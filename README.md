@@ -4,11 +4,10 @@ A Matrix client built for Exocortex. Tauri (Rust) + web frontend.
 
 ## Why
 
-Element is a general-purpose Matrix client. Nerve is purpose-built for how
-Kevin actually uses Matrix: talking to Exo across multiple rooms, with an
-eye toward first-class support for AI agent interaction patterns (tool
-approvals, streaming output, context telemetry) that Element will never
-prioritize.
+Element is a general-purpose Matrix client. Nerve is purpose-built for
+AI-augmented Matrix workflows: multiple rooms with AI agents, first-class
+support for agent interaction patterns (tool approvals, streaming output,
+context telemetry) that Element will never prioritize.
 
 **MVP goal:** Replace Element for daily use. Not by reimplementing all of
 Element, but by being good enough at the things that matter — fast room
