@@ -3,6 +3,7 @@
 
 mod client;
 mod commands;
+mod rooms;
 
 use client::MatrixState;
 
@@ -18,6 +19,7 @@ fn main() {
             commands::check_session,
             commands::login,
             commands::logout,
+            commands::list_rooms,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

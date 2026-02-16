@@ -1,6 +1,7 @@
 use tauri::State;
 
 use crate::client::{self, MatrixState};
+use crate::rooms::{self, RoomInfo};
 
 #[derive(serde::Serialize)]
 pub struct LoginResult {
@@ -61,8 +62,23 @@ pub async fn login(
 pub async fn logout(state: State<'_, MatrixState>) -> Result<(), String> {
     let mut guard = state.client.lock().await;
     if let Some(ref client) = *guard {
-        client.matrix_auth().logout().await.map_err(|e| format!("Logout failed: {e}"))?;
+        client
+            .matrix_auth()
+            .logout()
+            .await
+            .map_err(|e| format!("Logout failed: {e}"))?;
     }
     *guard = None;
     Ok(())
+}
+
+/// Get the current list of joined rooms.
+#[tauri::command]
+pub async fn list_rooms(state: State<'_, MatrixState>) -> Result<Vec<RoomInfo>, String> {
+    let guard = state.client.lock().await;
+    if let Some(ref client) = *guard {
+        Ok(rooms::collect_rooms(client).await)
+    } else {
+        Err("Not logged in".to_string())
+    }
 }

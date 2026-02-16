@@ -1,6 +1,6 @@
 ---
 id: ner-007b
-status: in_progress
+status: closed
 deps: [ner-63c4]
 links: []
 created: 2026-02-16T20:32:48Z

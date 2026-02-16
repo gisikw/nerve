@@ -44,9 +44,22 @@
         <span id="user-id"></span>
         <button id="logout-btn">Log out</button>
       </header>
-      <main id="app">
-        <p>Connected. Room list coming soon.</p>
-      </main>
+      <div id="layout">
+        <aside id="sidebar">
+          <ul id="room-list"></ul>
+        </aside>
+        <main id="chat">
+          <div id="no-room-selected">
+            <p>Select a room</p>
+          </div>
+          <div id="room-content" hidden>
+            <div id="room-header">
+              <h2 id="room-name"></h2>
+            </div>
+            <div id="messages"></div>
+          </div>
+        </main>
+      </div>
     </div>
 
     <script src="app.js"></script>

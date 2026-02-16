@@ -1,0 +1,35 @@
+use matrix_sdk::Client;
+use serde::Serialize;
+
+#[derive(Serialize, Clone)]
+pub struct RoomInfo {
+    pub id: String,
+    pub name: String,
+    pub is_direct: bool,
+    pub unread: bool,
+}
+
+/// Collect room info from the client's current state.
+pub async fn collect_rooms(client: &Client) -> Vec<RoomInfo> {
+    let joined = client.joined_rooms();
+    let mut rooms = Vec::with_capacity(joined.len());
+
+    for room in joined {
+        let name = room
+            .cached_display_name()
+            .map(|n| n.to_string())
+            .unwrap_or_else(|| room.room_id().to_string());
+        let is_direct = room.is_direct().await.unwrap_or(false);
+        let unread = room.unread_notification_counts().notification_count > 0;
+
+        rooms.push(RoomInfo {
+            id: room.room_id().to_string(),
+            name,
+            is_direct,
+            unread,
+        });
+    }
+
+    rooms.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+    rooms
+}
