@@ -1,8 +1,4 @@
 # Rust
-/target/
-Cargo.lock
-
-# Tauri
 /src-tauri/target/
 
 # Frontend

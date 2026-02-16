@@ -29,16 +29,29 @@ livable.
 ## Development
 
 ```bash
-# Prerequisites: Rust toolchain, system webview deps
-# On NixOS/Debian: webkit2gtk, libayatana-appindicator, etc.
+# Enter dev shell (provides Rust, Tauri CLI, GTK/WebKit deps)
+nix develop
 
 # Dev mode (hot-reload frontend, Rust rebuilds on change)
 cargo tauri dev
 
 # Build release binary
 cargo tauri build
+
+# Check backend compiles
+cd src-tauri && cargo check
 ```
 
-## Status
+## Project Structure
 
-Not started. This README is the spec.
+```
+src-tauri/          # Rust backend (Tauri app)
+  src/main.rs       # Entry point
+  Cargo.toml        # Rust dependencies
+  tauri.conf.json   # Tauri configuration
+  icons/            # App icons
+ui/                 # Frontend (HTML/CSS/JS)
+  index.html        # Entry point
+  styles.css        # Styles
+flake.nix           # Nix dev shell
+```
