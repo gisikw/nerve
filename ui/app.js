@@ -66,17 +66,80 @@ function renderRoomList(rooms) {
   }
 }
 
-function selectRoom(room) {
+async function selectRoom(room) {
   selectedRoomId = room.id;
   roomNameEl.textContent = room.name;
   noRoomSelected.hidden = true;
   roomContent.hidden = false;
-  messagesEl.innerHTML = "<p class='placeholder'>Messages coming soon.</p>";
 
   // Update selection styling
   for (const li of roomListEl.children) {
     li.classList.toggle("selected", li.dataset.roomId === room.id);
   }
+
+  await loadMessages(room.id);
+}
+
+// Messages
+
+async function loadMessages(roomId) {
+  messagesEl.innerHTML = "<p class='placeholder'>Loading...</p>";
+  try {
+    const msgs = await invoke("get_messages", { roomId });
+    renderMessages(msgs);
+  } catch (err) {
+    messagesEl.innerHTML = `<p class='placeholder'>Failed to load messages</p>`;
+    console.error("Failed to load messages:", err);
+  }
+}
+
+function renderMessages(msgs) {
+  messagesEl.innerHTML = "";
+  if (msgs.length === 0) {
+    messagesEl.innerHTML = "<p class='placeholder'>No messages yet.</p>";
+    return;
+  }
+
+  for (const msg of msgs) {
+    const el = document.createElement("div");
+    el.classList.add("message");
+    if (msg.msg_type === "notice") el.classList.add("notice");
+    if (msg.msg_type === "emote") el.classList.add("emote");
+
+    const sender = document.createElement("span");
+    sender.classList.add("sender");
+    sender.textContent = formatSender(msg.sender);
+
+    const time = document.createElement("span");
+    time.classList.add("timestamp");
+    time.textContent = formatTime(msg.timestamp);
+
+    const header = document.createElement("div");
+    header.classList.add("message-header");
+    header.appendChild(sender);
+    header.appendChild(time);
+
+    const body = document.createElement("div");
+    body.classList.add("message-body");
+    body.textContent = msg.body;
+
+    el.appendChild(header);
+    el.appendChild(body);
+    messagesEl.appendChild(el);
+  }
+
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function formatSender(userId) {
+  // @user:server.org -> user
+  const match = userId.match(/^@([^:]+)/);
+  return match ? match[1] : userId;
+}
+
+function formatTime(tsMillis) {
+  const d = new Date(tsMillis);
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
 function startRoomPolling() {

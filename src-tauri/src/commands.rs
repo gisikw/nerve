@@ -1,6 +1,7 @@
 use tauri::State;
 
 use crate::client::{self, MatrixState};
+use crate::messages::{self, MessageInfo};
 use crate::rooms::{self, RoomInfo};
 
 #[derive(serde::Serialize)]
@@ -78,6 +79,22 @@ pub async fn list_rooms(state: State<'_, MatrixState>) -> Result<Vec<RoomInfo>, 
     let guard = state.client.lock().await;
     if let Some(ref client) = *guard {
         Ok(rooms::collect_rooms(client).await)
+    } else {
+        Err("Not logged in".to_string())
+    }
+}
+
+/// Get recent messages for a room.
+#[tauri::command]
+pub async fn get_messages(
+    state: State<'_, MatrixState>,
+    room_id: String,
+) -> Result<Vec<MessageInfo>, String> {
+    let guard = state.client.lock().await;
+    if let Some(ref client) = *guard {
+        messages::fetch_messages(client, &room_id, 50)
+            .await
+            .map_err(|e| format!("Failed to fetch messages: {e}"))
     } else {
         Err("Not logged in".to_string())
     }
