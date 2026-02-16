@@ -1,5 +1,5 @@
 use matrix_sdk::room::MessagesOptions;
-use matrix_sdk::ruma::events::room::message::MessageType;
+use matrix_sdk::ruma::events::room::message::{MessageType, RoomMessageEventContent};
 use matrix_sdk::ruma::events::{AnySyncMessageLikeEvent, AnySyncTimelineEvent};
 use matrix_sdk::Client;
 use serde::Serialize;
@@ -86,4 +86,20 @@ pub async fn fetch_messages(
     }
 
     Ok(messages)
+}
+
+/// Send a text message to a room.
+pub async fn send_message(
+    client: &Client,
+    room_id: &str,
+    body: &str,
+) -> anyhow::Result<()> {
+    let room_id = matrix_sdk::ruma::RoomId::parse(room_id)?;
+    let room = client
+        .get_room(&room_id)
+        .ok_or_else(|| anyhow::anyhow!("Room not found"))?;
+
+    let content = RoomMessageEventContent::text_plain(body);
+    room.send(content).await?;
+    Ok(())
 }

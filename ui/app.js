@@ -12,6 +12,8 @@ const noRoomSelected = document.getElementById("no-room-selected");
 const roomContent = document.getElementById("room-content");
 const roomNameEl = document.getElementById("room-name");
 const messagesEl = document.getElementById("messages");
+const composeForm = document.getElementById("compose");
+const composeInput = document.getElementById("compose-input");
 
 let selectedRoomId = null;
 let roomPollInterval = null;
@@ -141,6 +143,37 @@ function formatTime(tsMillis) {
   const d = new Date(tsMillis);
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
+
+// Compose
+
+composeForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const body = composeInput.value.trim();
+  if (!body || !selectedRoomId) return;
+
+  composeInput.value = "";
+  composeInput.style.height = "auto";
+
+  try {
+    await invoke("send_message", { roomId: selectedRoomId, body });
+    await loadMessages(selectedRoomId);
+  } catch (err) {
+    console.error("Failed to send message:", err);
+  }
+});
+
+composeInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    composeForm.requestSubmit();
+  }
+});
+
+// Auto-resize textarea
+composeInput.addEventListener("input", () => {
+  composeInput.style.height = "auto";
+  composeInput.style.height = Math.min(composeInput.scrollHeight, 120) + "px";
+});
 
 function startRoomPolling() {
   stopRoomPolling();

@@ -99,3 +99,20 @@ pub async fn get_messages(
         Err("Not logged in".to_string())
     }
 }
+
+/// Send a text message to a room.
+#[tauri::command]
+pub async fn send_message(
+    state: State<'_, MatrixState>,
+    room_id: String,
+    body: String,
+) -> Result<(), String> {
+    let guard = state.client.lock().await;
+    if let Some(ref client) = *guard {
+        messages::send_message(client, &room_id, &body)
+            .await
+            .map_err(|e| format!("Failed to send message: {e}"))
+    } else {
+        Err("Not logged in".to_string())
+    }
+}

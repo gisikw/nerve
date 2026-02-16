@@ -278,3 +278,37 @@ button:hover {
 .message.emote .sender {
   font-style: italic;
 }
+
+/* Compose bar */
+
+#compose {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border);
+  background: var(--bg-surface);
+}
+
+#compose-input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+#compose-input:focus {
+  border-color: var(--accent);
+}
+
+#compose button {
+  padding: 0.5rem 1rem;
+  align-self: flex-end;
+}

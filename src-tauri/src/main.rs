@@ -22,6 +22,7 @@ fn main() {
             commands::logout,
             commands::list_rooms,
             commands::get_messages,
+            commands::send_message,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
