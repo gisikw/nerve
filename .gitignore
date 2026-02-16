@@ -1,0 +1,24 @@
+# Rust
+/target/
+Cargo.lock
+
+# Tauri
+/src-tauri/target/
+
+# Frontend
+/node_modules/
+/dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Credentials
+*.key
+*.pem
