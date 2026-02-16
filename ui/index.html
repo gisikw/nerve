@@ -7,9 +7,48 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main id="app">
-      <h1>Nerve</h1>
-      <p>Matrix client loading&hellip;</p>
-    </main>
+    <div id="login-view" class="view">
+      <form id="login-form">
+        <h1>Nerve</h1>
+        <label for="homeserver">Homeserver</label>
+        <input
+          type="text"
+          id="homeserver"
+          name="homeserver"
+          placeholder="matrix.example.org"
+          required
+        />
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          placeholder="alice"
+          required
+        />
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          required
+        />
+        <button type="submit">Log in</button>
+        <p id="login-error" class="error" hidden></p>
+        <p id="login-status" class="status" hidden></p>
+      </form>
+    </div>
+
+    <div id="main-view" class="view" hidden>
+      <header>
+        <span id="user-id"></span>
+        <button id="logout-btn">Log out</button>
+      </header>
+      <main id="app">
+        <p>Connected. Room list coming soon.</p>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
   </body>
 </html>

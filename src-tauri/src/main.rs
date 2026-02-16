@@ -1,8 +1,24 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#![recursion_limit = "512"]
+
+mod client;
+mod commands;
+
+use client::MatrixState;
 
 fn main() {
+    tracing_subscriber::fmt::init();
+
+    let state = MatrixState::new();
+
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
+        .manage(state)
+        .invoke_handler(tauri::generate_handler![
+            commands::check_session,
+            commands::login,
+            commands::logout,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

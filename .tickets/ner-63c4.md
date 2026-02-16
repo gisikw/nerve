@@ -1,6 +1,6 @@
 ---
 id: ner-63c4
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-02-16T20:32:42Z
