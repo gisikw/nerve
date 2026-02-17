@@ -48,8 +48,10 @@ type Msg
       -- Polling ticks
     | PollRooms
     | PollMessages
-      -- Scroll
-    | ScrolledToBottom
+      -- DOM effects (fire-and-forget results)
+    | DomNoOp
+      -- Keyboard
+    | KeyPressed String
       -- Time zone
     | GotTimeZone Time.Zone
 

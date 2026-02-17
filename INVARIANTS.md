@@ -49,6 +49,28 @@ be ticketed for remediation. No grandfathering.
   Good line height, sensible max-width, monospace for code blocks, proper
   quote styling. This is a daily-driver client, not a prototype.
 
+### Elm/JS boundary
+
+- **Elm owns behavior. JS is plumbing.** Decisions about *what happens*
+  live in the Elm architecture (Model/Update/Subscriptions). The JS glue
+  layer (`main.ts`) does exactly two things: (1) bridge Elm ports to Tauri
+  IPC, and (2) perform DOM operations that Elm cannot express (measuring
+  `scrollHeight`, etc.). If a behavior can be expressed as an Elm
+  subscription, decoder, or `Browser.Dom` task, it must be — even if the
+  JS version would be fewer lines.
+- **JS glue is typed.** The glue layer is TypeScript, not JavaScript. Port
+  types are declared in `src/elm.d.ts`. New ports get type declarations.
+- **All JS DOM operations are port-initiated.** JS must not attach its own
+  event listeners or timers to drive behavior. Every JS side-effect is
+  triggered by an Elm port call. The one exception is the Tauri IPC bridge
+  itself (the `sendToTauri`/`receiveFromTauri` subscription), which is
+  infrastructure, not behavior.
+- **The test for "should this be JS?" is capability, not convenience.**
+  Valid reasons for JS: the operation requires imperative DOM measurement
+  (`scrollHeight`, `getBoundingClientRect`), direct style mutation that
+  Elm's virtual DOM can't express, or WebAPI access not exposed by
+  `Browser.Dom`. "It's faster to write in JS" is not a valid reason.
+
 ## Specifications and Tests
 
 - **Every behavior has a spec.** Behavioral specs live in `specs/*.feature`

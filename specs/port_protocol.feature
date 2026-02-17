@@ -1,6 +1,7 @@
 Feature: Port Protocol
-  Communication between Elm and Tauri via the JS glue layer.
-  Two ports only: sendToTauri (out) and receiveFromTauri (in).
+  Communication between Elm and Tauri via the TypeScript glue layer.
+  IPC ports: sendToTauri (out) and receiveFromTauri (in).
+  DOM ports: resizeComposeInput (out, fire-and-forget).
 
   Scenario: Outgoing commands use tagged envelope format
     Given Elm sends a command via sendToTauri
@@ -36,3 +37,8 @@ Feature: Port Protocol
       | listRooms     | list_rooms    |
       | getMessages   | get_messages  |
       | sendMessage   | send_message  |
+
+  Scenario: Compose textarea auto-resizes via port
+    Given Elm sends a unit value via resizeComposeInput
+    Then the JS glue sets the compose textarea height to its scrollHeight
+    And the resize runs on the next animation frame

@@ -5,6 +5,7 @@ import Commands
 import Decode
 import Json.Decode as D
 import Model exposing (Model, Msg(..), Page(..))
+import Ports
 import Task
 
 
@@ -53,7 +54,7 @@ update msg model =
 
         -- Compose
         SetComposeText s ->
-            ( { model | composeText = s }, Cmd.none )
+            ( { model | composeText = s }, Ports.resizeComposeInput () )
 
         SubmitMessage ->
             case model.selectedRoomId of
@@ -63,7 +64,10 @@ update msg model =
 
                     else
                         ( { model | composeText = "" }
-                        , Commands.sendMessage roomId model.composeText
+                        , Cmd.batch
+                            [ Commands.sendMessage roomId model.composeText
+                            , Ports.resizeComposeInput ()
+                            ]
                         )
 
                 Nothing ->
@@ -85,9 +89,13 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
-        -- Scroll
-        ScrolledToBottom ->
+        -- DOM effects (fire-and-forget results)
+        DomNoOp ->
             ( model, Cmd.none )
+
+        -- Keyboard: printable key pressed while compose not focused
+        KeyPressed _ ->
+            ( model, focusCompose )
 
         -- Time zone
         GotTimeZone zone ->
@@ -215,7 +223,7 @@ dispatchTag tag payload model =
 focusCompose : Cmd Msg
 focusCompose =
     Browser.Dom.focus "compose-input"
-        |> Task.attempt (\_ -> ScrolledToBottom)
+        |> Task.attempt (\_ -> DomNoOp)
 
 
 {-| Scroll the messages container to the bottom, but only if already near
@@ -240,4 +248,4 @@ scrollToBottom =
                 else
                     Task.succeed ()
             )
-        |> Task.attempt (\_ -> ScrolledToBottom)
+        |> Task.attempt (\_ -> DomNoOp)
