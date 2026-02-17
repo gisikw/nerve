@@ -1,6 +1,6 @@
 # Nerve
 
-A Matrix client built for Exocortex. Tauri (Rust) + web frontend.
+A Matrix client built for Exocortex. Tauri (Rust) + Elm frontend.
 
 ## Why
 
@@ -21,28 +21,32 @@ livable.
 
 - **Backend:** Tauri (Rust). Uses matrix-rust-sdk for Matrix protocol,
   E2EE, sync. Exposes commands to the frontend via Tauri's IPC.
-- **Frontend:** Web (framework TBD — likely Svelte or vanilla). Renders
-  messages, handles input, room navigation.
+- **Frontend:** Elm. Virtual DOM for flicker-free updates. Communicates
+  with the Rust backend via two ports (sendToTauri/receiveFromTauri) using
+  tagged JSON envelopes. Vite + vite-plugin-elm for the build pipeline.
 - **Build:** Single binary per platform. System webview (WebKitGTK on
   Linux, WebKit on macOS).
 
 ## Building
 
 Requires [Nix](https://nixos.org/download/) with flakes enabled. The flake
-provides Rust, Tauri CLI, and all system dependencies (GTK3, WebKitGTK, etc.).
+provides Rust, Tauri CLI, Node.js, Elm, and all system dependencies.
 
 ```bash
 # Enter dev shell
 nix develop
 
-# Run in dev mode (hot-reload frontend, Rust rebuilds on save)
+# Install frontend deps (first time only)
+cd ui && npm install && cd ..
+
+# Run in dev mode (Vite hot-reload + Rust rebuilds on save)
 cargo tauri dev
 
 # Build release binary — outputs to src-tauri/target/release/bundle/
 cargo tauri build
 
-# Just check compilation without building the full bundle
-cd src-tauri && cargo check
+# Run Elm tests
+cd ui && npx elm-test
 ```
 
 First build takes ~20 minutes (matrix-sdk dependency tree). Incremental
@@ -53,27 +57,36 @@ rebuilds are fast.
 You'll need:
 - Rust toolchain (stable)
 - `cargo-tauri` CLI (`cargo install tauri-cli`)
-- GTK3, WebKitGTK 4.1, libsoup 3, and related dev packages
-
-On Debian/Ubuntu:
-```bash
-sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev libsoup-3.0-dev \
-  libjavascriptcoregtk-4.1-dev libglib2.0-dev libcairo2-dev \
-  libpango1.0-dev libatk1.0-dev libgdk-pixbuf-2.0-dev
-```
-
-Then `cargo tauri dev` / `cargo tauri build` as above.
+- Node.js 20+ and npm
+- Elm 0.19.1
+- GTK3, WebKitGTK 4.1, libsoup 3, and related dev packages (Linux only)
 
 ## Project Structure
 
 ```
-src-tauri/          # Rust backend (Tauri app)
-  src/main.rs       # Entry point
-  Cargo.toml        # Rust dependencies
-  tauri.conf.json   # Tauri configuration
-  icons/            # App icons
-ui/                 # Frontend (HTML/CSS/JS)
-  index.html        # Entry point
-  styles.css        # Styles
-flake.nix           # Nix dev shell
+src-tauri/              # Rust backend (Tauri app)
+  src/main.rs           # Entry point
+  src/commands.rs       # Tauri IPC commands
+  src/rooms.rs          # Room listing
+  src/messages.rs       # Message fetching and sending
+  Cargo.toml            # Rust dependencies
+  tauri.conf.json       # Tauri configuration
+ui/                     # Elm frontend
+  src/Main.elm          # App entry point
+  src/Model.elm         # Model, Msg, Page types
+  src/Update.elm        # Update function (all state transitions)
+  src/View/Login.elm    # Login form view
+  src/View/Sidebar.elm  # Room list sidebar
+  src/View/Messages.elm # Message display and compose bar
+  src/Types.elm         # Domain types (Room, Message, etc.)
+  src/Decode.elm        # JSON decoders for Rust types
+  src/Ports.elm         # Port declarations
+  src/Commands.elm      # Typed command helpers
+  main.js               # JS glue (ports <-> Tauri invoke)
+  index.html            # HTML shell
+  styles.css            # Styles
+  elm.json              # Elm dependencies
+  package.json          # Vite + vite-plugin-elm
+  tests/                # Elm tests
+flake.nix               # Nix dev shell
 ```

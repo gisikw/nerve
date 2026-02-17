@@ -1,6 +1,6 @@
 ---
 id: ner-bd08
-status: open
+status: closed
 deps: [ner-b304]
 links: []
 created: 2026-02-17T03:23:16Z
