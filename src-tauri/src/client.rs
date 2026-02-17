@@ -17,10 +17,31 @@ impl MatrixState {
     }
 }
 
-fn data_dir() -> PathBuf {
+pub fn data_dir() -> PathBuf {
     dirs::data_dir()
         .unwrap_or_else(|| PathBuf::from("."))
         .join("nerve")
+}
+
+/// Persist the homeserver name so we can restore the session on next launch.
+pub fn save_homeserver(homeserver: &str) -> anyhow::Result<()> {
+    let dir = data_dir();
+    std::fs::create_dir_all(&dir)?;
+    std::fs::write(dir.join("homeserver"), homeserver)?;
+    Ok(())
+}
+
+/// Load the previously-used homeserver name, if any.
+pub fn load_homeserver() -> Option<String> {
+    std::fs::read_to_string(data_dir().join("homeserver"))
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+}
+
+/// Clear the saved homeserver (on logout).
+pub fn clear_homeserver() {
+    let _ = std::fs::remove_file(data_dir().join("homeserver"));
 }
 
 /// Build a Matrix client for the given homeserver, with a persistent sqlite

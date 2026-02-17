@@ -46,6 +46,8 @@ type Msg
       -- Polling ticks
     | PollRooms
     | PollMessages
+      -- Scroll
+    | ScrolledToBottom
 
 
 initialModel : Model

@@ -16,6 +16,22 @@ Feature: Session Management
     Given the backend responds to checkSession with logged_in false
     Then the app stays on the login page
 
+  Scenario: Session persists across app restarts
+    Given the user previously logged in to a homeserver
+    And the app is restarted
+    When check_session runs on startup
+    Then the backend restores the client from the saved homeserver and sqlite store
+    And the app transitions to the main page without requiring login
+
+  Scenario: Login saves homeserver for future session restore
+    Given the user logs in with homeserver "example.chat"
+    Then the homeserver is persisted to disk
+
+  Scenario: Logout clears saved session
+    Given the user logs out
+    Then the saved homeserver is removed
+    And the next app launch will require login
+
   Scenario: Successful login
     Given the user fills in homeserver, username, and password
     And submits the login form

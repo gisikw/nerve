@@ -1,5 +1,5 @@
 use matrix_sdk::room::MessagesOptions;
-use matrix_sdk::ruma::events::room::message::{MessageType, RoomMessageEventContent};
+use matrix_sdk::ruma::events::room::message::{MessageType, Relation, RoomMessageEventContent};
 use matrix_sdk::ruma::events::room::MediaSource;
 use matrix_sdk::ruma::events::{AnySyncMessageLikeEvent, AnySyncTimelineEvent};
 use matrix_sdk::Client;
@@ -34,6 +34,24 @@ fn mxc_to_http(client: &Client, source: &MediaSource) -> Option<String> {
     Some(url)
 }
 
+/// Extract body, msg_type, and media_url from a message type.
+fn extract_content(client: &Client, msgtype: &MessageType) -> (String, String, Option<String>) {
+    match msgtype {
+        MessageType::Text(t) => (t.body.clone(), "text".to_string(), None),
+        MessageType::Notice(n) => (n.body.clone(), "notice".to_string(), None),
+        MessageType::Emote(e) => (format!("* {}", e.body), "emote".to_string(), None),
+        MessageType::Image(img) => {
+            let url = mxc_to_http(client, &img.source);
+            let caption = img.caption().unwrap_or(&img.body);
+            (caption.to_string(), "image".to_string(), url)
+        }
+        MessageType::File(_) => ("[file]".to_string(), "other".to_string(), None),
+        MessageType::Audio(_) => ("[audio]".to_string(), "other".to_string(), None),
+        MessageType::Video(_) => ("[video]".to_string(), "other".to_string(), None),
+        _ => ("[unsupported]".to_string(), "other".to_string(), None),
+    }
+}
+
 /// Fetch recent messages for a room. Returns newest-last.
 pub async fn fetch_messages(
     client: &Client,
@@ -60,36 +78,40 @@ pub async fn fetch_messages(
             AnySyncMessageLikeEvent::RoomMessage(msg),
         ) = event
         {
-            let (body, msg_type, media_url) = match msg.as_original() {
-                Some(original) => {
-                    let (body, msg_type, media_url) = match &original.content.msgtype {
-                        MessageType::Text(t) => (t.body.clone(), "text", None),
-                        MessageType::Notice(n) => (n.body.clone(), "notice", None),
-                        MessageType::Emote(e) => (format!("* {}", e.body), "emote", None),
-                        MessageType::Image(img) => {
-                            let url = mxc_to_http(client, &img.source);
-                            let caption = img.caption().unwrap_or(&img.body);
-                            (caption.to_string(), "image", url)
-                        }
-                        MessageType::File(_) => ("[file]".to_string(), "other", None),
-                        MessageType::Audio(_) => ("[audio]".to_string(), "other", None),
-                        MessageType::Video(_) => ("[video]".to_string(), "other", None),
-                        _ => ("[unsupported]".to_string(), "other", None),
-                    };
-                    (body, msg_type.to_string(), media_url)
-                }
-                None => ("[redacted]".to_string(), "redacted".to_string(), None),
+            let Some(original) = msg.as_original() else {
+                messages.push(MessageInfo {
+                    event_id: msg.event_id().to_string(),
+                    sender: msg.sender().to_string(),
+                    body: "[redacted]".to_string(),
+                    timestamp: msg.origin_server_ts().0.into(),
+                    msg_type: "redacted".to_string(),
+                    media_url: None,
+                });
+                continue;
             };
 
-            let sender = msg.sender().to_string();
-            let timestamp = msg.origin_server_ts().0.into();
-            let event_id = msg.event_id().to_string();
+            // If this is an edit (m.replace), update the original message's
+            // body instead of adding a duplicate entry.
+            if let Some(Relation::Replacement(replacement)) = &original.content.relates_to {
+                let target_id = replacement.event_id.to_string();
+                let (body, msg_type, media_url) =
+                    extract_content(client, &replacement.new_content.msgtype);
+                if let Some(target) = messages.iter_mut().find(|m| m.event_id == target_id) {
+                    target.body = body;
+                    target.msg_type = msg_type;
+                    target.media_url = media_url;
+                }
+                continue;
+            }
+
+            let (body, msg_type, media_url) =
+                extract_content(client, &original.content.msgtype);
 
             messages.push(MessageInfo {
-                event_id,
-                sender,
+                event_id: msg.event_id().to_string(),
+                sender: msg.sender().to_string(),
                 body,
-                timestamp,
+                timestamp: msg.origin_server_ts().0.into(),
                 msg_type,
                 media_url,
             });

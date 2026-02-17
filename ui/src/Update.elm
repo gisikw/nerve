@@ -1,9 +1,11 @@
 module Update exposing (update)
 
+import Browser.Dom
 import Commands
 import Decode
 import Json.Decode as D
 import Model exposing (Model, Msg(..), Page(..))
+import Task
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -79,6 +81,10 @@ update msg model =
 
                 Nothing ->
                     ( model, Cmd.none )
+
+        -- Scroll
+        ScrolledToBottom ->
+            ( model, Cmd.none )
 
         -- Port responses
         ReceivedFromTauri value ->
@@ -166,7 +172,7 @@ dispatchTag tag payload model =
             case D.decodeValue Decode.messageList payload of
                 Ok messages ->
                     ( { model | messages = messages, messagesLoading = False }
-                    , Cmd.none
+                    , scrollToBottom
                     )
 
                 Err _ ->
@@ -197,3 +203,28 @@ dispatchTag tag payload model =
 
         _ ->
             ( model, Cmd.none )
+
+
+{-| Scroll the messages container to the bottom, but only if already near
+the bottom (within 100px). This preserves scroll-back position when reading
+history while still auto-scrolling during active conversation.
+-}
+scrollToBottom : Cmd Msg
+scrollToBottom =
+    Browser.Dom.getViewportOf "messages"
+        |> Task.andThen
+            (\viewport ->
+                let
+                    nearBottom =
+                        viewport.viewport.y
+                            + viewport.viewport.height
+                            >= viewport.scene.height
+                            - 100
+                in
+                if nearBottom then
+                    Browser.Dom.setViewportOf "messages" 0 viewport.scene.height
+
+                else
+                    Task.succeed ()
+            )
+        |> Task.attempt (\_ -> ScrolledToBottom)

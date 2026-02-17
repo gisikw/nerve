@@ -36,6 +36,16 @@ Feature: Message Display
     Given a room has no messages
     Then the chat area shows "No messages yet."
 
+  Scenario: Messages auto-scroll to bottom on new messages
+    Given the user is scrolled to the bottom of the messages area
+    When new messages arrive
+    Then the messages area scrolls to the bottom
+
+  Scenario: Scroll-back position is preserved
+    Given the user has scrolled up in the messages area
+    When new messages arrive
+    Then the scroll position is not changed
+
   Scenario: Messages poll periodically when room is selected
     Given a room is selected
     Then messages refresh every 3 seconds

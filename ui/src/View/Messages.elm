@@ -3,6 +3,7 @@ module View.Messages exposing (view)
 import Html exposing (Html, div, form, h2, img, p, span, text, textarea)
 import Html.Attributes exposing (alt, class, id, placeholder, rows, src, type_, value)
 import Html.Events exposing (onInput, onSubmit)
+import Json.Decode as D
 import Model exposing (Model, Msg(..))
 import Types exposing (Message)
 
@@ -173,7 +174,27 @@ composeBar model =
             , rows 1
             , value model.composeText
             , onInput SetComposeText
+            , onEnter SubmitMessage
             ]
             []
         , Html.button [ type_ "submit" ] [ text "Send" ]
         ]
+
+
+{-| Submit on Enter, allow Shift+Enter for newlines.
+-}
+onEnter : Msg -> Html.Attribute Msg
+onEnter msg =
+    Html.Events.preventDefaultOn "keydown"
+        (D.map2 Tuple.pair
+            (D.field "key" D.string)
+            (D.field "shiftKey" D.bool)
+            |> D.andThen
+                (\( key, shift ) ->
+                    if key == "Enter" && not shift then
+                        D.succeed ( msg, True )
+
+                    else
+                        D.fail "not Enter"
+                )
+        )

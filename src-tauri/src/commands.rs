@@ -18,20 +18,37 @@ pub struct SessionStatus {
 /// Attempt to restore a persisted session. Called on app startup.
 #[tauri::command]
 pub async fn check_session(state: State<'_, MatrixState>) -> Result<SessionStatus, String> {
-    let guard = state.client.lock().await;
+    let mut guard = state.client.lock().await;
+
+    // If we already have a client, check it directly.
     if let Some(ref client) = *guard {
         let logged_in = client::try_restore_session(client).await;
         let user_id = client.user_id().map(|id| id.to_string());
         if logged_in {
             client::spawn_sync(client.clone());
         }
-        Ok(SessionStatus { logged_in, user_id })
-    } else {
-        Ok(SessionStatus {
-            logged_in: false,
-            user_id: None,
-        })
+        return Ok(SessionStatus { logged_in, user_id });
     }
+
+    // No client yet — try to restore from a saved homeserver + sqlite store.
+    if let Some(homeserver) = client::load_homeserver() {
+        if let Ok(restored) = client::build_client(&homeserver).await {
+            if client::try_restore_session(&restored).await {
+                let user_id = restored.user_id().map(|id| id.to_string());
+                client::spawn_sync(restored.clone());
+                *guard = Some(restored);
+                return Ok(SessionStatus {
+                    logged_in: true,
+                    user_id,
+                });
+            }
+        }
+    }
+
+    Ok(SessionStatus {
+        logged_in: false,
+        user_id: None,
+    })
 }
 
 /// Log in with homeserver, username, and password.
@@ -49,6 +66,9 @@ pub async fn login(
     let user_id = client::login(&new_client, &username, &password)
         .await
         .map_err(|e| format!("Login failed: {e}"))?;
+
+    // Persist homeserver for session restore on next launch.
+    let _ = client::save_homeserver(&homeserver);
 
     client::spawn_sync(new_client.clone());
 
@@ -70,6 +90,7 @@ pub async fn logout(state: State<'_, MatrixState>) -> Result<(), String> {
             .map_err(|e| format!("Logout failed: {e}"))?;
     }
     *guard = None;
+    client::clear_homeserver();
     Ok(())
 }
 

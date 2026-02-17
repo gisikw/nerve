@@ -5,6 +5,18 @@ Feature: Message Compose
     Given the user types a message and submits
     Then the compose input is cleared
 
+  Scenario: Enter key submits the message
+    Given the user is focused on the compose input
+    When the user presses Enter without Shift
+    Then the message is submitted
+    And the default newline is prevented
+
+  Scenario: Shift+Enter inserts a newline
+    Given the user is focused on the compose input
+    When the user presses Shift+Enter
+    Then a newline is inserted
+    And the message is not submitted
+
   Scenario: Empty messages are not sent
     Given the compose input contains only whitespace
     When the user submits
