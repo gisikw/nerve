@@ -4,6 +4,7 @@ import Html exposing (Html, div, form, h2, img, p, span, text, textarea)
 import Html.Attributes exposing (alt, class, id, placeholder, rows, src, type_, value)
 import Html.Events exposing (onInput, onSubmit)
 import Json.Decode as D
+import Markdown
 import Model exposing (Model, Msg(..))
 import Time
 import Types exposing (Message)
@@ -131,7 +132,7 @@ messageBody msg =
                 div [ class "message-body" ] [ text msg.body ]
 
     else
-        div [ class "message-body" ] [ text msg.body ]
+        div [ class "message-body" ] (Markdown.render msg.body)
 
 
 formatSender : String -> String

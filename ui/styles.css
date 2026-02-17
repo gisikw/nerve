@@ -348,6 +348,40 @@ button:hover {
   word-break: break-word;
 }
 
+.message-body .inline-code {
+  background: var(--bg-surface);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+}
+
+.message-body .code-block {
+  background: var(--bg-surface);
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  line-height: 1.45;
+  overflow-x: auto;
+  margin: 0.3rem 0;
+  white-space: pre;
+}
+
+.message-body .code-block code {
+  background: none;
+  padding: 0;
+}
+
+.message-body a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.message-body a:hover {
+  text-decoration: underline;
+}
+
 .message.notice .message-body {
   color: var(--text-muted);
   font-style: italic;
