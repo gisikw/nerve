@@ -25,6 +25,7 @@
             cargo-tauri
             pkg-config
             openssl
+            sqlite
           ] ++ pkgs.lib.optionals isLinux [
             # Linux: GTK/WebKitGTK (macOS uses system WebKit)
             glib
