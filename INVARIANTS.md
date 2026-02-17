@@ -244,6 +244,46 @@ All responses are JSON: `{"ok": true}` on success, `{"ok": false, "error": "..."
 - **The plugin only activates in dev mode.** `apply: "serve"` in the
   Vite plugin config means production builds don't include any of this.
 
+## Screenshot Pipeline
+
+Headless UI capture using the fake backend. Starts Vite, optionally
+drives the fake backend into a specific state, renders in headless
+Chromium (via puppeteer-core), and saves a PNG.
+
+### Usage
+
+```bash
+cd ui && npx tsx screenshot.ts [options]
+# or: npm run screenshot -- [options]
+```
+
+| Option              | Description                                      |
+|---------------------|--------------------------------------------------|
+| `--output, -o`      | Output path (default: timestamped in `notes/attachments/`) |
+| `--width`           | Viewport width in px (default: 1280)             |
+| `--height`          | Viewport height in px (default: 800)             |
+| `--room <name>`     | Click a room in the sidebar before capture       |
+| `--scene <name>`    | Apply a predefined state setup                   |
+| `--delay <ms>`      | Extra delay before capture (default: 500)        |
+| `--vite-url <url>`  | Use existing Vite server instead of starting one |
+
+### Scenes
+
+Predefined state configurations applied via the driver before capture:
+
+- **`default`** — seed data, no room selected
+- **`login`** — logged-out state, shows login page
+- **`busy`** — high notification counts on multiple rooms
+- **`fresh`** — reset to clean seed data
+
+New scenes are defined in `screenshot.ts` as arrays of driver actions.
+
+### Requirements
+
+- Chromium in the nix store (auto-detected via `find /nix/store`)
+- `puppeteer-core` and `tsx` (dev dependencies)
+- Fake backend (Vite plugin) — starts automatically
+
 ## Policy
 
 - **Decisions that shape code are explicit, not implicit.** If an agent
