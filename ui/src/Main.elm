@@ -1,12 +1,16 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, div, h1, text)
-import Html.Attributes exposing (id)
+import Html exposing (Html, button, div, header, span, text)
+import Html.Attributes exposing (class, id)
+import Html.Events exposing (onClick)
 import Model exposing (Model, Msg(..), Page(..), initialModel)
 import Ports
 import Time
 import Update
+import View.Login
+import View.Messages
+import View.Sidebar
 
 
 main : Program () Model Msg
@@ -25,10 +29,29 @@ init _ =
 
 
 view : Model -> Html Msg
-view _ =
-    div [ id "app" ]
-        [ h1 [] [ text "Nerve" ]
-        , div [] [ text "Hello from Elm" ]
+view model =
+    case model.page of
+        LoginPage ->
+            View.Login.view model
+
+        MainPage ->
+            mainView model
+
+
+mainView : Model -> Html Msg
+mainView model =
+    div [ id "main-view", class "view" ]
+        [ header []
+            [ span [ id "user-id" ]
+                [ text (Maybe.withDefault "" model.userId) ]
+            , button [ id "logout-btn", onClick Logout ]
+                [ text "Log out" ]
+            ]
+        , div [ id "layout" ]
+            [ View.Sidebar.view model
+            , Html.main_ [ id "chat" ]
+                [ View.Messages.view model ]
+            ]
         ]
 
 
