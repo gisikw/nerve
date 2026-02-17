@@ -17,11 +17,13 @@ const composeInput = document.getElementById("compose-input");
 
 let selectedRoomId = null;
 let roomPollInterval = null;
+let messagePollInterval = null;
 
 function showLogin() {
   loginView.hidden = false;
   mainView.hidden = true;
   stopRoomPolling();
+  stopMessagePolling();
 }
 
 function showMain(userId) {
@@ -59,9 +61,19 @@ function renderRoomList(rooms) {
   roomListEl.innerHTML = "";
   for (const room of rooms) {
     const li = document.createElement("li");
-    li.textContent = room.name;
     li.dataset.roomId = room.id;
-    if (room.unread) li.classList.add("unread");
+
+    const nameSpan = document.createTextNode(room.name);
+    li.appendChild(nameSpan);
+
+    if (room.notification_count > 0) {
+      li.classList.add("unread");
+      const badge = document.createElement("span");
+      badge.classList.add("unread-badge");
+      badge.textContent = room.notification_count > 99 ? "99+" : room.notification_count;
+      li.appendChild(badge);
+    }
+
     if (room.id === selectedRoomId) li.classList.add("selected");
     li.addEventListener("click", () => selectRoom(room));
     roomListEl.appendChild(li);
@@ -74,12 +86,12 @@ async function selectRoom(room) {
   noRoomSelected.hidden = true;
   roomContent.hidden = false;
 
-  // Update selection styling
   for (const li of roomListEl.children) {
     li.classList.toggle("selected", li.dataset.roomId === room.id);
   }
 
   await loadMessages(room.id);
+  startMessagePolling();
 }
 
 // Messages
@@ -90,17 +102,23 @@ async function loadMessages(roomId) {
     const msgs = await invoke("get_messages", { roomId });
     renderMessages(msgs);
   } catch (err) {
-    messagesEl.innerHTML = `<p class='placeholder'>Failed to load messages</p>`;
+    messagesEl.innerHTML = "<p class='placeholder'>Failed to load messages</p>";
     console.error("Failed to load messages:", err);
   }
 }
 
 function renderMessages(msgs) {
+  const wasAtBottom =
+    messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 40;
+
   messagesEl.innerHTML = "";
   if (msgs.length === 0) {
     messagesEl.innerHTML = "<p class='placeholder'>No messages yet.</p>";
     return;
   }
+
+  let prevSender = null;
+  let prevTimestamp = 0;
 
   for (const msg of msgs) {
     const el = document.createElement("div");
@@ -108,33 +126,68 @@ function renderMessages(msgs) {
     if (msg.msg_type === "notice") el.classList.add("notice");
     if (msg.msg_type === "emote") el.classList.add("emote");
 
-    const sender = document.createElement("span");
-    sender.classList.add("sender");
-    sender.textContent = formatSender(msg.sender);
+    // Group consecutive messages from the same sender within 5 minutes
+    const sameGroup =
+      prevSender === msg.sender && msg.timestamp - prevTimestamp < 300000;
 
-    const time = document.createElement("span");
-    time.classList.add("timestamp");
-    time.textContent = formatTime(msg.timestamp);
+    if (!sameGroup) {
+      el.classList.add("group-start");
 
-    const header = document.createElement("div");
-    header.classList.add("message-header");
-    header.appendChild(sender);
-    header.appendChild(time);
+      const sender = document.createElement("span");
+      sender.classList.add("sender");
+      sender.textContent = formatSender(msg.sender);
 
-    const body = document.createElement("div");
-    body.classList.add("message-body");
-    body.textContent = msg.body;
+      const time = document.createElement("span");
+      time.classList.add("timestamp");
+      time.textContent = formatTime(msg.timestamp);
 
-    el.appendChild(header);
-    el.appendChild(body);
+      const header = document.createElement("div");
+      header.classList.add("message-header");
+      header.appendChild(sender);
+      header.appendChild(time);
+      el.appendChild(header);
+    }
+
+    if (msg.msg_type === "image" && msg.media_url) {
+      const container = document.createElement("div");
+      container.classList.add("image-container");
+
+      const loading = document.createElement("span");
+      loading.classList.add("image-loading");
+      loading.textContent = "Loading image...";
+      container.appendChild(loading);
+
+      const img = document.createElement("img");
+      img.src = msg.media_url;
+      img.alt = msg.body || "Image";
+      img.onload = () => {
+        loading.remove();
+        if (wasAtBottom) messagesEl.scrollTop = messagesEl.scrollHeight;
+      };
+      img.onerror = () => {
+        loading.textContent = "[Failed to load image]";
+        img.remove();
+      };
+      container.appendChild(img);
+      el.appendChild(container);
+    } else {
+      const body = document.createElement("div");
+      body.classList.add("message-body");
+      body.textContent = msg.body;
+      el.appendChild(body);
+    }
+
     messagesEl.appendChild(el);
+    prevSender = msg.sender;
+    prevTimestamp = msg.timestamp;
   }
 
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  if (wasAtBottom) {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
 }
 
 function formatSender(userId) {
-  // @user:server.org -> user
   const match = userId.match(/^@([^:]+)/);
   return match ? match[1] : userId;
 }
@@ -142,6 +195,22 @@ function formatSender(userId) {
 function formatTime(tsMillis) {
   const d = new Date(tsMillis);
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+// Message polling
+
+function startMessagePolling() {
+  stopMessagePolling();
+  messagePollInterval = setInterval(() => {
+    if (selectedRoomId) loadMessages(selectedRoomId);
+  }, 3000);
+}
+
+function stopMessagePolling() {
+  if (messagePollInterval) {
+    clearInterval(messagePollInterval);
+    messagePollInterval = null;
+  }
 }
 
 // Compose
@@ -169,7 +238,6 @@ composeInput.addEventListener("keydown", (e) => {
   }
 });
 
-// Auto-resize textarea
 composeInput.addEventListener("input", () => {
   composeInput.style.height = "auto";
   composeInput.style.height = Math.min(composeInput.scrollHeight, 120) + "px";

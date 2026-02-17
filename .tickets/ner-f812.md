@@ -1,6 +1,6 @@
 ---
 id: ner-f812
-status: in_progress
+status: closed
 deps: [ner-007b]
 links: []
 created: 2026-02-16T20:32:48Z

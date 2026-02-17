@@ -6,7 +6,7 @@ pub struct RoomInfo {
     pub id: String,
     pub name: String,
     pub is_direct: bool,
-    pub unread: bool,
+    pub notification_count: u64,
 }
 
 /// Collect room info from the client's current state.
@@ -20,13 +20,13 @@ pub async fn collect_rooms(client: &Client) -> Vec<RoomInfo> {
             .map(|n| n.to_string())
             .unwrap_or_else(|| room.room_id().to_string());
         let is_direct = room.is_direct().await.unwrap_or(false);
-        let unread = room.unread_notification_counts().notification_count > 0;
+        let notification_count = room.unread_notification_counts().notification_count;
 
         rooms.push(RoomInfo {
             id: room.room_id().to_string(),
             name,
             is_direct,
-            unread,
+            notification_count,
         });
     }
 

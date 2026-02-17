@@ -1,5 +1,6 @@
 use matrix_sdk::room::MessagesOptions;
 use matrix_sdk::ruma::events::room::message::{MessageType, RoomMessageEventContent};
+use matrix_sdk::ruma::events::room::MediaSource;
 use matrix_sdk::ruma::events::{AnySyncMessageLikeEvent, AnySyncTimelineEvent};
 use matrix_sdk::Client;
 use serde::Serialize;
@@ -11,6 +12,26 @@ pub struct MessageInfo {
     pub body: String,
     pub timestamp: i64,
     pub msg_type: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub media_url: Option<String>,
+}
+
+/// Convert an mxc:// URI to an HTTP download URL via the homeserver.
+fn mxc_to_http(client: &Client, source: &MediaSource) -> Option<String> {
+    let mxc_uri = match source {
+        MediaSource::Plain(uri) => uri,
+        MediaSource::Encrypted(_) => return None,
+    };
+
+    let (server_name, media_id) = mxc_uri.parts().ok()?;
+    let homeserver = client.homeserver();
+    let url = format!(
+        "{}/_matrix/media/v3/download/{}/{}",
+        homeserver.as_str().trim_end_matches('/'),
+        server_name,
+        media_id,
+    );
+    Some(url)
 }
 
 /// Fetch recent messages for a room. Returns newest-last.
@@ -39,28 +60,25 @@ pub async fn fetch_messages(
             AnySyncMessageLikeEvent::RoomMessage(msg),
         ) = event
         {
-            let (body, msg_type) = match msg.as_original() {
+            let (body, msg_type, media_url) = match msg.as_original() {
                 Some(original) => {
-                    let body = match &original.content.msgtype {
-                        MessageType::Text(t) => t.body.clone(),
-                        MessageType::Notice(n) => n.body.clone(),
-                        MessageType::Emote(e) => format!("* {}", e.body),
-                        MessageType::Image(_) => "[image]".to_string(),
-                        MessageType::File(_) => "[file]".to_string(),
-                        MessageType::Audio(_) => "[audio]".to_string(),
-                        MessageType::Video(_) => "[video]".to_string(),
-                        _ => "[unsupported]".to_string(),
+                    let (body, msg_type, media_url) = match &original.content.msgtype {
+                        MessageType::Text(t) => (t.body.clone(), "text", None),
+                        MessageType::Notice(n) => (n.body.clone(), "notice", None),
+                        MessageType::Emote(e) => (format!("* {}", e.body), "emote", None),
+                        MessageType::Image(img) => {
+                            let url = mxc_to_http(client, &img.source);
+                            let caption = img.caption().unwrap_or(&img.body);
+                            (caption.to_string(), "image", url)
+                        }
+                        MessageType::File(_) => ("[file]".to_string(), "other", None),
+                        MessageType::Audio(_) => ("[audio]".to_string(), "other", None),
+                        MessageType::Video(_) => ("[video]".to_string(), "other", None),
+                        _ => ("[unsupported]".to_string(), "other", None),
                     };
-                    let msg_type = match &original.content.msgtype {
-                        MessageType::Text(_) => "text",
-                        MessageType::Notice(_) => "notice",
-                        MessageType::Emote(_) => "emote",
-                        MessageType::Image(_) => "image",
-                        _ => "other",
-                    };
-                    (body, msg_type.to_string())
+                    (body, msg_type.to_string(), media_url)
                 }
-                None => ("[redacted]".to_string(), "redacted".to_string()),
+                None => ("[redacted]".to_string(), "redacted".to_string(), None),
             };
 
             let sender = msg.sender().to_string();
@@ -73,6 +91,7 @@ pub async fn fetch_messages(
                 body,
                 timestamp,
                 msg_type,
+                media_url,
             });
         }
     }
