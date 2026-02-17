@@ -10,6 +10,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
+        isLinux = pkgs.stdenv.isLinux;
       in
       {
         devShells.default = pkgs.mkShell {
@@ -20,9 +21,12 @@
             rustfmt
             clippy
 
-            # Tauri system deps
+            # Tauri CLI
+            cargo-tauri
             pkg-config
             openssl
+          ] ++ pkgs.lib.optionals isLinux [
+            # Linux: GTK/WebKitGTK (macOS uses system WebKit)
             glib
             gtk3
             libsoup_3
@@ -32,9 +36,6 @@
             cairo
             pango
             atk
-
-            # Tauri CLI
-            cargo-tauri
           ];
 
           shellHook = ''
