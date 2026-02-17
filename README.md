@@ -26,21 +26,43 @@ livable.
 - **Build:** Single binary per platform. System webview (WebKitGTK on
   Linux, WebKit on macOS).
 
-## Development
+## Building
+
+Requires [Nix](https://nixos.org/download/) with flakes enabled. The flake
+provides Rust, Tauri CLI, and all system dependencies (GTK3, WebKitGTK, etc.).
 
 ```bash
-# Enter dev shell (provides Rust, Tauri CLI, GTK/WebKit deps)
+# Enter dev shell
 nix develop
 
-# Dev mode (hot-reload frontend, Rust rebuilds on change)
+# Run in dev mode (hot-reload frontend, Rust rebuilds on save)
 cargo tauri dev
 
-# Build release binary
+# Build release binary — outputs to src-tauri/target/release/bundle/
 cargo tauri build
 
-# Check backend compiles
+# Just check compilation without building the full bundle
 cd src-tauri && cargo check
 ```
+
+First build takes ~20 minutes (matrix-sdk dependency tree). Incremental
+rebuilds are fast.
+
+### Without Nix
+
+You'll need:
+- Rust toolchain (stable)
+- `cargo-tauri` CLI (`cargo install tauri-cli`)
+- GTK3, WebKitGTK 4.1, libsoup 3, and related dev packages
+
+On Debian/Ubuntu:
+```bash
+sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev libsoup-3.0-dev \
+  libjavascriptcoregtk-4.1-dev libglib2.0-dev libcairo2-dev \
+  libpango1.0-dev libatk1.0-dev libgdk-pixbuf-2.0-dev
+```
+
+Then `cargo tauri dev` / `cargo tauri build` as above.
 
 ## Project Structure
 
