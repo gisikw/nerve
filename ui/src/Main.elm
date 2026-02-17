@@ -45,8 +45,7 @@ mainView : Model -> Html Msg
 mainView model =
     div [ id "main-view", class "view" ]
         [ header []
-            [ span [ id "user-id" ]
-                [ text (Maybe.withDefault "" model.userId) ]
+            [ span [] [ text "Nerve" ]
             , button [ id "logout-btn", onClick Logout ]
                 [ text "Log out" ]
             ]
