@@ -1,6 +1,6 @@
 ---
 id: ner-bfa2
-status: open
+status: closed
 deps: [ner-5190, ner-b5bd]
 links: []
 created: 2026-02-17T03:23:10Z
