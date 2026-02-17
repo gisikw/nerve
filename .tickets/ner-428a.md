@@ -1,6 +1,6 @@
 ---
 id: ner-428a
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-02-16T20:32:48Z
