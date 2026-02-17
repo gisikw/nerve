@@ -98,10 +98,11 @@ be ticketed for remediation. No grandfathering.
 - **Elm unit tests** (`ui/tests/*.elm`) verify decoders, update logic, and
   view helpers. Run with `cd ui && npx elm-test`. These are fast, pure, and
   cover all state transitions and JSON parsing.
-- **Elm view tests** use a fake backend (mock ports) to drive the full Elm
-  app with canned data, snapshot the virtual DOM, and assert on structure.
-  No Matrix dependency. This is how the frontend gets "seen" without a
-  running server.
+- **Fake backend** (`ui/fake-state.ts`) is a stateful in-memory simulator
+  that replaces Tauri when running in a browser via `npx vite`. Supports
+  all six commands, maintains message and session state across round-trips,
+  and exposes a driver interface for external test scripts. See the Fake
+  Backend section below for details.
 - **Rust unit tests** (`#[cfg(test)] mod tests` inline or `*_test.rs`) verify
   backend decision logic — message formatting, room filtering, notification
   counting. Run with `cd src-tauri && cargo test`.
@@ -181,6 +182,67 @@ be ticketed for remediation. No grandfathering.
 - **Dev mode must hot-reload the frontend.** `cargo tauri dev` watches
   frontend assets and reloads the webview. Rust changes trigger a rebuild.
   The dev loop must be fast enough to stay in flow.
+
+## Fake Backend
+
+The fake backend lets the UI run in a regular browser without Tauri or a
+Matrix server. It's a stateful simulator — not just canned data. Messages
+sent via the compose box persist and appear on the next poll. Login/logout
+toggle session state.
+
+### Files
+
+- **`ui/fake-state.ts`** — State, command handlers, and driver actions.
+  Runs server-side in Vite's Node process. This is the source of truth.
+- **`ui/fake.ts`** — Browser-side client. Calls `fetch("/fake/command")`
+  to route Elm commands to the Vite server.
+- **`ui/vite-plugin-fake.ts`** — Vite plugin that mounts HTTP middleware
+  and a WebSocket server. Loaded in `vite.config.js`.
+- **`ui/main.ts`** — Falls through to `fakeInvoke` when `window.__TAURI__`
+  is absent. No Elm changes required.
+
+### Running
+
+`cd ui && npx vite` — opens on `http://localhost:3000`. The app boots
+into MainPage with seed data (rooms, messages, session). Send messages,
+switch rooms, log out — it all works.
+
+### Driver interface
+
+External processes can manipulate state to set up specific UI scenarios.
+Two transports, same protocol:
+
+- **WebSocket** `ws://localhost:3001` — persistent connection, send JSON
+- **HTTP** `POST /fake/driver` — stateless, same JSON in request body
+
+Actions:
+
+| Action                   | Fields                                          |
+|--------------------------|-------------------------------------------------|
+| `inject_message`         | `roomId`, `sender`, `body`, `msgType?`, `timestamp?`, `mediaUrl?` |
+| `add_room`               | `id`, `name`, `is_direct?`, `notification_count?` |
+| `remove_room`            | `roomId`                                        |
+| `set_notification_count` | `roomId`, `count`                               |
+| `clear_messages`         | `roomId`                                        |
+| `set_session`            | `loggedIn?`, `userId?`                          |
+| `get_state`              | *(none — returns full state snapshot)*           |
+| `reset`                  | *(none — restores seed data)*                   |
+
+All responses are JSON: `{"ok": true}` on success, `{"ok": false, "error": "..."}` on failure. `get_state` returns `{"ok": true, "state": {...}}`.
+
+### Design decisions
+
+- **State lives server-side.** The Vite Node process holds state; the
+  browser fetches it. This lets external drivers and the browser see the
+  same state without cross-frame messaging.
+- **No Elm changes.** The fake backend is invisible to Elm. Same ports,
+  same JSON shapes, same polling. The only difference is `main.ts`
+  routing to `fetch()` instead of `invoke()`.
+- **Seed data is realistic.** Rooms and messages reflect actual usage
+  patterns (group rooms, DMs, notices, multi-party conversation) so the
+  UI renders representatively without setup.
+- **The plugin only activates in dev mode.** `apply: "serve"` in the
+  Vite plugin config means production builds don't include any of this.
 
 ## Policy
 

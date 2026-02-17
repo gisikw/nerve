@@ -1,8 +1,11 @@
 import { Elm } from "./src/Main.elm";
+import { fakeInvoke } from "./fake";
 
-const invoke = window.__TAURI__?.core?.invoke as
+const tauriInvoke = window.__TAURI__?.core?.invoke as
   | ((cmd: string, args?: Record<string, unknown>) => Promise<unknown>)
   | undefined;
+
+const invoke = tauriInvoke ?? fakeInvoke;
 
 const app = Elm.Main.init({
   node: document.getElementById("app"),
@@ -32,7 +35,7 @@ app.ports.sendToTauri.subscribe(async (msg) => {
   }
 
   try {
-    const result = await invoke!(tauriCmd, msg.args ?? {});
+    const result = await invoke(tauriCmd, msg.args ?? {});
     app.ports.receiveFromTauri.send({ tag: msg.command, payload: result });
   } catch (err) {
     app.ports.receiveFromTauri.send({ tag: "error", payload: String(err) });
@@ -53,12 +56,10 @@ app.ports.resizeComposeInput.subscribe(() => {
 });
 
 // Check session on startup
-if (invoke) {
-  invoke("check_session")
-    .then((result) => {
-      app.ports.receiveFromTauri.send({ tag: "checkSession", payload: result });
-    })
-    .catch((err) => {
-      app.ports.receiveFromTauri.send({ tag: "error", payload: String(err) });
-    });
-}
+invoke("check_session")
+  .then((result) => {
+    app.ports.receiveFromTauri.send({ tag: "checkSession", payload: result });
+  })
+  .catch((err) => {
+    app.ports.receiveFromTauri.send({ tag: "error", payload: String(err) });
+  });

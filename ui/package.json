@@ -8,8 +8,10 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@types/ws": "^8.18.1",
     "elm-test": "^0.19.1-revision17",
     "vite": "^6",
-    "vite-plugin-elm": "^3"
+    "vite-plugin-elm": "^3",
+    "ws": "^8.19.0"
   }
 }
