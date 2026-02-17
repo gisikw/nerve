@@ -55,6 +55,40 @@ app.ports.resizeComposeInput.subscribe(() => {
   });
 });
 
+// Zoom: Cmd/Ctrl + / - / 0 to adjust base font size
+const ZOOM_STEP = 1;
+const ZOOM_MIN = 10;
+const ZOOM_MAX = 22;
+const ZOOM_DEFAULT = 14;
+
+function getZoom(): number {
+  const stored = localStorage.getItem("nerve-font-size");
+  return stored ? parseInt(stored, 10) : ZOOM_DEFAULT;
+}
+
+function setZoom(size: number) {
+  const clamped = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, size));
+  document.documentElement.style.fontSize = clamped + "px";
+  localStorage.setItem("nerve-font-size", String(clamped));
+}
+
+setZoom(getZoom());
+
+document.addEventListener("keydown", (e) => {
+  const mod = e.metaKey || e.ctrlKey;
+  if (!mod) return;
+  if (e.key === "=" || e.key === "+") {
+    e.preventDefault();
+    setZoom(getZoom() + ZOOM_STEP);
+  } else if (e.key === "-") {
+    e.preventDefault();
+    setZoom(getZoom() - ZOOM_STEP);
+  } else if (e.key === "0") {
+    e.preventDefault();
+    setZoom(ZOOM_DEFAULT);
+  }
+});
+
 // Check session on startup
 invoke("check_session")
   .then((result) => {
