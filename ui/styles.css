@@ -27,7 +27,7 @@
   --transition: 120ms ease;
 }
 
-html, body {
+html, body, #app {
   height: 100%;
   background: var(--bg);
   color: var(--text);

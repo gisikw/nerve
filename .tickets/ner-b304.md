@@ -1,6 +1,6 @@
 ---
 id: ner-b304
-status: open
+status: closed
 deps: [ner-eabd]
 links: []
 created: 2026-02-17T03:23:16Z
