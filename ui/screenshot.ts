@@ -169,8 +169,14 @@ async function main() {
     await page.setViewport({ width, height });
     await page.goto(baseUrl, { waitUntil: "networkidle0" });
 
+    // Wait for Elm to process the checkSession response and render.
+    // The fetch completes during networkidle0 but Elm needs a frame
+    // to process the port message and re-render.
+    await new Promise((r) => setTimeout(r, 1000));
+
     // Select room if requested (match by visible sidebar text)
     if (args.room) {
+      await page.waitForSelector("#room-list li", { timeout: 5000 });
       await page.evaluate((name: string) => {
         const items = document.querySelectorAll("#room-list li");
         for (const item of items) {
