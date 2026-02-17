@@ -5,6 +5,7 @@ import Html.Attributes exposing (alt, class, id, placeholder, rows, src, type_, 
 import Html.Events exposing (onInput, onSubmit)
 import Json.Decode as D
 import Model exposing (Model, Msg(..))
+import Time
 import Types exposing (Message)
 
 
@@ -48,11 +49,11 @@ messagesArea model =
 
     else
         div [ id "messages" ]
-            (renderGrouped model.messages)
+            (renderGrouped model.timeZone model.messages)
 
 
-renderGrouped : List Message -> List (Html Msg)
-renderGrouped msgs =
+renderGrouped : Time.Zone -> List Message -> List (Html Msg)
+renderGrouped zone msgs =
     List.indexedMap
         (\i msg ->
             let
@@ -71,13 +72,13 @@ renderGrouped msgs =
                         Nothing ->
                             True
             in
-            renderMessage isGroupStart msg
+            renderMessage zone isGroupStart msg
         )
         msgs
 
 
-renderMessage : Bool -> Message -> Html Msg
-renderMessage isGroupStart msg =
+renderMessage : Time.Zone -> Bool -> Message -> Html Msg
+renderMessage zone isGroupStart msg =
     let
         baseClasses =
             [ "message"
@@ -100,7 +101,7 @@ renderMessage isGroupStart msg =
     in
     div [ class baseClasses ]
         ([ if isGroupStart then
-            Just (messageHeader msg)
+            Just (messageHeader zone msg)
 
            else
             Nothing
@@ -110,11 +111,11 @@ renderMessage isGroupStart msg =
         )
 
 
-messageHeader : Message -> Html Msg
-messageHeader msg =
+messageHeader : Time.Zone -> Message -> Html Msg
+messageHeader zone msg =
     div [ class "message-header" ]
         [ span [ class "sender" ] [ text (formatSender msg.sender) ]
-        , span [ class "timestamp" ] [ text (formatTime msg.timestamp) ]
+        , span [ class "timestamp" ] [ text (formatTime zone msg.timestamp) ]
         ]
 
 
@@ -143,17 +144,35 @@ formatSender userId =
             userId
 
 
-formatTime : Int -> String
-formatTime tsMillis =
+formatTime : Time.Zone -> Int -> String
+formatTime zone tsMillis =
     let
-        totalMinutes =
-            tsMillis // 60000
+        posix =
+            Time.millisToPosix tsMillis
 
-        hours =
-            modBy 24 (totalMinutes // 60)
+        hour24 =
+            Time.toHour zone posix
+
+        hour12 =
+            let
+                h =
+                    modBy 12 hour24
+            in
+            if h == 0 then
+                12
+
+            else
+                h
 
         minutes =
-            modBy 60 totalMinutes
+            Time.toMinute zone posix
+
+        ampm =
+            if hour24 < 12 then
+                "am"
+
+            else
+                "pm"
 
         pad n =
             if n < 10 then
@@ -162,7 +181,7 @@ formatTime tsMillis =
             else
                 String.fromInt n
     in
-    pad hours ++ ":" ++ pad minutes
+    String.fromInt hour12 ++ ":" ++ pad minutes ++ " " ++ ampm
 
 
 composeBar : Model -> Html Msg

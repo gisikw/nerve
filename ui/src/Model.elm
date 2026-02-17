@@ -6,6 +6,7 @@ module Model exposing
     )
 
 import Json.Encode as E
+import Time
 import Types exposing (..)
 
 
@@ -25,6 +26,7 @@ type alias Model =
     , messages : List Message
     , messagesLoading : Bool
     , composeText : String
+    , timeZone : Time.Zone
     }
 
 
@@ -48,6 +50,8 @@ type Msg
     | PollMessages
       -- Scroll
     | ScrolledToBottom
+      -- Time zone
+    | GotTimeZone Time.Zone
 
 
 initialModel : Model
@@ -62,4 +66,5 @@ initialModel =
     , messages = []
     , messagesLoading = False
     , composeText = ""
+    , timeZone = Time.utc
     }

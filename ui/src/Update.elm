@@ -45,7 +45,10 @@ update msg model =
                 , messages = []
                 , messagesLoading = True
               }
-            , Commands.getMessages roomId
+            , Cmd.batch
+                [ Commands.getMessages roomId
+                , focusCompose
+                ]
             )
 
         -- Compose
@@ -85,6 +88,10 @@ update msg model =
         -- Scroll
         ScrolledToBottom ->
             ( model, Cmd.none )
+
+        -- Time zone
+        GotTimeZone zone ->
+            ( { model | timeZone = zone }, Cmd.none )
 
         -- Port responses
         ReceivedFromTauri value ->
@@ -203,6 +210,12 @@ dispatchTag tag payload model =
 
         _ ->
             ( model, Cmd.none )
+
+
+focusCompose : Cmd Msg
+focusCompose =
+    Browser.Dom.focus "compose-input"
+        |> Task.attempt (\_ -> ScrolledToBottom)
 
 
 {-| Scroll the messages container to the bottom, but only if already near

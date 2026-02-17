@@ -1,6 +1,6 @@
 ---
 id: ner-de7d
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-02-17T04:36:11Z

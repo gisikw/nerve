@@ -6,6 +6,7 @@ import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
 import Model exposing (Model, Msg(..), Page(..), initialModel)
 import Ports
+import Task
 import Time
 import Update
 import View.Login
@@ -25,7 +26,7 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( initialModel, Cmd.none )
+    ( initialModel, Task.perform GotTimeZone Time.here )
 
 
 view : Model -> Html Msg

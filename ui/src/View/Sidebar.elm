@@ -37,7 +37,13 @@ roomItem selectedId room =
           else
             class classes
         ]
-        [ text room.name
+        [ text
+            (if room.isDirect then
+                room.name
+
+             else
+                "# " ++ room.name
+            )
         , if room.notificationCount > 0 then
             span [ class "unread-badge" ]
                 [ text

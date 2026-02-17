@@ -35,6 +35,37 @@ app.ports.sendToTauri.subscribe(async (msg) => {
   }
 });
 
+// Auto-grow compose textarea to fit content
+document.addEventListener("input", (e) => {
+  if (e.target.id === "compose-input") {
+    e.target.style.height = "auto";
+    e.target.style.height = e.target.scrollHeight + "px";
+  }
+});
+
+// Reset textarea height when Elm clears the compose text (after sending)
+app.ports.sendToTauri.subscribe((msg) => {
+  if (msg.command === "sendMessage") {
+    requestAnimationFrame(() => {
+      const el = document.getElementById("compose-input");
+      if (el) el.style.height = "auto";
+    });
+  }
+});
+
+// Focus compose input on any unbound keypress (printable characters only)
+document.addEventListener("keydown", (e) => {
+  const compose = document.getElementById("compose-input");
+  if (!compose || document.activeElement === compose) return;
+  // Skip if user is in another input/textarea (e.g. login form)
+  const tag = document.activeElement?.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA") return;
+  // Skip modifier-only or navigation keys
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key.length !== 1) return;
+  compose.focus();
+});
+
 // Check session on startup
 if (invoke) {
   invoke("check_session")
