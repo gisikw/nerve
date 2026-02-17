@@ -269,8 +269,14 @@ loginForm.addEventListener("submit", async (e) => {
 
   try {
     const result = await invoke("login", { homeserver, username, password });
-    showMain(result.user_id);
+    console.log("Login result:", JSON.stringify(result));
+    if (result && result.user_id) {
+      showMain(result.user_id);
+    } else {
+      showError("Login succeeded but no user_id returned");
+    }
   } catch (err) {
+    console.error("Login error:", err);
     showError(String(err));
   }
 });
@@ -287,14 +293,17 @@ logoutBtn.addEventListener("click", async () => {
 // Init
 
 async function init() {
+  console.log("init: checking session...");
   try {
     const session = await invoke("check_session");
+    console.log("init: session result:", JSON.stringify(session));
     if (session.logged_in && session.user_id) {
       showMain(session.user_id);
     } else {
       showLogin();
     }
-  } catch (_) {
+  } catch (err) {
+    console.error("init: check_session failed:", err);
     showLogin();
   }
 }
