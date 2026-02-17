@@ -50,6 +50,54 @@ be ticketed for remediation. No grandfathering.
   Good line height, sensible max-width, monospace for code blocks, proper
   quote styling. This is a daily-driver client, not a prototype.
 
+## Specifications and Tests
+
+- **Every behavior has a spec.** Behavioral specs live in `specs/*.feature`
+  (gherkin syntax). These are the source of truth for what the system promises
+  to do. They are documentation artifacts, not executable test suites.
+- **Every spec has a test.** A spec without a corresponding test is an
+  unverified claim. A test without a corresponding spec is a test that can be
+  silently removed — there's no way to know if it's validating the right thing.
+- **Specs and tests are independent artifacts.** A discrepancy between a spec
+  and its corresponding test (missing test, skipped test, test that doesn't
+  actually validate the spec's claim) is always a defect — the question is
+  which one is wrong.
+- **Spec before code.** Every new behavior gets a spec before or alongside the
+  implementation. Not after. The spec is how we know what we're building.
+  Writing the test first is fine; writing the code first and speccing it later
+  is how intent gets lost.
+- **Specs are named for the behavioral domain, not the implementation.**
+  `message_rendering.feature`, not `ViewMessages_test.feature`. The spec
+  describes what the system does, not which module does it.
+- **One spec file per behavioral domain.** Don't split a domain across files.
+  Don't combine unrelated domains.
+
+### Test layers
+
+- **Elm unit tests** (`ui/tests/*.elm`) verify decoders, update logic, and
+  view helpers. Run with `cd ui && npx elm-test`. These are fast, pure, and
+  cover all state transitions and JSON parsing.
+- **Elm view tests** use a fake backend (mock ports) to drive the full Elm
+  app with canned data, snapshot the virtual DOM, and assert on structure.
+  No Matrix dependency. This is how the frontend gets "seen" without a
+  running server.
+- **Rust unit tests** (`#[cfg(test)] mod tests` inline or `*_test.rs`) verify
+  backend decision logic — message formatting, room filtering, notification
+  counting. Run with `cd src-tauri && cargo test`.
+- **Integration tests** are deferred until the IPC boundary stabilizes. The
+  port protocol (tagged JSON envelopes) is simple enough that decoder tests
+  on both sides of the boundary provide sufficient coverage for now.
+
+### Test enforcement
+
+- **All tests must pass before commit.** This is enforced by convention, not
+  by hooks (Tauri's Rust build is too slow for a pre-commit gate). An agent
+  that commits with failing tests is out of compliance with this invariant.
+- **New features require new specs and tests.** A PR that adds behavior
+  without a corresponding spec and test is incomplete.
+- **Bug fixes require regression tests.** If it broke once, it gets a test
+  so it can't break again silently.
+
 ## Code Organization
 
 - **Decision logic is pure.** Functions that make decisions — should we
@@ -100,8 +148,9 @@ be ticketed for remediation. No grandfathering.
   No project-specific naming schemes.
 - **Tauri commands are `verb_noun`.** `send_message`, `list_rooms`,
   `get_room_messages`. The frontend calls these by name — clarity matters.
-- **Frontend files are kebab-case.** `room-list.js`, `message-view.js`.
-  Components match their primary export.
+- **Elm follows Elm conventions.** `CamelCase` module names matching file
+  names (`View/Login.elm` → `View.Login`). `camelCase` for functions and
+  values. Ports use `camelCase` (`sendToTauri`, `receiveFromTauri`).
 
 ## Build
 
