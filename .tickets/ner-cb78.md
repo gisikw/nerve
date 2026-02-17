@@ -1,6 +1,6 @@
 ---
 id: ner-cb78
-status: open
+status: in_progress
 deps: [ner-f8d9]
 links: []
 created: 2026-02-17T03:23:08Z

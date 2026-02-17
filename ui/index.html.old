@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nerve</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="login-view" class="view">
+      <form id="login-form">
+        <h1>Nerve</h1>
+        <label for="homeserver">Homeserver</label>
+        <input
+          type="text"
+          id="homeserver"
+          name="homeserver"
+          placeholder="matrix.example.org"
+          required
+        />
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          placeholder="alice"
+          required
+        />
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          required
+        />
+        <button type="submit">Log in</button>
+        <p id="login-error" class="error" hidden></p>
+        <p id="login-status" class="status" hidden></p>
+      </form>
+    </div>
+
+    <div id="main-view" class="view" hidden>
+      <header>
+        <span id="user-id"></span>
+        <button id="logout-btn">Log out</button>
+      </header>
+      <div id="layout">
+        <aside id="sidebar">
+          <ul id="room-list"></ul>
+        </aside>
+        <main id="chat">
+          <div id="no-room-selected">
+            <p>Select a room</p>
+          </div>
+          <div id="room-content" hidden>
+            <div id="room-header">
+              <h2 id="room-name"></h2>
+            </div>
+            <div id="messages"></div>
+            <form id="compose">
+              <textarea id="compose-input" placeholder="Send a message..." rows="1"></textarea>
+              <button type="submit">Send</button>
+            </form>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

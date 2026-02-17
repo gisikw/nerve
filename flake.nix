@@ -26,6 +26,10 @@
             pkg-config
             openssl
             sqlite
+
+            # Frontend (Elm + Vite)
+            nodejs
+            elmPackages.elm
           ] ++ pkgs.lib.optionals isLinux [
             # Linux: GTK/WebKitGTK (macOS uses system WebKit)
             glib
