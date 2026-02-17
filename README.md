@@ -1,6 +1,6 @@
 # Nerve
 
-A Matrix client built for Exocortex. Tauri (Rust) + Elm frontend.
+A purpose-built Matrix client. Tauri (Rust) + Elm frontend.
 
 ## Why
 
