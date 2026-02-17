@@ -86,6 +86,8 @@ document.addEventListener("keydown", (e) => {
   } else if (e.key === "0") {
     e.preventDefault();
     setZoom(ZOOM_DEFAULT);
+  } else if (e.key === "k") {
+    e.preventDefault(); // Let Elm handle Cmd+K
   }
 });
 

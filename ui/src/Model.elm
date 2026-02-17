@@ -27,6 +27,9 @@ type alias Model =
     , messagesLoading : Bool
     , composeText : String
     , timeZone : Time.Zone
+    , switcherOpen : Bool
+    , switcherQuery : String
+    , switcherIndex : Int
     }
 
 
@@ -52,6 +55,13 @@ type Msg
     | DomNoOp
       -- Keyboard
     | KeyPressed String
+      -- Channel switcher
+    | OpenSwitcher
+    | CloseSwitcher
+    | SetSwitcherQuery String
+    | SwitcherUp
+    | SwitcherDown
+    | SwitcherSelect
       -- Time zone
     | GotTimeZone Time.Zone
 
@@ -69,4 +79,7 @@ initialModel =
     , messagesLoading = False
     , composeText = ""
     , timeZone = Time.utc
+    , switcherOpen = False
+    , switcherQuery = ""
+    , switcherIndex = 0
     }

@@ -1,4 +1,4 @@
-module Update exposing (update)
+module Update exposing (filteredRooms, update)
 
 import Browser.Dom
 import Commands
@@ -7,6 +7,7 @@ import Json.Decode as D
 import Model exposing (Model, Msg(..), Page(..))
 import Ports
 import Task
+import Types exposing (Room)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -45,6 +46,7 @@ update msg model =
                 | selectedRoomId = Just roomId
                 , messages = []
                 , messagesLoading = True
+                , switcherOpen = False
               }
             , Cmd.batch
                 [ Commands.getMessages roomId
@@ -95,7 +97,49 @@ update msg model =
 
         -- Keyboard: printable key pressed while compose not focused
         KeyPressed _ ->
-            ( model, focusCompose )
+            if model.switcherOpen then
+                ( model, Cmd.none )
+
+            else
+                ( model, focusCompose )
+
+        -- Channel switcher
+        OpenSwitcher ->
+            ( { model | switcherOpen = True, switcherQuery = "", switcherIndex = 0 }
+            , focusElement "switcher-input"
+            )
+
+        CloseSwitcher ->
+            ( { model | switcherOpen = False }, Cmd.none )
+
+        SetSwitcherQuery q ->
+            ( { model | switcherQuery = q, switcherIndex = 0 }, Cmd.none )
+
+        SwitcherUp ->
+            ( { model | switcherIndex = max 0 (model.switcherIndex - 1) }, Cmd.none )
+
+        SwitcherDown ->
+            let
+                maxIdx =
+                    max 0 (List.length (filteredRooms model) - 1)
+            in
+            ( { model | switcherIndex = min maxIdx (model.switcherIndex + 1) }, Cmd.none )
+
+        SwitcherSelect ->
+            let
+                rooms =
+                    filteredRooms model
+
+                selected =
+                    List.drop model.switcherIndex rooms |> List.head
+            in
+            case selected of
+                Just room ->
+                    update (SelectRoom room.id)
+                        { model | switcherOpen = False }
+
+                Nothing ->
+                    ( { model | switcherOpen = False }, Cmd.none )
 
         -- Time zone
         GotTimeZone zone ->
@@ -220,10 +264,28 @@ dispatchTag tag payload model =
             ( model, Cmd.none )
 
 
+focusElement : String -> Cmd Msg
+focusElement elementId =
+    Browser.Dom.focus elementId
+        |> Task.attempt (\_ -> DomNoOp)
+
+
 focusCompose : Cmd Msg
 focusCompose =
-    Browser.Dom.focus "compose-input"
-        |> Task.attempt (\_ -> DomNoOp)
+    focusElement "compose-input"
+
+
+filteredRooms : Model -> List Room
+filteredRooms model =
+    let
+        q =
+            String.toLower model.switcherQuery
+    in
+    if String.isEmpty q then
+        model.rooms
+
+    else
+        List.filter (\r -> String.contains q (String.toLower r.name)) model.rooms
 
 
 {-| Scroll the messages container to the bottom, but only if already near

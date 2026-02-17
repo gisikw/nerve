@@ -2,14 +2,15 @@ module Main exposing (main)
 
 import Browser
 import Browser.Events
-import Html exposing (Html, button, div, header, span, text)
-import Html.Attributes exposing (class, id)
-import Html.Events exposing (onClick)
+import Html exposing (Html, button, div, header, input, li, span, text, ul)
+import Html.Attributes exposing (autofocus, class, id, placeholder, type_, value)
+import Html.Events exposing (onClick, onInput)
 import Json.Decode as D
 import Model exposing (Model, Msg(..), Page(..), initialModel)
 import Ports
 import Task
 import Time
+import Types exposing (Room)
 import Update
 import View.Login
 import View.Messages
@@ -44,17 +45,101 @@ view model =
 mainView : Model -> Html Msg
 mainView model =
     div [ id "main-view", class "view" ]
-        [ header []
+        ([ header []
             [ span [] [ text "Nerve" ]
             , button [ id "logout-btn", onClick Logout ]
                 [ text "Log out" ]
             ]
-        , div [ id "layout" ]
+         , div [ id "layout" ]
             [ View.Sidebar.view model
             , Html.main_ [ id "chat" ]
                 [ View.Messages.view model ]
             ]
+         ]
+            ++ (if model.switcherOpen then
+                    [ switcherModal model ]
+
+                else
+                    []
+               )
+        )
+
+
+switcherModal : Model -> Html Msg
+switcherModal model =
+    let
+        rooms =
+            Update.filteredRooms model
+    in
+    div [ id "switcher-backdrop", onClick CloseSwitcher ]
+        [ div [ id "switcher-modal", onClickStop ]
+            [ input
+                [ id "switcher-input"
+                , type_ "text"
+                , placeholder "Switch to room..."
+                , value model.switcherQuery
+                , onInput SetSwitcherQuery
+                , onSwitcherKey
+                , autofocus True
+                ]
+                []
+            , ul [ id "switcher-results" ]
+                (List.indexedMap (switcherItem model.switcherIndex) rooms)
+            ]
         ]
+
+
+switcherItem : Int -> Int -> Room -> Html Msg
+switcherItem selectedIdx idx room =
+    li
+        [ class
+            (if idx == selectedIdx then
+                "switcher-item selected"
+
+             else
+                "switcher-item"
+            )
+        , onClick (SelectRoom room.id)
+        ]
+        [ text
+            (if room.isDirect then
+                room.name
+
+             else
+                "# " ++ room.name
+            )
+        ]
+
+
+onClickStop : Html.Attribute Msg
+onClickStop =
+    Html.Events.stopPropagationOn "click"
+        (D.succeed ( DomNoOp, True ))
+
+
+onSwitcherKey : Html.Attribute Msg
+onSwitcherKey =
+    Html.Events.preventDefaultOn "keydown"
+        (D.field "key" D.string
+            |> D.andThen
+                (\key ->
+                    case key of
+                        "ArrowUp" ->
+                            D.succeed ( SwitcherUp, True )
+
+                        "ArrowDown" ->
+                            D.succeed ( SwitcherDown, True )
+
+                        "Enter" ->
+                            D.succeed ( SwitcherSelect, True )
+
+                        "Escape" ->
+                            D.succeed ( CloseSwitcher, True )
+
+                        _ ->
+                            D.fail "ignore"
+                )
+        )
 
 
 subscriptions : Model -> Sub Msg
@@ -65,6 +150,7 @@ subscriptions model =
             MainPage ->
                 Sub.batch
                     [ Time.every 5000 (\_ -> PollRooms)
+                    , Browser.Events.onKeyDown cmdKDecoder
                     , case model.selectedRoomId of
                         Just _ ->
                             Sub.batch
@@ -109,4 +195,30 @@ printableKeyDecoder =
 
                     Nothing ->
                         D.fail "not a printable key"
+            )
+
+
+{-| Decode Cmd/Ctrl+K to open the channel switcher.
+-}
+cmdKDecoder : D.Decoder Msg
+cmdKDecoder =
+    D.map3
+        (\key ctrl meta ->
+            if key == "k" && (ctrl || meta) then
+                Just OpenSwitcher
+
+            else
+                Nothing
+        )
+        (D.field "key" D.string)
+        (D.field "ctrlKey" D.bool)
+        (D.field "metaKey" D.bool)
+        |> D.andThen
+            (\maybe ->
+                case maybe of
+                    Just msg ->
+                        D.succeed msg
+
+                    Nothing ->
+                        D.fail "not Cmd+K"
             )
