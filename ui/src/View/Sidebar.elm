@@ -1,7 +1,7 @@
 module View.Sidebar exposing (view)
 
-import Html exposing (Html, aside, li, span, text, ul)
-import Html.Attributes exposing (class, id)
+import Html exposing (Html, aside, button, div, li, span, text, ul)
+import Html.Attributes exposing (class, id, title)
 import Html.Events exposing (onClick)
 import Model exposing (Model, Msg(..))
 import Types exposing (Room)
@@ -12,6 +12,10 @@ view model =
     aside [ id "sidebar" ]
         [ ul [ id "room-list" ]
             (List.map (roomItem model.selectedRoomId) model.rooms)
+        , div [ id "sidebar-actions" ]
+            [ button [ class "sidebar-action-btn", title "Join or create a room" ]
+                [ text "+" ]
+            ]
         ]
 
 
