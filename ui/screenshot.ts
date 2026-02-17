@@ -9,7 +9,7 @@
 //   npx tsx screenshot.ts [options]
 //
 // Options:
-//   --output, -o <path>   Output file path (default: timestamped in notes/attachments/)
+//   --output, -o <path>   Output file path (required)
 //   --width <px>          Viewport width (default: 1280)
 //   --height <px>         Viewport height (default: 800)
 //   --room <name>         Select a room by sidebar text (e.g. "nerve", "Exo")
@@ -33,7 +33,6 @@ const VITE_PORT = 3000;
 const DEFAULT_WIDTH = 1280;
 const DEFAULT_HEIGHT = 800;
 const DEFAULT_DELAY = 500;
-const NOTES_DIR = path.resolve(__dirname, "../../notes/attachments");
 
 // --- Args ---
 
@@ -188,9 +187,11 @@ async function main() {
     // Extra delay for rendering
     await new Promise((r) => setTimeout(r, delay));
 
-    // Determine output path
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-    const outputPath = args.output ?? path.join(NOTES_DIR, `${timestamp}_nerve-screenshot.png`);
+    if (!args.output) {
+      console.error("Error: --output (-o) is required");
+      process.exit(1);
+    }
+    const outputPath = args.output;
 
     await page.screenshot({ path: outputPath, fullPage: false });
     console.log(`[screenshot] Saved: ${outputPath}`);

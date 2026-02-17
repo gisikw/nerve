@@ -259,7 +259,7 @@ cd ui && npx tsx screenshot.ts [options]
 
 | Option              | Description                                      |
 |---------------------|--------------------------------------------------|
-| `--output, -o`      | Output path (default: timestamped in `notes/attachments/`) |
+| `--output, -o`      | Output path (required)                           |
 | `--width`           | Viewport width in px (default: 1280)             |
 | `--height`          | Viewport height in px (default: 800)             |
 | `--room <name>`     | Click a room in the sidebar before capture       |
