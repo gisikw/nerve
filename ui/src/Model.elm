@@ -55,6 +55,8 @@ type Msg
     | DomNoOp
       -- Keyboard
     | KeyPressed String
+      -- Reactions
+    | SendReaction String String -- eventId emoji
       -- Channel switcher
     | OpenSwitcher
     | CloseSwitcher

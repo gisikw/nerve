@@ -73,6 +73,7 @@ suite =
                                 , timestamp = 1700000000000
                                 , msgType = "text"
                                 , mediaUrl = Nothing
+                                , reactions = []
                                 }
                             )
             , test "decodes an image message with media_url" <|

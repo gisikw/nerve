@@ -277,6 +277,6 @@ testRoom =
     { id = "!test:x", name = "Test", isDirect = False, notificationCount = 0 }
 
 
-testMessage : { eventId : String, sender : String, body : String, timestamp : Int, msgType : String, mediaUrl : Maybe String }
+testMessage : { eventId : String, sender : String, body : String, timestamp : Int, msgType : String, mediaUrl : Maybe String, reactions : List a }
 testMessage =
-    { eventId = "$test", sender = "@a:x", body = "hi", timestamp = 0, msgType = "text", mediaUrl = Nothing }
+    { eventId = "$test", sender = "@a:x", body = "hi", timestamp = 0, msgType = "text", mediaUrl = Nothing, reactions = [] }

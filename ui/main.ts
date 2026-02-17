@@ -19,6 +19,7 @@ const commands: Record<string, string> = {
   listRooms: "list_rooms",
   getMessages: "get_messages",
   sendMessage: "send_message",
+  sendReaction: "send_reaction",
 };
 
 // Listen for outgoing commands from Elm

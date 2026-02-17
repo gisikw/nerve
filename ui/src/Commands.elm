@@ -5,6 +5,7 @@ module Commands exposing
     , listRooms
     , getMessages
     , sendMessage
+    , sendReaction
     )
 
 import Json.Encode as E
@@ -60,5 +61,16 @@ sendMessage roomId body =
         (E.object
             [ ( "roomId", E.string roomId )
             , ( "body", E.string body )
+            ]
+        )
+
+
+sendReaction : String -> String -> String -> Cmd msg
+sendReaction roomId eventId emoji =
+    send "sendReaction"
+        (E.object
+            [ ( "roomId", E.string roomId )
+            , ( "eventId", E.string eventId )
+            , ( "emoji", E.string emoji )
             ]
         )

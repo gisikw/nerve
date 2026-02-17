@@ -137,3 +137,21 @@ pub async fn send_message(
         Err("Not logged in".to_string())
     }
 }
+
+/// Send an emoji reaction to a message.
+#[tauri::command]
+pub async fn send_reaction(
+    state: State<'_, MatrixState>,
+    room_id: String,
+    event_id: String,
+    emoji: String,
+) -> Result<(), String> {
+    let guard = state.client.lock().await;
+    if let Some(ref client) = *guard {
+        messages::send_reaction(client, &room_id, &event_id, &emoji)
+            .await
+            .map_err(|e| format!("Failed to send reaction: {e}"))
+    } else {
+        Err("Not logged in".to_string())
+    }
+}

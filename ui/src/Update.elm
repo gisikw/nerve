@@ -95,6 +95,15 @@ update msg model =
         DomNoOp ->
             ( model, Cmd.none )
 
+        -- Reactions
+        SendReaction eventId emoji ->
+            case model.selectedRoomId of
+                Just roomId ->
+                    ( model, Commands.sendReaction roomId eventId emoji )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
         -- Keyboard: printable key pressed while compose not focused
         KeyPressed _ ->
             if model.switcherOpen then
@@ -239,6 +248,15 @@ dispatchTag tag payload model =
 
         "sendMessage" ->
             -- After sending, refresh messages
+            case model.selectedRoomId of
+                Just roomId ->
+                    ( model, Commands.getMessages roomId )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        "sendReaction" ->
+            -- After reacting, refresh messages to show updated reactions
             case model.selectedRoomId of
                 Just roomId ->
                     ( model, Commands.getMessages roomId )

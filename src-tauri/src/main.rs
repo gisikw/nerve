@@ -23,6 +23,7 @@ fn main() {
             commands::list_rooms,
             commands::get_messages,
             commands::send_message,
+            commands::send_reaction,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

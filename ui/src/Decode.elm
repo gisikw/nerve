@@ -3,6 +3,7 @@ module Decode exposing
     , roomList
     , message
     , messageList
+    , reaction
     , sessionStatus
     , loginResult
     )
@@ -25,15 +26,48 @@ roomList =
     D.list room
 
 
+reaction : Decoder Reaction
+reaction =
+    D.map3 Reaction
+        (D.field "emoji" D.string)
+        (D.field "count" D.int)
+        (D.field "include_self" D.bool)
+
+
 message : Decoder Message
 message =
-    D.map6 Message
+    D.map6
+        (\eventId sender body timestamp msgType mediaUrl ->
+            \reactions ->
+                { eventId = eventId
+                , sender = sender
+                , body = body
+                , timestamp = timestamp
+                , msgType = msgType
+                , mediaUrl = mediaUrl
+                , reactions = reactions
+                }
+        )
         (D.field "event_id" D.string)
         (D.field "sender" D.string)
         (D.field "body" D.string)
         (D.field "timestamp" D.int)
         (D.field "msg_type" D.string)
         (D.maybe (D.field "media_url" D.string))
+        |> andMap (optionalField "reactions" (D.list reaction) [])
+
+
+optionalField : String -> Decoder a -> a -> Decoder a
+optionalField name decoder default =
+    D.oneOf
+        [ D.field name decoder
+        , D.succeed default
+        ]
+
+
+andMap : Decoder a -> Decoder (a -> b) -> Decoder b
+andMap argDecoder funcDecoder =
+    D.map2 (\f a -> f a) funcDecoder argDecoder
 
 
 messageList : Decoder (List Message)

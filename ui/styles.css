@@ -411,6 +411,48 @@ button:hover {
   text-decoration: underline;
 }
 
+.reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.2rem;
+}
+
+.reaction-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.1rem 0.4rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  transition: border-color var(--transition), background var(--transition);
+  margin-top: 0;
+}
+
+.reaction-pill:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.reaction-pill.self {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.reaction-emoji {
+  font-size: 0.85rem;
+}
+
+.reaction-count {
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
 .message.notice .message-body {
   color: var(--text-muted);
   font-style: italic;

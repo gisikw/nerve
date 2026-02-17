@@ -1,6 +1,7 @@
 module Types exposing
     ( Room
     , Message
+    , Reaction
     , SessionStatus
     , LoginResult
     , LoginForm
@@ -15,6 +16,13 @@ type alias Room =
     }
 
 
+type alias Reaction =
+    { emoji : String
+    , count : Int
+    , includeSelf : Bool
+    }
+
+
 type alias Message =
     { eventId : String
     , sender : String
@@ -22,6 +30,7 @@ type alias Message =
     , timestamp : Int
     , msgType : String
     , mediaUrl : Maybe String
+    , reactions : List Reaction
     }
 
 

@@ -14,6 +14,12 @@ interface FakeRoom {
   notification_count: number;
 }
 
+interface FakeReaction {
+  emoji: string;
+  count: number;
+  include_self: boolean;
+}
+
 interface FakeMessage {
   event_id: string;
   sender: string;
@@ -21,6 +27,7 @@ interface FakeMessage {
   timestamp: number;
   msg_type: string;
   media_url?: string;
+  reactions: FakeReaction[];
 }
 
 // --- State ---
@@ -40,6 +47,7 @@ function makeMessage(
     body,
     timestamp,
     msg_type: msgType,
+    reactions: [],
   };
   if (mediaUrl) {
     msg.media_url = mediaUrl;
@@ -122,6 +130,26 @@ export function handleCommand(
       state.messages[roomId].push(
         makeMessage(state.userId ?? "@unknown:local", body, Date.now()),
       );
+      return null;
+    }
+
+    case "send_reaction": {
+      const roomId = args.roomId as string;
+      const eventId = args.eventId as string;
+      const emoji = args.emoji as string;
+      const msgs = state.messages[roomId];
+      if (msgs) {
+        const msg = msgs.find((m) => m.event_id === eventId);
+        if (msg) {
+          const existing = msg.reactions.find((r) => r.emoji === emoji);
+          if (existing) {
+            existing.count++;
+            existing.include_self = true;
+          } else {
+            msg.reactions.push({ emoji, count: 1, include_self: true });
+          }
+        }
+      }
       return null;
     }
 

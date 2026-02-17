@@ -1,13 +1,13 @@
 module View.Messages exposing (view)
 
-import Html exposing (Html, div, form, h2, img, p, span, text, textarea)
-import Html.Attributes exposing (alt, class, id, placeholder, rows, src, type_, value)
-import Html.Events exposing (onInput, onSubmit)
+import Html exposing (Html, button, div, form, h2, img, p, span, text, textarea)
+import Html.Attributes exposing (alt, class, id, placeholder, rows, src, title, type_, value)
+import Html.Events exposing (onClick, onInput, onSubmit)
 import Json.Decode as D
 import Markdown
 import Model exposing (Model, Msg(..))
 import Time
-import Types exposing (Message)
+import Types exposing (Message, Reaction)
 
 
 view : Model -> Html Msg
@@ -107,6 +107,11 @@ renderMessage zone isGroupStart msg =
            else
             Nothing
          , Just (messageBody msg)
+         , if List.isEmpty msg.reactions then
+            Nothing
+
+           else
+            Just (reactionsRow msg)
          ]
             |> List.filterMap identity
         )
@@ -133,6 +138,30 @@ messageBody msg =
 
     else
         div [ class "message-body" ] (Markdown.render msg.body)
+
+
+reactionsRow : Message -> Html Msg
+reactionsRow msg =
+    div [ class "reactions" ]
+        (List.map (reactionPill msg.eventId) msg.reactions)
+
+
+reactionPill : String -> Reaction -> Html Msg
+reactionPill eventId reaction =
+    button
+        [ class
+            (if reaction.includeSelf then
+                "reaction-pill self"
+
+             else
+                "reaction-pill"
+            )
+        , onClick (SendReaction eventId reaction.emoji)
+        , title (reaction.emoji ++ " " ++ String.fromInt reaction.count)
+        ]
+        [ span [ class "reaction-emoji" ] [ text reaction.emoji ]
+        , span [ class "reaction-count" ] [ text (String.fromInt reaction.count) ]
+        ]
 
 
 formatSender : String -> String
