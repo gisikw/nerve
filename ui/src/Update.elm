@@ -69,6 +69,16 @@ update msg model =
                 , typingUsers = []
                 , composeText = restoredText
                 , drafts = updatedDrafts
+                , rooms =
+                    List.map
+                        (\r ->
+                            if r.id == roomId then
+                                { r | notificationCount = 0 }
+
+                            else
+                                r
+                        )
+                        model.rooms
               }
             , Cmd.batch
                 [ Commands.getMessages roomId
@@ -288,13 +298,29 @@ dispatchTag tag payload model =
             case D.decodeValue Decode.roomList payload of
                 Ok rooms ->
                     let
+                        -- Clear unread count for the currently viewed room
+                        clearActiveUnread r =
+                            case model.selectedRoomId of
+                                Just rid ->
+                                    if r.id == rid then
+                                        { r | notificationCount = 0 }
+
+                                    else
+                                        r
+
+                                Nothing ->
+                                    r
+
+                        updatedRooms =
+                            List.map clearActiveUnread rooms
+
                         typingUsers =
                             model.selectedRoomId
-                                |> Maybe.andThen (\rid -> List.filter (\r -> r.id == rid) rooms |> List.head)
+                                |> Maybe.andThen (\rid -> List.filter (\r -> r.id == rid) updatedRooms |> List.head)
                                 |> Maybe.map .typingUsers
                                 |> Maybe.withDefault []
                     in
-                    ( { model | rooms = rooms, typingUsers = typingUsers }, Cmd.none )
+                    ( { model | rooms = updatedRooms, typingUsers = typingUsers }, Cmd.none )
 
                 Err _ ->
                     ( model, Cmd.none )
