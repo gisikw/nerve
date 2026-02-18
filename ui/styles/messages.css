@@ -1,0 +1,194 @@
+#messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem 1rem;
+}
+
+#messages .placeholder {
+  color: var(--text-faint);
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.85rem;
+}
+
+.message {
+  max-width: 72ch;
+  padding: 0.2rem 0;
+}
+
+.message + .message {
+  margin-top: 0.15rem;
+}
+
+.message.group-start {
+  margin-top: 0.85rem;
+}
+
+.message.group-start:first-child {
+  margin-top: 0;
+}
+
+.message-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin-bottom: 0.1rem;
+}
+
+.sender {
+  font-weight: 600;
+  font-size: 0.825rem;
+  color: var(--accent);
+}
+
+.timestamp {
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+}
+
+.message-body {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.message-body .inline-code {
+  background: var(--bg-surface);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+}
+
+.message-body .code-block {
+  background: var(--bg-surface);
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  line-height: 1.45;
+  overflow-x: auto;
+  margin: 0.3rem 0;
+  white-space: pre;
+}
+
+.message-body .code-block code {
+  background: none;
+  padding: 0;
+}
+
+.message-body a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.message-body a:hover {
+  text-decoration: underline;
+}
+
+.reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.2rem;
+}
+
+.reaction-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.1rem 0.4rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  transition: border-color var(--transition), background var(--transition);
+  margin-top: 0;
+}
+
+.reaction-pill:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.reaction-pill.self {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.reaction-emoji {
+  font-size: 0.85rem;
+}
+
+.reaction-count {
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.message.notice .message-body {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.message.emote .sender {
+  font-style: italic;
+}
+
+.message .image-container {
+  margin-top: 0.25rem;
+}
+
+.message .image-container img {
+  max-width: 400px;
+  max-height: 300px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: opacity var(--transition);
+}
+
+.message .image-container img:hover {
+  opacity: 0.9;
+}
+
+.message .image-container .image-loading {
+  display: inline-block;
+  padding: 1rem 1.5rem;
+  background: var(--bg-surface);
+  border-radius: var(--radius);
+  color: var(--text-faint);
+  font-size: 0.8rem;
+}
+
+/* Typing indicator */
+
+#typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 1rem;
+  min-height: 1.4rem;
+}
+
+.typing-dots {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  animation: typing-pulse 1.2s ease-in-out infinite;
+}
+
+.typing-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+@keyframes typing-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}

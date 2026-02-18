@@ -16,6 +16,18 @@ pub struct SessionStatus {
     pub user_id: Option<String>,
 }
 
+/// Try to restore a session from a saved homeserver and sqlite store.
+/// Returns the restored client if successful.
+async fn try_restore_from_disk() -> Option<matrix_sdk::Client> {
+    let homeserver = client::load_homeserver()?;
+    let restored = client::build_client(&homeserver).await.ok()?;
+    if client::try_restore_session(&restored).await {
+        Some(restored)
+    } else {
+        None
+    }
+}
+
 /// Attempt to restore a persisted session. Called on app startup.
 #[tauri::command]
 pub async fn check_session(state: State<'_, MatrixState>) -> Result<SessionStatus, String> {
@@ -31,19 +43,15 @@ pub async fn check_session(state: State<'_, MatrixState>) -> Result<SessionStatu
         return Ok(SessionStatus { logged_in, user_id });
     }
 
-    // No client yet — try to restore from a saved homeserver + sqlite store.
-    if let Some(homeserver) = client::load_homeserver() {
-        if let Ok(restored) = client::build_client(&homeserver).await {
-            if client::try_restore_session(&restored).await {
-                let user_id = restored.user_id().map(|id| id.to_string());
-                client::spawn_sync(restored.clone(), state.typing_cache.clone());
-                *guard = Some(restored);
-                return Ok(SessionStatus {
-                    logged_in: true,
-                    user_id,
-                });
-            }
-        }
+    // No client yet — try to restore from disk.
+    if let Some(restored) = try_restore_from_disk().await {
+        let user_id = restored.user_id().map(|id| id.to_string());
+        client::spawn_sync(restored.clone(), state.typing_cache.clone());
+        *guard = Some(restored);
+        return Ok(SessionStatus {
+            logged_in: true,
+            user_id,
+        });
     }
 
     Ok(SessionStatus {
@@ -116,7 +124,7 @@ pub async fn get_messages(
     if let Some(ref client) = *guard {
         messages::fetch_messages(client, &room_id, 50)
             .await
-            .map_err(|e| format!("Failed to fetch messages: {e}"))
+            .map_err(|e| format!("Failed to fetch messages for room {room_id}: {e}"))
     } else {
         Err("Not logged in".to_string())
     }
@@ -133,7 +141,7 @@ pub async fn send_message(
     if let Some(ref client) = *guard {
         messages::send_message(client, &room_id, &body)
             .await
-            .map_err(|e| format!("Failed to send message: {e}"))
+            .map_err(|e| format!("Failed to send message to room {room_id}: {e}"))
     } else {
         Err("Not logged in".to_string())
     }
@@ -151,7 +159,7 @@ pub async fn send_reaction(
     if let Some(ref client) = *guard {
         messages::send_reaction(client, &room_id, &event_id, &emoji)
             .await
-            .map_err(|e| format!("Failed to send reaction: {e}"))
+            .map_err(|e| format!("Failed to send reaction {emoji} to event {event_id} in room {room_id}: {e}"))
     } else {
         Err("Not logged in".to_string())
     }
@@ -165,7 +173,7 @@ pub async fn get_typing(
 ) -> Result<TypingStatus, String> {
     typing::get_typing_users(&state.typing_cache, &room_id)
         .await
-        .map_err(|e| format!("Failed to get typing status: {e}"))
+        .map_err(|e| format!("Failed to get typing status for room {room_id}: {e}"))
 }
 
 /// Send a typing indicator to a room.
@@ -179,7 +187,7 @@ pub async fn send_typing_notice(
     if let Some(ref client) = *guard {
         typing::send_typing(client, &room_id, is_typing)
             .await
-            .map_err(|e| format!("Failed to send typing notice: {e}"))
+            .map_err(|e| format!("Failed to send typing notice for room {room_id}: {e}"))
     } else {
         Err("Not logged in".to_string())
     }

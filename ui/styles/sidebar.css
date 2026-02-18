@@ -1,0 +1,102 @@
+#sidebar {
+  width: 240px;
+  min-width: 240px;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 0.35rem 0;
+}
+
+#room-list {
+  list-style: none;
+  flex: 1;
+  overflow-y: auto;
+}
+
+#room-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.65rem;
+  cursor: pointer;
+  font-size: 0.825rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background var(--transition), color var(--transition);
+  border-radius: 4px;
+  margin: 0 0.35rem;
+}
+
+#room-list li:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+#room-list li.selected {
+  background: var(--accent-dim);
+  color: var(--text);
+}
+
+#room-list li.unread {
+  color: var(--text);
+  font-weight: 600;
+}
+
+#room-list li .room-name-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+#room-list li .unread-badge {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
+  text-align: center;
+  border-radius: 8px;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+
+#room-list li .typing-badge {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  animation: typing-pulse 1.2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+#sidebar-actions {
+  padding: 0.35rem;
+  border-top: 1px solid var(--border);
+}
+
+.sidebar-action-btn {
+  width: 100%;
+  padding: 0.3rem 0.5rem;
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: border-color var(--transition), color var(--transition);
+  margin-top: 0;
+}
+
+.sidebar-action-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: transparent;
+}

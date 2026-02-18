@@ -1,0 +1,34 @@
+#compose {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.4rem;
+  padding: 0.55rem 0.85rem;
+  border-top: 1px solid var(--border);
+  background: var(--bg-surface);
+}
+
+#compose-input {
+  flex: 1;
+  padding: 0.45rem 0.65rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+  overflow-y: auto;
+  max-height: 10rem;
+  transition: border-color var(--transition);
+}
+
+#compose-input:focus {
+  border-color: var(--accent);
+}
+
+#compose button {
+  padding: 0.45rem 0.85rem;
+  margin-top: 0;
+}

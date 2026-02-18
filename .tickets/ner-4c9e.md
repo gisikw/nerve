@@ -1,6 +1,6 @@
 ---
 id: ner-4c9e
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-02-18T01:29:50Z
