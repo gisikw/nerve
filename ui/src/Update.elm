@@ -164,11 +164,18 @@ update msg model =
 
         -- Keyboard: printable key pressed while compose not focused
         KeyPressed _ ->
-            if model.switcherOpen then
+            if model.switcherOpen || model.shortcutsOpen then
                 ( model, Cmd.none )
 
             else
                 ( model, focusCompose )
+
+        -- Shortcuts modal
+        OpenShortcuts ->
+            ( { model | shortcutsOpen = True }, Cmd.none )
+
+        CloseShortcuts ->
+            ( { model | shortcutsOpen = False }, Cmd.none )
 
         -- Channel switcher
         OpenSwitcher ->

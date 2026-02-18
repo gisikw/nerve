@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Browser.Events
-import Html exposing (Html, div, input, li, span, text, ul)
+import Html exposing (Html, div, h3, input, li, span, text, ul)
 import Html.Attributes exposing (autofocus, class, id, placeholder, spellcheck, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Json.Decode as D
@@ -54,6 +54,9 @@ mainView model =
             ++ (if model.switcherOpen then
                     [ switcherModal model ]
 
+                else if model.shortcutsOpen then
+                    [ shortcutsModal ]
+
                 else
                     []
                )
@@ -104,6 +107,30 @@ switcherItem selectedIdx idx room =
              else
                 "# " ++ room.name
             )
+        ]
+
+
+shortcutsModal : Html Msg
+shortcutsModal =
+    let
+        shortcut keys desc =
+            li [ class "shortcut-row" ]
+                [ span [ class "shortcut-keys" ] (List.map (\k -> span [ class "kbd" ] [ text k ]) keys)
+                , span [ class "shortcut-desc" ] [ text desc ]
+                ]
+    in
+    div [ id "switcher-backdrop", onClick CloseShortcuts ]
+        [ div [ id "shortcuts-modal", onClickStop ]
+            [ Html.h3 [] [ text "Keyboard shortcuts" ]
+            , ul [ class "shortcuts-list" ]
+                [ shortcut [ "\u{2318}/Ctrl", "K" ] "Channel switcher"
+                , shortcut [ "\u{2318}/Ctrl", "/" ] "This help"
+                , shortcut [ "\u{2318}/Ctrl", "+/\u{2212}/0" ] "Zoom in / out / reset"
+                , shortcut [ "Enter" ] "Send message"
+                , shortcut [ "Shift", "Enter" ] "New line"
+                , shortcut [ "Esc" ] "Close modal"
+                ]
+            ]
         ]
 
 
@@ -206,14 +233,20 @@ printableKeyDecoder =
             )
 
 
-{-| Decode Cmd/Ctrl+K to open the channel switcher.
+{-| Decode Cmd/Ctrl+K and Cmd/Ctrl+/ keyboard shortcuts.
 -}
 cmdKDecoder : D.Decoder Msg
 cmdKDecoder =
     D.map3
         (\key ctrl meta ->
-            if key == "k" && (ctrl || meta) then
+            if (ctrl || meta) && key == "k" then
                 Just OpenSwitcher
+
+            else if (ctrl || meta) && key == "/" then
+                Just OpenShortcuts
+
+            else if key == "Escape" then
+                Just CloseShortcuts
 
             else
                 Nothing
@@ -228,5 +261,5 @@ cmdKDecoder =
                         D.succeed msg
 
                     Nothing ->
-                        D.fail "not Cmd+K"
+                        D.fail "not a shortcut"
             )

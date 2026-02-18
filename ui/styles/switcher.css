@@ -56,3 +56,56 @@
   background: var(--accent-dim);
   color: var(--text);
 }
+
+/* Keyboard shortcuts modal (Cmd+/) */
+
+#shortcuts-modal {
+  width: 340px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  padding: 1rem 1.25rem;
+}
+
+#shortcuts-modal h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.shortcuts-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.shortcut-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.35rem 0;
+}
+
+.shortcut-keys {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.kbd {
+  display: inline-block;
+  padding: 0.15rem 0.4rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.shortcut-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}

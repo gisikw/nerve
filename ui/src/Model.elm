@@ -30,6 +30,7 @@ type alias Model =
     , composeText : String
     , drafts : Dict String String
     , timeZone : Time.Zone
+    , shortcutsOpen : Bool
     , switcherOpen : Bool
     , switcherQuery : String
     , switcherIndex : Int
@@ -63,6 +64,9 @@ type Msg
     | KeyPressed String
       -- Reactions
     | SendReaction String String -- eventId emoji
+      -- Shortcuts modal
+    | OpenShortcuts
+    | CloseShortcuts
       -- Channel switcher
     | OpenSwitcher
     | CloseSwitcher
@@ -95,6 +99,7 @@ initialModel =
     , composeText = ""
     , drafts = Dict.empty
     , timeZone = Time.utc
+    , shortcutsOpen = False
     , switcherOpen = False
     , switcherQuery = ""
     , switcherIndex = 0
