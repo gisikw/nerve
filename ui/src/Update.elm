@@ -77,6 +77,7 @@ update msg model =
                 , hasOlderHistory = False
                 , pinnedEventIds = Set.empty
                 , showPinned = False
+                , streams = []
                 , rooms =
                     List.map
                         (\r ->
@@ -91,6 +92,7 @@ update msg model =
             , Cmd.batch
                 [ Commands.getMessages roomId
                 , Commands.getPinnedEvents roomId
+                , Commands.getStreams roomId
                 , focusCompose
                 , scrollToBottomForce
                 ]
@@ -314,6 +316,37 @@ update msg model =
         TogglePinned ->
             ( { model | showPinned = not model.showPinned }, Cmd.none )
 
+        -- Streams panel
+        ToggleStreamsPanel ->
+            ( { model | streamsPanelOpen = not model.streamsPanelOpen }, Cmd.none )
+
+        PollStreams ->
+            case model.selectedRoomId of
+                Just roomId ->
+                    ( model, Commands.getStreams roomId )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        ToggleStreamCollapsed streamId ->
+            let
+                newCollapsed =
+                    if Set.member streamId model.streamsCollapsed then
+                        Set.remove streamId model.streamsCollapsed
+
+                    else
+                        Set.insert streamId model.streamsCollapsed
+            in
+            ( { model | streamsCollapsed = newCollapsed }, Cmd.none )
+
+        StreamButtonClick streamId buttonId ->
+            case model.selectedRoomId of
+                Just roomId ->
+                    ( model, Commands.sendStreamAction roomId streamId buttonId )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
         -- Time zone
         GotTimeZone zone ->
             ( { model | timeZone = zone }, Cmd.none )
@@ -526,6 +559,28 @@ dispatchTag tag payload model =
 
                 Nothing ->
                     ( model, Cmd.none )
+
+        "getStreams" ->
+            case D.decodeValue Decode.streamList payload of
+                Ok streams ->
+                    let
+                        hasActive =
+                            List.any (\s -> not s.closed) streams
+
+                        panelOpen =
+                            if hasActive && not model.streamsPanelOpen then
+                                True
+
+                            else
+                                model.streamsPanelOpen
+                    in
+                    ( { model | streams = streams, streamsPanelOpen = panelOpen }, Cmd.none )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
+        "sendStreamAction" ->
+            ( model, Cmd.none )
 
         "sendTypingNotice" ->
             ( model, Cmd.none )

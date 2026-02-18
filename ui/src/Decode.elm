@@ -9,6 +9,10 @@ module Decode exposing
     , loginResult
     , typingStatus
     , createRoomResult
+    , streamButton
+    , streamLine
+    , streamState
+    , streamList
     )
 
 import Json.Decode as D exposing (Decoder)
@@ -110,3 +114,32 @@ createRoomResult : Decoder { roomId : String }
 createRoomResult =
     D.map (\id -> { roomId = id })
         (D.field "room_id" D.string)
+
+
+streamButton : Decoder StreamButton
+streamButton =
+    D.map2 StreamButton
+        (D.field "id" D.string)
+        (D.field "label" D.string)
+
+
+streamLine : Decoder StreamLine
+streamLine =
+    D.map2 StreamLine
+        (D.field "text" D.string)
+        (D.field "channel" D.string)
+
+
+streamState : Decoder StreamState
+streamState =
+    D.map5 StreamState
+        (D.field "stream_id" D.string)
+        (D.field "name" D.string)
+        (optionalField "buttons" (D.list streamButton) [])
+        (optionalField "lines" (D.list streamLine) [])
+        (D.field "closed" D.bool)
+
+
+streamList : Decoder (List StreamState)
+streamList =
+    D.list streamState

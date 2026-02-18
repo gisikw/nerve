@@ -33,6 +33,8 @@ const commands: Record<string, string> = {
   getTyping: "get_typing",
   sendTypingNotice: "send_typing_notice",
   createRoom: "create_room",
+  getStreams: "get_streams",
+  sendStreamAction: "send_stream_action",
 };
 
 // Listen for outgoing commands from Elm
@@ -111,6 +113,8 @@ document.addEventListener("keydown", (e) => {
     e.preventDefault(); // Let Elm handle Cmd+K
   } else if (e.key === "/") {
     e.preventDefault(); // Let Elm handle Cmd+/
+  } else if (e.key === ".") {
+    e.preventDefault(); // Let Elm handle Cmd+.
   }
 });
 

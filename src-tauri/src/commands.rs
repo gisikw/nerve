@@ -3,6 +3,7 @@ use tauri::State;
 use crate::client::{self, MatrixState};
 use crate::messages::{self, MessagesResponse};
 use crate::rooms::{self, CreateRoomResult, RoomInfo};
+use crate::streams::{self, StreamState};
 use crate::typing::{self, TypingStatus};
 
 #[derive(serde::Serialize)]
@@ -38,7 +39,7 @@ pub async fn check_session(state: State<'_, MatrixState>) -> Result<SessionStatu
         let logged_in = client::try_restore_session(client).await;
         let user_id = client.user_id().map(|id| id.to_string());
         if logged_in {
-            client::spawn_sync(client.clone(), state.typing_cache.clone());
+            client::spawn_sync(client.clone(), state.typing_cache.clone(), state.stream_cache.clone());
         }
         return Ok(SessionStatus { logged_in, user_id });
     }
@@ -46,7 +47,7 @@ pub async fn check_session(state: State<'_, MatrixState>) -> Result<SessionStatu
     // No client yet — try to restore from disk.
     if let Some(restored) = try_restore_from_disk().await {
         let user_id = restored.user_id().map(|id| id.to_string());
-        client::spawn_sync(restored.clone(), state.typing_cache.clone());
+        client::spawn_sync(restored.clone(), state.typing_cache.clone(), state.stream_cache.clone());
         *guard = Some(restored);
         return Ok(SessionStatus {
             logged_in: true,
@@ -79,7 +80,7 @@ pub async fn login(
     // Persist homeserver for session restore on next launch.
     let _ = client::save_homeserver(&homeserver);
 
-    client::spawn_sync(new_client.clone(), state.typing_cache.clone());
+    client::spawn_sync(new_client.clone(), state.typing_cache.clone(), state.stream_cache.clone());
 
     let mut guard = state.client.lock().await;
     *guard = Some(new_client);
@@ -304,6 +305,35 @@ pub async fn unpin_message(
         messages::unpin_message(client, &room_id, &event_id)
             .await
             .map_err(|e| format!("Failed to unpin message {event_id} in room {room_id}: {e}"))
+    } else {
+        Err("Not logged in".to_string())
+    }
+}
+
+/// Get active streams for a room.
+#[tauri::command]
+pub async fn get_streams(
+    state: State<'_, MatrixState>,
+    room_id: String,
+) -> Result<Vec<StreamState>, String> {
+    streams::get_streams(&state.stream_cache, &room_id)
+        .await
+        .map_err(|e| format!("Failed to get streams for room {room_id}: {e}"))
+}
+
+/// Send a stream button action back to a room.
+#[tauri::command]
+pub async fn send_stream_action(
+    state: State<'_, MatrixState>,
+    room_id: String,
+    stream_id: String,
+    button_id: String,
+) -> Result<(), String> {
+    let guard = state.client.lock().await;
+    if let Some(ref client) = *guard {
+        streams::send_stream_action(client, &room_id, &stream_id, &button_id)
+            .await
+            .map_err(|e| format!("Failed to send stream action: {e}"))
     } else {
         Err("Not logged in".to_string())
     }

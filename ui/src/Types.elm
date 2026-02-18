@@ -7,6 +7,9 @@ module Types exposing
     , LoginResult
     , LoginForm
     , TypingStatus
+    , StreamState
+    , StreamButton
+    , StreamLine
     )
 
 
@@ -64,4 +67,25 @@ type alias LoginForm =
 
 type alias TypingStatus =
     { users : List String
+    }
+
+
+type alias StreamButton =
+    { id : String
+    , label : String
+    }
+
+
+type alias StreamLine =
+    { text : String
+    , channel : String
+    }
+
+
+type alias StreamState =
+    { streamId : String
+    , name : String
+    , buttons : List StreamButton
+    , lines : List StreamLine
+    , closed : Bool
     }

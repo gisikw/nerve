@@ -13,6 +13,8 @@ module Commands exposing
     , getTyping
     , sendTypingNotice
     , createRoom
+    , getStreams
+    , sendStreamAction
     )
 
 import Json.Encode as E
@@ -139,3 +141,20 @@ createRoom : String -> Cmd msg
 createRoom name =
     send "createRoom"
         (E.object [ ( "name", E.string name ) ])
+
+
+getStreams : String -> Cmd msg
+getStreams roomId =
+    send "getStreams"
+        (E.object [ ( "roomId", E.string roomId ) ])
+
+
+sendStreamAction : String -> String -> String -> Cmd msg
+sendStreamAction roomId streamId buttonId =
+    send "sendStreamAction"
+        (E.object
+            [ ( "roomId", E.string roomId )
+            , ( "streamId", E.string streamId )
+            , ( "buttonId", E.string buttonId )
+            ]
+        )

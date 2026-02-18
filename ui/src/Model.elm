@@ -42,6 +42,9 @@ type alias Model =
     , showArchived : Bool
     , pinnedEventIds : Set String
     , showPinned : Bool
+    , streams : List StreamState
+    , streamsPanelOpen : Bool
+    , streamsCollapsed : Set String
     }
 
 
@@ -95,6 +98,11 @@ type Msg
     | PinMessage String -- eventId
     | UnpinMessage String -- eventId
     | TogglePinned
+      -- Streams panel
+    | ToggleStreamsPanel
+    | PollStreams
+    | ToggleStreamCollapsed String -- streamId
+    | StreamButtonClick String String -- streamId buttonId
 
 
 initialModel : Model
@@ -123,4 +131,7 @@ initialModel =
     , showArchived = False
     , pinnedEventIds = Set.empty
     , showPinned = False
+    , streams = []
+    , streamsPanelOpen = False
+    , streamsCollapsed = Set.empty
     }

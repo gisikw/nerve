@@ -16,6 +16,7 @@ import Update
 import View.Login
 import View.Messages
 import View.Sidebar
+import View.Streams
 
 
 main : Program D.Value Model Msg
@@ -57,10 +58,17 @@ mainView : Model -> Html Msg
 mainView model =
     div [ id "main-view", class "view" ]
         ([ div [ id "layout" ]
-            [ View.Sidebar.view model
-            , Html.main_ [ id "chat" ]
+            ([ View.Sidebar.view model
+             , Html.main_ [ id "chat" ]
                 [ View.Messages.view model ]
-            ]
+             ]
+                ++ (if model.streamsPanelOpen && not (List.isEmpty model.streams) then
+                        [ View.Streams.view model ]
+
+                    else
+                        []
+                   )
+            )
          ]
             ++ (if model.switcherOpen then
                     [ switcherModal model ]
@@ -144,6 +152,7 @@ shortcutsModal =
             , ul [ class "shortcuts-list" ]
                 [ shortcut [ "\u{2318}/Ctrl", "K" ] "Channel switcher"
                 , shortcut [ "\u{2318}/Ctrl", "/" ] "This help"
+                , shortcut [ "\u{2318}/Ctrl", "." ] "Toggle streams panel"
                 , shortcut [ "\u{2318}/Ctrl", "+/\u{2212}/0" ] "Zoom in / out / reset"
                 , shortcut [ "Enter" ] "Send message"
                 , shortcut [ "Shift", "Enter" ] "New line"
@@ -207,6 +216,7 @@ subscriptions model =
                             Sub.batch
                                 [ Time.every 3000 (\_ -> PollMessages)
                                 , Time.every 2000 (\_ -> PollTyping)
+                                , Time.every 2000 (\_ -> PollStreams)
                                 , Browser.Events.onKeyDown printableKeyDecoder
                                 , Ports.onScrollNearTop (\_ -> LoadOlderMessages)
                                 , Ports.onScrollNearBottom (\_ -> ResumePolling)
@@ -263,6 +273,9 @@ cmdKDecoder =
 
             else if (ctrl || meta) && key == "/" then
                 Just OpenShortcuts
+
+            else if (ctrl || meta) && key == "." then
+                Just ToggleStreamsPanel
 
             else if key == "Escape" then
                 Just CloseShortcuts
