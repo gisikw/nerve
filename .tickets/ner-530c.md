@@ -1,6 +1,6 @@
 ---
 id: ner-530c
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-02-18T05:47:03Z

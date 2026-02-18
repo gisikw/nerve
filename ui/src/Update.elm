@@ -213,7 +213,13 @@ update msg model =
                         { model | switcherOpen = False }
 
                 Nothing ->
-                    ( { model | switcherOpen = False }, Cmd.none )
+                    if String.isEmpty (String.trim model.switcherQuery) then
+                        ( { model | switcherOpen = False }, Cmd.none )
+
+                    else
+                        ( { model | switcherOpen = False }
+                        , Commands.createRoom (String.trim model.switcherQuery)
+                        )
 
         -- Typing
         PollTyping ->
@@ -402,6 +408,20 @@ dispatchTag tag payload model =
                     ( model, Commands.getMessages roomId )
 
                 Nothing ->
+                    ( model, Cmd.none )
+
+        "createRoom" ->
+            case D.decodeValue Decode.createRoomResult payload of
+                Ok result ->
+                    -- Refresh rooms list, then select the new room
+                    ( model
+                    , Cmd.batch
+                        [ Commands.listRooms
+                        , Task.perform (\_ -> SelectRoom result.roomId) (Task.succeed ())
+                        ]
+                    )
+
+                Err _ ->
                     ( model, Cmd.none )
 
         "sendReaction" ->

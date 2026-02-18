@@ -1,4 +1,7 @@
+use anyhow::Result;
 use futures::future::join_all;
+use matrix_sdk::ruma::api::client::room::create_room::v3::Request as CreateRoomRequest;
+use matrix_sdk::ruma::api::client::room::Visibility;
 use matrix_sdk::Client;
 use serde::Serialize;
 
@@ -54,4 +57,21 @@ pub async fn collect_rooms(client: &Client, typing_cache: &TypingCache) -> Vec<R
     let mut rooms = join_all(futures).await;
     rooms.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
     rooms
+}
+
+#[derive(Serialize)]
+pub struct CreateRoomResult {
+    pub room_id: String,
+}
+
+/// Create a new room with the given name.
+pub async fn create_room(client: &Client, name: &str) -> Result<CreateRoomResult> {
+    let mut request = CreateRoomRequest::new();
+    request.name = Some(name.to_owned());
+    request.visibility = Visibility::Private;
+
+    let response = client.create_room(request).await?;
+    Ok(CreateRoomResult {
+        room_id: response.room_id().to_string(),
+    })
 }

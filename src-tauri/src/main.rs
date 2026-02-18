@@ -29,6 +29,7 @@ fn main() {
             commands::get_typing,
             commands::send_typing_notice,
             commands::get_media,
+            commands::create_room,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

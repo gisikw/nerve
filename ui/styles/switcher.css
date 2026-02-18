@@ -57,6 +57,13 @@
   color: var(--text);
 }
 
+.switcher-hint {
+  padding: 0.5rem 0.85rem;
+  font-size: 0.8rem;
+  color: var(--text-faint);
+  font-style: italic;
+}
+
 /* Keyboard shortcuts modal (Cmd+/) */
 
 #shortcuts-modal {

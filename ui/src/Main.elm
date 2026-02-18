@@ -68,6 +68,15 @@ switcherModal model =
     let
         rooms =
             Update.filteredRooms model
+
+        resultsContent =
+            if List.isEmpty rooms && not (String.isEmpty (String.trim model.switcherQuery)) then
+                [ li [ class "switcher-hint" ]
+                    [ text ("Press Enter to create \"" ++ String.trim model.switcherQuery ++ "\"") ]
+                ]
+
+            else
+                List.indexedMap (switcherItem model.switcherIndex) rooms
     in
     div [ id "switcher-backdrop", onClick CloseSwitcher ]
         [ div [ id "switcher-modal", onClickStop ]
@@ -82,8 +91,7 @@ switcherModal model =
                 , spellcheck False
                 ]
                 []
-            , ul [ id "switcher-results" ]
-                (List.indexedMap (switcherItem model.switcherIndex) rooms)
+            , ul [ id "switcher-results" ] resultsContent
             ]
         ]
 

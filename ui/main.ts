@@ -23,6 +23,7 @@ const commands: Record<string, string> = {
   sendReaction: "send_reaction",
   getTyping: "get_typing",
   sendTypingNotice: "send_typing_notice",
+  createRoom: "create_room",
 };
 
 // Listen for outgoing commands from Elm

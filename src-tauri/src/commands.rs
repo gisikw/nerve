@@ -2,7 +2,7 @@ use tauri::State;
 
 use crate::client::{self, MatrixState};
 use crate::messages::{self, MessagesResponse};
-use crate::rooms::{self, RoomInfo};
+use crate::rooms::{self, CreateRoomResult, RoomInfo};
 use crate::typing::{self, TypingStatus};
 
 #[derive(serde::Serialize)]
@@ -190,6 +190,22 @@ pub async fn send_typing_notice(
         typing::send_typing(client, &room_id, is_typing)
             .await
             .map_err(|e| format!("Failed to send typing notice for room {room_id}: {e}"))
+    } else {
+        Err("Not logged in".to_string())
+    }
+}
+
+/// Create a new room with the given name.
+#[tauri::command]
+pub async fn create_room(
+    state: State<'_, MatrixState>,
+    name: String,
+) -> Result<CreateRoomResult, String> {
+    let guard = state.client.lock().await;
+    if let Some(ref client) = *guard {
+        rooms::create_room(client, &name)
+            .await
+            .map_err(|e| format!("Failed to create room: {e}"))
     } else {
         Err("Not logged in".to_string())
     }

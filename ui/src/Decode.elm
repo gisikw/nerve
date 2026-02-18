@@ -8,6 +8,7 @@ module Decode exposing
     , sessionStatus
     , loginResult
     , typingStatus
+    , createRoomResult
     )
 
 import Json.Decode as D exposing (Decoder)
@@ -103,3 +104,9 @@ typingStatus : Decoder TypingStatus
 typingStatus =
     D.map TypingStatus
         (D.field "users" (D.list D.string))
+
+
+createRoomResult : Decoder { roomId : String }
+createRoomResult =
+    D.map (\id -> { roomId = id })
+        (D.field "room_id" D.string)

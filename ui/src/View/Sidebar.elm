@@ -13,7 +13,7 @@ view model =
         [ ul [ id "room-list" ]
             (List.map (roomItem model.selectedRoomId) model.rooms)
         , div [ id "sidebar-actions" ]
-            [ button [ class "sidebar-action-btn", title "Join or create a room" ]
+            [ button [ class "sidebar-action-btn", title "Join or create a room (Cmd+K)", onClick OpenSwitcher ]
                 [ text "+" ]
             ]
         ]

@@ -9,6 +9,7 @@ module Commands exposing
     , sendReaction
     , getTyping
     , sendTypingNotice
+    , createRoom
     )
 
 import Json.Encode as E
@@ -103,3 +104,9 @@ sendTypingNotice roomId isTyping =
             , ( "isTyping", E.bool isTyping )
             ]
         )
+
+
+createRoom : String -> Cmd msg
+createRoom name =
+    send "createRoom"
+        (E.object [ ( "name", E.string name ) ])
