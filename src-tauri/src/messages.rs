@@ -168,6 +168,9 @@ pub async fn fetch_messages(
 
     let mut messages: Vec<MessageInfo> = Vec::new();
     let mut reaction_acc = ReactionAccumulator::new();
+    // Edits collected separately since backward iteration means the edit event
+    // arrives before the target message. Key: target event ID.
+    let mut edits: HashMap<String, (String, String, Option<String>)> = HashMap::new();
 
     for timeline_event in response.chunk {
         let raw = timeline_event.raw();
@@ -190,17 +193,14 @@ pub async fn fetch_messages(
                     continue;
                 };
 
-                // If this is an edit (m.replace), update the original message's
-                // body instead of adding a duplicate entry.
+                // If this is an edit (m.replace), stash it for later application.
                 if let Some(Relation::Replacement(replacement)) = &original.content.relates_to {
                     let target_id = replacement.event_id.to_string();
                     let (body, msg_type, media_url) =
                         extract_content(&replacement.new_content.msgtype);
-                    if let Some(target) = messages.iter_mut().find(|m| m.event_id == target_id) {
-                        target.body = body;
-                        target.msg_type = msg_type;
-                        target.media_url = media_url;
-                    }
+                    // Only keep the newest edit per target (first one seen in
+                    // backward order is newest).
+                    edits.entry(target_id).or_insert((body, msg_type, media_url));
                     continue;
                 }
 
@@ -228,6 +228,15 @@ pub async fn fetch_messages(
                 }
             }
             _ => {}
+        }
+    }
+
+    // Apply edits to their target messages
+    for msg in &mut messages {
+        if let Some((body, msg_type, media_url)) = edits.remove(&msg.event_id) {
+            msg.body = body;
+            msg.msg_type = msg_type;
+            msg.media_url = media_url;
         }
     }
 
