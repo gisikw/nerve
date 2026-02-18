@@ -1,6 +1,6 @@
 ---
 id: ner-1e66
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-02-18T05:40:46Z
