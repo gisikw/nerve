@@ -40,6 +40,8 @@ type alias Model =
     , hasOlderHistory : Bool
     , archivedRoomIds : Set String
     , showArchived : Bool
+    , pinnedEventIds : Set String
+    , showPinned : Bool
     }
 
 
@@ -89,6 +91,10 @@ type Msg
     | ArchiveRoom String
     | UnarchiveRoom String
     | ToggleArchived
+      -- Pinned messages
+    | PinMessage String -- eventId
+    | UnpinMessage String -- eventId
+    | TogglePinned
 
 
 initialModel : Model
@@ -115,4 +121,6 @@ initialModel =
     , hasOlderHistory = False
     , archivedRoomIds = Set.empty
     , showArchived = False
+    , pinnedEventIds = Set.empty
+    , showPinned = False
     }

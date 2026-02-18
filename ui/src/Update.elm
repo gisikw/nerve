@@ -75,6 +75,8 @@ update msg model =
                 , drafts = updatedDrafts
                 , paginationToken = Nothing
                 , hasOlderHistory = False
+                , pinnedEventIds = Set.empty
+                , showPinned = False
                 , rooms =
                     List.map
                         (\r ->
@@ -88,6 +90,7 @@ update msg model =
               }
             , Cmd.batch
                 [ Commands.getMessages roomId
+                , Commands.getPinnedEvents roomId
                 , focusCompose
                 , scrollToBottomForce
                 ]
@@ -291,6 +294,26 @@ update msg model =
         ToggleArchived ->
             ( { model | showArchived = not model.showArchived }, Cmd.none )
 
+        -- Pinned messages
+        PinMessage eventId ->
+            case model.selectedRoomId of
+                Just roomId ->
+                    ( model, Commands.pinMessage roomId eventId )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        UnpinMessage eventId ->
+            case model.selectedRoomId of
+                Just roomId ->
+                    ( model, Commands.unpinMessage roomId eventId )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        TogglePinned ->
+            ( { model | showPinned = not model.showPinned }, Cmd.none )
+
         -- Time zone
         GotTimeZone zone ->
             ( { model | timeZone = zone }, Cmd.none )
@@ -438,6 +461,15 @@ dispatchTag tag payload model =
                 Nothing ->
                     ( model, Cmd.none )
 
+        "sendImage" ->
+            -- After image upload, refresh messages
+            case model.selectedRoomId of
+                Just roomId ->
+                    ( model, Commands.getMessages roomId )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
         "createRoom" ->
             case D.decodeValue Decode.createRoomResult payload of
                 Ok result ->
@@ -467,6 +499,32 @@ dispatchTag tag payload model =
                     ( { model | typingUsers = status.users }, Cmd.none )
 
                 Err _ ->
+                    ( model, Cmd.none )
+
+        "getPinnedEvents" ->
+            case D.decodeValue (D.list D.string) payload of
+                Ok ids ->
+                    ( { model | pinnedEventIds = Set.fromList ids }, Cmd.none )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
+        "pinMessage" ->
+            -- After pinning, refresh pinned events
+            case model.selectedRoomId of
+                Just roomId ->
+                    ( model, Commands.getPinnedEvents roomId )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        "unpinMessage" ->
+            -- After unpinning, refresh pinned events
+            case model.selectedRoomId of
+                Just roomId ->
+                    ( model, Commands.getPinnedEvents roomId )
+
+                Nothing ->
                     ( model, Cmd.none )
 
         "sendTypingNotice" ->

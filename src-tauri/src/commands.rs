@@ -211,6 +211,37 @@ pub async fn create_room(
     }
 }
 
+/// Send an image to a room. Accepts base64-encoded image data.
+#[tauri::command]
+pub async fn send_image(
+    state: State<'_, MatrixState>,
+    room_id: String,
+    filename: String,
+    data: String,
+    mime_type: String,
+    caption: Option<String>,
+) -> Result<(), String> {
+    use base64::Engine;
+    let guard = state.client.lock().await;
+    if let Some(ref client) = *guard {
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(&data)
+            .map_err(|e| format!("Invalid base64 data: {e}"))?;
+        messages::send_image(
+            client,
+            &room_id,
+            &filename,
+            bytes,
+            &mime_type,
+            caption.as_deref(),
+        )
+        .await
+        .map_err(|e| format!("Failed to send image to room {room_id}: {e}"))
+    } else {
+        Err("Not logged in".to_string())
+    }
+}
+
 /// Download media from an mxc:// URI and return it as a data: URI.
 /// Uses the SDK's authenticated media download (handles Matrix v1.11+).
 #[tauri::command]
@@ -223,6 +254,56 @@ pub async fn get_media(
         messages::download_media(client, &mxc_uri)
             .await
             .map_err(|e| format!("Failed to download media {mxc_uri}: {e}"))
+    } else {
+        Err("Not logged in".to_string())
+    }
+}
+
+/// Get pinned event IDs for a room.
+#[tauri::command]
+pub async fn get_pinned_events(
+    state: State<'_, MatrixState>,
+    room_id: String,
+) -> Result<Vec<String>, String> {
+    let guard = state.client.lock().await;
+    if let Some(ref client) = *guard {
+        messages::get_pinned_events(client, &room_id)
+            .await
+            .map_err(|e| format!("Failed to get pinned events for room {room_id}: {e}"))
+    } else {
+        Err("Not logged in".to_string())
+    }
+}
+
+/// Pin a message in a room.
+#[tauri::command]
+pub async fn pin_message(
+    state: State<'_, MatrixState>,
+    room_id: String,
+    event_id: String,
+) -> Result<(), String> {
+    let guard = state.client.lock().await;
+    if let Some(ref client) = *guard {
+        messages::pin_message(client, &room_id, &event_id)
+            .await
+            .map_err(|e| format!("Failed to pin message {event_id} in room {room_id}: {e}"))
+    } else {
+        Err("Not logged in".to_string())
+    }
+}
+
+/// Unpin a message in a room.
+#[tauri::command]
+pub async fn unpin_message(
+    state: State<'_, MatrixState>,
+    room_id: String,
+    event_id: String,
+) -> Result<(), String> {
+    let guard = state.client.lock().await;
+    if let Some(ref client) = *guard {
+        messages::unpin_message(client, &room_id, &event_id)
+            .await
+            .map_err(|e| format!("Failed to unpin message {event_id} in room {room_id}: {e}"))
     } else {
         Err("Not logged in".to_string())
     }

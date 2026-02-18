@@ -275,6 +275,49 @@ pub async fn send_message(
     Ok(())
 }
 
+/// Send an image to a room. Takes raw bytes, uploads to the homeserver's
+/// media repository, then sends an m.image message with the resulting mxc URI.
+pub async fn send_image(
+    client: &Client,
+    room_id: &str,
+    filename: &str,
+    data: Vec<u8>,
+    mime_type: &str,
+    caption: Option<&str>,
+) -> Result<()> {
+    use matrix_sdk::ruma::events::room::ImageInfo;
+
+    let room_id = error::parse_room_id(room_id)?;
+    let room = client
+        .get_room(&room_id)
+        .ok_or_else(|| NerveError::RoomNotFound(room_id.to_string()))?;
+
+    let content_type: mime::Mime = mime_type
+        .parse()
+        .unwrap_or(mime::APPLICATION_OCTET_STREAM);
+
+    let mxc_uri = client
+        .media()
+        .upload(&content_type, data, None)
+        .await?
+        .content_uri;
+
+    let body = caption.unwrap_or(filename).to_string();
+
+    let mut image_info = ImageInfo::new();
+    image_info.mimetype = Some(mime_type.to_string());
+
+    let content = RoomMessageEventContent::new(MessageType::Image(
+        matrix_sdk::ruma::events::room::message::ImageMessageEventContent::new(
+            body, MediaSource::Plain(mxc_uri),
+        )
+        .info(Box::new(image_info)),
+    ));
+
+    room.send(content).await?;
+    Ok(())
+}
+
 /// Send a reaction (emoji annotation) to an event in a room.
 pub async fn send_reaction(
     client: &Client,
@@ -292,6 +335,79 @@ pub async fn send_reaction(
         matrix_sdk::ruma::events::relation::Annotation::new(event_id, emoji.to_string()),
     );
     room.send(content).await?;
+    Ok(())
+}
+
+/// Get the list of pinned event IDs for a room.
+pub async fn get_pinned_events(
+    client: &Client,
+    room_id: &str,
+) -> Result<Vec<String>> {
+    let room_id = error::parse_room_id(room_id)?;
+    let room = client
+        .get_room(&room_id)
+        .ok_or_else(|| NerveError::RoomNotFound(room_id.to_string()))?;
+
+    match room.load_pinned_events().await {
+        Ok(Some(ids)) => Ok(ids.into_iter().map(|id| id.to_string()).collect()),
+        Ok(None) => Ok(Vec::new()),
+        Err(_) => Ok(Vec::new()),
+    }
+}
+
+/// Pin a message by adding its event ID to the room's pinned events.
+pub async fn pin_message(
+    client: &Client,
+    room_id: &str,
+    event_id: &str,
+) -> Result<()> {
+    use matrix_sdk::ruma::events::room::pinned_events::RoomPinnedEventsEventContent;
+
+    let room_id = error::parse_room_id(room_id)?;
+    let event_id = error::parse_event_id(event_id)?;
+    let room = client
+        .get_room(&room_id)
+        .ok_or_else(|| NerveError::RoomNotFound(room_id.to_string()))?;
+
+    let mut pinned = room
+        .load_pinned_events()
+        .await
+        .unwrap_or(None)
+        .unwrap_or_default();
+
+    if !pinned.contains(&event_id) {
+        pinned.push(event_id);
+        let content = RoomPinnedEventsEventContent::new(pinned);
+        room.send_state_event(content).await?;
+    }
+
+    Ok(())
+}
+
+/// Unpin a message by removing its event ID from the room's pinned events.
+pub async fn unpin_message(
+    client: &Client,
+    room_id: &str,
+    event_id: &str,
+) -> Result<()> {
+    use matrix_sdk::ruma::events::room::pinned_events::RoomPinnedEventsEventContent;
+
+    let room_id = error::parse_room_id(room_id)?;
+    let event_id = error::parse_event_id(event_id)?;
+    let room = client
+        .get_room(&room_id)
+        .ok_or_else(|| NerveError::RoomNotFound(room_id.to_string()))?;
+
+    let mut pinned = room
+        .load_pinned_events()
+        .await
+        .unwrap_or(None)
+        .unwrap_or_default();
+
+    pinned.retain(|id| id != &event_id);
+    let content = RoomPinnedEventsEventContent::new(pinned);
+    room.send_state_event(content).await?;
+
     Ok(())
 }
 

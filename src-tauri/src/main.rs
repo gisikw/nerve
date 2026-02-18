@@ -29,6 +29,10 @@ fn main() {
             commands::get_typing,
             commands::send_typing_notice,
             commands::get_media,
+            commands::send_image,
+            commands::get_pinned_events,
+            commands::pin_message,
+            commands::unpin_message,
             commands::create_room,
         ])
         .run(tauri::generate_context!())

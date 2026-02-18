@@ -1,7 +1,8 @@
 module View.Messages exposing (view)
 
 import Html exposing (Html, button, div, form, h2, img, p, span, text, textarea)
-import Html.Attributes exposing (alt, class, id, placeholder, rows, src, title, type_, value)
+import Html.Attributes exposing (alt, attribute, class, id, placeholder, rows, src, title, type_, value)
+import Set
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Json.Decode as D
 import Svg
@@ -22,6 +23,7 @@ view model =
         Just _ ->
             div [ id "room-content" ]
                 [ roomHeader model
+                , pinnedBar model
                 , messagesArea model
                 , typingIndicator model
                 , composeBar model
@@ -53,6 +55,57 @@ roomHeader model =
         ]
 
 
+pinnedBar : Model -> Html Msg
+pinnedBar model =
+    let
+        pinCount =
+            Set.size model.pinnedEventIds
+    in
+    if pinCount == 0 then
+        text ""
+
+    else if model.showPinned then
+        let
+            pinnedMsgs =
+                List.filter (\m -> Set.member m.eventId model.pinnedEventIds) model.messages
+        in
+        div [ id "pinned-bar", class "expanded" ]
+            [ div [ class "pinned-bar-header", onClick TogglePinned ]
+                [ pinIcon
+                , span [ class "pinned-bar-label" ]
+                    [ text (String.fromInt pinCount ++ " pinned") ]
+                , span [ class "pinned-bar-toggle" ] [ text "Hide" ]
+                ]
+            , div [ class "pinned-bar-messages" ]
+                (List.map pinnedMessagePreview pinnedMsgs)
+            ]
+
+    else
+        div [ id "pinned-bar", onClick TogglePinned ]
+            [ div [ class "pinned-bar-header" ]
+                [ pinIcon
+                , span [ class "pinned-bar-label" ]
+                    [ text (String.fromInt pinCount ++ " pinned") ]
+                , span [ class "pinned-bar-toggle" ] [ text "Show" ]
+                ]
+            ]
+
+
+pinnedMessagePreview : Message -> Html Msg
+pinnedMessagePreview msg =
+    div [ class "pinned-message-preview" ]
+        [ span [ class "pinned-preview-sender" ] [ text (formatSender msg.sender) ]
+        , span [ class "pinned-preview-body" ]
+            [ text (String.left 120 msg.body) ]
+        , button
+            [ class "pinned-preview-unpin"
+            , onClick (UnpinMessage msg.eventId)
+            , title "Unpin"
+            ]
+            [ text "Unpin" ]
+        ]
+
+
 messagesArea : Model -> Html Msg
 messagesArea model =
     if model.messagesLoading && List.isEmpty model.messages then
@@ -73,11 +126,11 @@ messagesArea model =
                     []
         in
         div [ id "messages" ]
-            (loadingEl ++ renderGrouped model.timeZone model.messages)
+            (loadingEl ++ renderGrouped model.timeZone model.pinnedEventIds model.messages)
 
 
-renderGrouped : Time.Zone -> List Message -> List (Html Msg)
-renderGrouped zone msgs =
+renderGrouped : Time.Zone -> Set.Set String -> List Message -> List (Html Msg)
+renderGrouped zone pinnedIds msgs =
     List.indexedMap
         (\i msg ->
             let
@@ -96,14 +149,17 @@ renderGrouped zone msgs =
                         Nothing ->
                             True
             in
-            renderMessage zone isGroupStart msg
+            renderMessage zone pinnedIds isGroupStart msg
         )
         msgs
 
 
-renderMessage : Time.Zone -> Bool -> Message -> Html Msg
-renderMessage zone isGroupStart msg =
+renderMessage : Time.Zone -> Set.Set String -> Bool -> Message -> Html Msg
+renderMessage zone pinnedIds isGroupStart msg =
     let
+        isPinned =
+            Set.member msg.eventId pinnedIds
+
         baseClasses =
             [ "message"
             , if msg.msgType == "notice" then
@@ -119,9 +175,28 @@ renderMessage zone isGroupStart msg =
 
               else
                 ""
+            , if isPinned then
+                "pinned"
+
+              else
+                ""
             ]
                 |> List.filter (not << String.isEmpty)
                 |> String.join " "
+
+        pinAction =
+            if isPinned then
+                UnpinMessage msg.eventId
+
+            else
+                PinMessage msg.eventId
+
+        pinLabel =
+            if isPinned then
+                "Unpin"
+
+            else
+                "Pin"
     in
     div [ class baseClasses ]
         ([ if isGroupStart then
@@ -135,6 +210,16 @@ renderMessage zone isGroupStart msg =
 
            else
             Just (reactionsRow msg)
+         , Just
+            (div [ class "message-actions" ]
+                [ button
+                    [ class "message-action-btn"
+                    , onClick pinAction
+                    , title pinLabel
+                    ]
+                    [ pinIcon ]
+                ]
+            )
          ]
             |> List.filterMap identity
         )
@@ -266,7 +351,16 @@ typingIndicator model =
 
 composeBar : Model -> Html Msg
 composeBar model =
-    form [ id "compose", onSubmit SubmitMessage ]
+    let
+        roomIdAttr =
+            case model.selectedRoomId of
+                Just rid ->
+                    [ attribute "data-room-id" rid ]
+
+                Nothing ->
+                    []
+    in
+    form ([ id "compose", onSubmit SubmitMessage ] ++ roomIdAttr)
         [ textarea
             [ id "compose-input"
             , placeholder "Send a message..."
@@ -278,6 +372,23 @@ composeBar model =
             []
         , Html.button [ type_ "submit", class "send-btn", title "Send message" ]
             [ sendIcon ]
+        ]
+
+
+pinIcon : Html msg
+pinIcon =
+    Svg.svg
+        [ SvgA.viewBox "0 0 24 24"
+        , SvgA.width "14"
+        , SvgA.height "14"
+        , SvgA.fill "none"
+        , SvgA.stroke "currentColor"
+        , SvgA.strokeWidth "2"
+        , SvgA.strokeLinecap "round"
+        , SvgA.strokeLinejoin "round"
+        ]
+        [ Svg.line [ SvgA.x1 "12", SvgA.y1 "17", SvgA.x2 "12", SvgA.y2 "22" ] []
+        , Svg.path [ SvgA.d "M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z" ] []
         ]
 
 

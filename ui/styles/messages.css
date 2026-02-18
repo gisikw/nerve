@@ -21,6 +21,7 @@
 .message {
   max-width: 72ch;
   padding: 0.2rem 0;
+  position: relative;
 }
 
 .message + .message {
@@ -209,4 +210,133 @@
 @keyframes typing-pulse {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 1; }
+}
+
+/* Pinned messages */
+
+.message.pinned {
+  border-left: 2px solid var(--accent);
+  padding-left: 0.5rem;
+}
+
+/* Message hover actions (pin/unpin) */
+
+.message-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: none;
+  gap: 0.15rem;
+  padding: 0.1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.message:hover .message-actions {
+  display: flex;
+}
+
+.message-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 3px;
+  transition: color var(--transition), background var(--transition);
+}
+
+.message-action-btn:hover {
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.message.pinned .message-action-btn {
+  color: var(--accent);
+}
+
+/* Pinned bar */
+
+#pinned-bar {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-surface);
+  cursor: pointer;
+  user-select: none;
+}
+
+.pinned-bar-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 1rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.pinned-bar-header svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.pinned-bar-label {
+  font-weight: 500;
+}
+
+.pinned-bar-toggle {
+  margin-left: auto;
+  color: var(--accent);
+  font-size: 0.72rem;
+}
+
+.pinned-bar-messages {
+  padding: 0 1rem 0.35rem;
+}
+
+.pinned-message-preview {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  padding: 0.2rem 0;
+  font-size: 0.78rem;
+}
+
+.pinned-preview-sender {
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pinned-preview-body {
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.pinned-preview-unpin {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  color: var(--text-faint);
+  font-size: 0.7rem;
+  cursor: pointer;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  transition: color var(--transition), background var(--transition);
+}
+
+.pinned-preview-unpin:hover {
+  color: var(--accent);
+  background: var(--accent-dim);
 }

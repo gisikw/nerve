@@ -7,6 +7,9 @@ module Commands exposing
     , getOlderMessages
     , sendMessage
     , sendReaction
+    , getPinnedEvents
+    , pinMessage
+    , unpinMessage
     , getTyping
     , sendTypingNotice
     , createRoom
@@ -86,6 +89,32 @@ sendReaction roomId eventId emoji =
             [ ( "roomId", E.string roomId )
             , ( "eventId", E.string eventId )
             , ( "emoji", E.string emoji )
+            ]
+        )
+
+
+getPinnedEvents : String -> Cmd msg
+getPinnedEvents roomId =
+    send "getPinnedEvents"
+        (E.object [ ( "roomId", E.string roomId ) ])
+
+
+pinMessage : String -> String -> Cmd msg
+pinMessage roomId eventId =
+    send "pinMessage"
+        (E.object
+            [ ( "roomId", E.string roomId )
+            , ( "eventId", E.string eventId )
+            ]
+        )
+
+
+unpinMessage : String -> String -> Cmd msg
+unpinMessage roomId eventId =
+    send "unpinMessage"
+        (E.object
+            [ ( "roomId", E.string roomId )
+            , ( "eventId", E.string eventId )
             ]
         )
 
