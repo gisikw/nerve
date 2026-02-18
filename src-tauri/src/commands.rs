@@ -133,6 +133,23 @@ pub async fn get_messages(
     }
 }
 
+/// Send a read receipt for a room, clearing server-side unread count.
+#[tauri::command]
+pub async fn mark_read(
+    state: State<'_, MatrixState>,
+    room_id: String,
+    event_id: String,
+) -> Result<(), String> {
+    let guard = state.client.lock().await;
+    if let Some(ref client) = *guard {
+        messages::mark_read(client, &room_id, &event_id)
+            .await
+            .map_err(|e| format!("Failed to mark room {room_id} as read: {e}"))
+    } else {
+        Err("Not logged in".to_string())
+    }
+}
+
 /// Send a text message to a room.
 #[tauri::command]
 pub async fn send_message(

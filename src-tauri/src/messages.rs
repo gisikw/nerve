@@ -259,6 +259,24 @@ pub async fn fetch_messages(
     })
 }
 
+/// Send a read receipt for the given event, clearing the server-side unread
+/// notification count for the room.
+pub async fn mark_read(client: &Client, room_id: &str, event_id: &str) -> Result<()> {
+    use matrix_sdk::ruma::api::client::receipt::create_receipt::v3::ReceiptType;
+    use matrix_sdk::ruma::events::receipt::ReceiptThread;
+
+    let room_id = error::parse_room_id(room_id)?;
+    let event_id = error::parse_event_id(event_id)?;
+    let room = client
+        .get_room(&room_id)
+        .ok_or_else(|| NerveError::RoomNotFound(room_id.to_string()))?;
+
+    room.send_single_receipt(ReceiptType::Read, ReceiptThread::Unthreaded, event_id)
+        .await?;
+
+    Ok(())
+}
+
 /// Send a text message to a room.
 pub async fn send_message(
     client: &Client,

@@ -5,6 +5,7 @@ module Commands exposing
     , listRooms
     , getMessages
     , getOlderMessages
+    , markRead
     , sendMessage
     , sendReaction
     , getPinnedEvents
@@ -70,6 +71,16 @@ getOlderMessages roomId fromToken =
         (E.object
             [ ( "roomId", E.string roomId )
             , ( "from", E.string fromToken )
+            ]
+        )
+
+
+markRead : String -> String -> Cmd msg
+markRead roomId eventId =
+    send "markRead"
+        (E.object
+            [ ( "roomId", E.string roomId )
+            , ( "eventId", E.string eventId )
             ]
         )
 

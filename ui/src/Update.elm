@@ -459,12 +459,21 @@ dispatchTag tag payload model =
         "getMessages" ->
             case D.decodeValue Decode.messagesResponse payload of
                 Ok resp ->
+                    let
+                        markReadCmd =
+                            case ( model.selectedRoomId, List.reverse resp.messages |> List.head ) of
+                                ( Just roomId, Just lastMsg ) ->
+                                    Commands.markRead roomId lastMsg.eventId
+
+                                _ ->
+                                    Cmd.none
+                    in
                     ( { model
                         | messages = resp.messages
                         , messagesLoading = False
                         , paginationToken = resp.endToken
                       }
-                    , scrollToBottom
+                    , Cmd.batch [ scrollToBottom, markReadCmd ]
                     )
 
                 Err _ ->
@@ -580,6 +589,9 @@ dispatchTag tag payload model =
                     ( model, Cmd.none )
 
         "sendStreamAction" ->
+            ( model, Cmd.none )
+
+        "markRead" ->
             ( model, Cmd.none )
 
         "sendTypingNotice" ->

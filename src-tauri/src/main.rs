@@ -25,6 +25,7 @@ fn main() {
             commands::logout,
             commands::list_rooms,
             commands::get_messages,
+            commands::mark_read,
             commands::send_message,
             commands::send_reaction,
             commands::get_typing,

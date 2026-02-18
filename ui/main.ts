@@ -24,6 +24,7 @@ const commands: Record<string, string> = {
   listRooms: "list_rooms",
   getMessages: "get_messages",
   getOlderMessages: "get_messages",
+  markRead: "mark_read",
   sendMessage: "send_message",
   sendImage: "send_image",
   sendReaction: "send_reaction",
