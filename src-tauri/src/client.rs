@@ -95,3 +95,84 @@ pub fn spawn_sync(client: Client, typing_cache: TypingCache) {
         }
     }));
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::atomic::{AtomicU64, Ordering};
+
+    static TEST_COUNTER: AtomicU64 = AtomicU64::new(0);
+
+    /// Run a test with XDG_DATA_HOME pointed at a unique temp dir, so
+    /// data_dir() returns a predictable, isolated path. Each call gets
+    /// its own directory to avoid races from parallel test execution.
+    fn with_temp_data_dir<F: FnOnce()>(f: F) {
+        let id = TEST_COUNTER.fetch_add(1, Ordering::SeqCst);
+        let tmp = std::env::temp_dir().join(format!(
+            "nerve-test-{}-{}",
+            std::process::id(),
+            id
+        ));
+        let _ = std::fs::remove_dir_all(&tmp);
+        std::fs::create_dir_all(&tmp).unwrap();
+
+        // dirs::data_dir() reads XDG_DATA_HOME on Linux
+        unsafe { std::env::set_var("XDG_DATA_HOME", &tmp) };
+        f();
+        let _ = std::fs::remove_dir_all(&tmp);
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn save_and_load_homeserver() {
+        with_temp_data_dir(|| {
+            save_homeserver("matrix.example.com").unwrap();
+            let loaded = load_homeserver();
+            assert_eq!(loaded, Some("matrix.example.com".to_string()));
+        });
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn load_homeserver_returns_none_when_missing() {
+        with_temp_data_dir(|| {
+            let loaded = load_homeserver();
+            assert_eq!(loaded, None);
+        });
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn clear_homeserver_removes_file() {
+        with_temp_data_dir(|| {
+            save_homeserver("matrix.example.com").unwrap();
+            assert!(load_homeserver().is_some());
+            clear_homeserver();
+            assert_eq!(load_homeserver(), None);
+        });
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn load_homeserver_trims_whitespace() {
+        with_temp_data_dir(|| {
+            let dir = data_dir();
+            std::fs::create_dir_all(&dir).unwrap();
+            std::fs::write(dir.join("homeserver"), "  matrix.example.com  \n").unwrap();
+            let loaded = load_homeserver();
+            assert_eq!(loaded, Some("matrix.example.com".to_string()));
+        });
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn load_homeserver_returns_none_for_empty() {
+        with_temp_data_dir(|| {
+            let dir = data_dir();
+            std::fs::create_dir_all(&dir).unwrap();
+            std::fs::write(dir.join("homeserver"), "   \n").unwrap();
+            let loaded = load_homeserver();
+            assert_eq!(loaded, None);
+        });
+    }
+}

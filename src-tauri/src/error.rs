@@ -57,3 +57,89 @@ pub fn parse_server_name(
     matrix_sdk::ruma::ServerName::parse(server_name)
         .map_err(|e| NerveError::InvalidServerName(server_name.to_string(), e))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_room_id_valid() {
+        let result = parse_room_id("!abc123:matrix.org");
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().as_str(), "!abc123:matrix.org");
+    }
+
+    #[test]
+    fn parse_room_id_invalid_missing_bang() {
+        let result = parse_room_id("abc123:matrix.org");
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(matches!(err, NerveError::InvalidRoomId(input, _) if input == "abc123:matrix.org"));
+    }
+
+    #[test]
+    fn parse_room_id_invalid_empty() {
+        let result = parse_room_id("");
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(matches!(err, NerveError::InvalidRoomId(input, _) if input.is_empty()));
+    }
+
+    #[test]
+    fn parse_room_id_error_includes_input() {
+        let result = parse_room_id("garbage");
+        let err_msg = format!("{}", result.unwrap_err());
+        assert!(err_msg.contains("garbage"), "error should include original input: {err_msg}");
+    }
+
+    #[test]
+    fn parse_event_id_valid() {
+        let result = parse_event_id("$event123:matrix.org");
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().as_str(), "$event123:matrix.org");
+    }
+
+    #[test]
+    fn parse_event_id_invalid() {
+        let result = parse_event_id("not-an-event-id");
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(matches!(err, NerveError::InvalidEventId(input, _) if input == "not-an-event-id"));
+    }
+
+    #[test]
+    fn parse_event_id_error_includes_input() {
+        let result = parse_event_id("bad!");
+        let err_msg = format!("{}", result.unwrap_err());
+        assert!(err_msg.contains("bad!"), "error should include original input: {err_msg}");
+    }
+
+    #[test]
+    fn parse_server_name_valid() {
+        let result = parse_server_name("matrix.org");
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().as_str(), "matrix.org");
+    }
+
+    #[test]
+    fn parse_server_name_with_port() {
+        let result = parse_server_name("matrix.org:8448");
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn parse_server_name_invalid_empty() {
+        let result = parse_server_name("");
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(matches!(err, NerveError::InvalidServerName(input, _) if input.is_empty()));
+    }
+
+    #[test]
+    fn nerve_error_display_formats() {
+        let result = parse_room_id("bad");
+        let err = result.unwrap_err();
+        let msg = format!("{err}");
+        assert!(msg.starts_with("invalid room ID 'bad':"));
+    }
+}

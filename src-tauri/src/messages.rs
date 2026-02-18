@@ -244,3 +244,117 @@ pub async fn send_reaction(
     room.send(content).await?;
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn event_id(s: &str) -> OwnedEventId {
+        OwnedEventId::try_from(s).unwrap()
+    }
+
+    #[test]
+    fn reaction_accumulator_empty() {
+        let acc = ReactionAccumulator::new();
+        let reactions = acc.for_event("$evt:matrix.org", "@me:matrix.org");
+        assert!(reactions.is_empty());
+    }
+
+    #[test]
+    fn reaction_accumulator_single_reaction() {
+        let mut acc = ReactionAccumulator::new();
+        acc.add(event_id("$evt:matrix.org"), "👍".to_string(), "@alice:matrix.org".to_string());
+
+        let reactions = acc.for_event("$evt:matrix.org", "@bob:matrix.org");
+        assert_eq!(reactions.len(), 1);
+        assert_eq!(reactions[0].emoji, "👍");
+        assert_eq!(reactions[0].count, 1);
+        assert!(!reactions[0].include_self);
+    }
+
+    #[test]
+    fn reaction_accumulator_include_self() {
+        let mut acc = ReactionAccumulator::new();
+        acc.add(event_id("$evt:matrix.org"), "👍".to_string(), "@me:matrix.org".to_string());
+        acc.add(event_id("$evt:matrix.org"), "👍".to_string(), "@alice:matrix.org".to_string());
+
+        let reactions = acc.for_event("$evt:matrix.org", "@me:matrix.org");
+        assert_eq!(reactions.len(), 1);
+        assert_eq!(reactions[0].count, 2);
+        assert!(reactions[0].include_self);
+    }
+
+    #[test]
+    fn reaction_accumulator_not_include_self() {
+        let mut acc = ReactionAccumulator::new();
+        acc.add(event_id("$evt:matrix.org"), "👍".to_string(), "@alice:matrix.org".to_string());
+        acc.add(event_id("$evt:matrix.org"), "👍".to_string(), "@bob:matrix.org".to_string());
+
+        let reactions = acc.for_event("$evt:matrix.org", "@me:matrix.org");
+        assert_eq!(reactions[0].count, 2);
+        assert!(!reactions[0].include_self);
+    }
+
+    #[test]
+    fn reaction_accumulator_multiple_emoji() {
+        let mut acc = ReactionAccumulator::new();
+        acc.add(event_id("$evt:matrix.org"), "👍".to_string(), "@alice:matrix.org".to_string());
+        acc.add(event_id("$evt:matrix.org"), "❤️".to_string(), "@bob:matrix.org".to_string());
+        acc.add(event_id("$evt:matrix.org"), "❤️".to_string(), "@carol:matrix.org".to_string());
+
+        let reactions = acc.for_event("$evt:matrix.org", "@me:matrix.org");
+        assert_eq!(reactions.len(), 2);
+        // Sorted by count descending — ❤️ (2) before 👍 (1)
+        assert_eq!(reactions[0].emoji, "❤️");
+        assert_eq!(reactions[0].count, 2);
+        assert_eq!(reactions[1].emoji, "👍");
+        assert_eq!(reactions[1].count, 1);
+    }
+
+    #[test]
+    fn reaction_accumulator_different_events() {
+        let mut acc = ReactionAccumulator::new();
+        acc.add(event_id("$evt1:matrix.org"), "👍".to_string(), "@alice:matrix.org".to_string());
+        acc.add(event_id("$evt2:matrix.org"), "❤️".to_string(), "@bob:matrix.org".to_string());
+
+        let r1 = acc.for_event("$evt1:matrix.org", "@me:matrix.org");
+        assert_eq!(r1.len(), 1);
+        assert_eq!(r1[0].emoji, "👍");
+
+        let r2 = acc.for_event("$evt2:matrix.org", "@me:matrix.org");
+        assert_eq!(r2.len(), 1);
+        assert_eq!(r2[0].emoji, "❤️");
+    }
+
+    #[test]
+    fn reaction_accumulator_invalid_event_id_returns_empty() {
+        let mut acc = ReactionAccumulator::new();
+        acc.add(event_id("$evt:matrix.org"), "👍".to_string(), "@alice:matrix.org".to_string());
+
+        let reactions = acc.for_event("not-a-valid-id", "@me:matrix.org");
+        assert!(reactions.is_empty());
+    }
+
+    #[test]
+    fn reaction_accumulator_unknown_event_returns_empty() {
+        let mut acc = ReactionAccumulator::new();
+        acc.add(event_id("$evt:matrix.org"), "👍".to_string(), "@alice:matrix.org".to_string());
+
+        let reactions = acc.for_event("$other:matrix.org", "@me:matrix.org");
+        assert!(reactions.is_empty());
+    }
+
+    #[test]
+    fn reaction_accumulator_multiple_senders_same_emoji() {
+        let mut acc = ReactionAccumulator::new();
+        let eid = event_id("$evt:matrix.org");
+        for i in 0..5 {
+            acc.add(eid.clone(), "🎉".to_string(), format!("@user{i}:matrix.org"));
+        }
+
+        let reactions = acc.for_event("$evt:matrix.org", "@user2:matrix.org");
+        assert_eq!(reactions.len(), 1);
+        assert_eq!(reactions[0].count, 5);
+        assert!(reactions[0].include_self);
+    }
+}

@@ -68,3 +68,71 @@ pub async fn send_typing(
     room.typing_notice(typing).await?;
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use matrix_sdk::ruma::RoomId;
+
+    fn room_id(s: &str) -> OwnedRoomId {
+        RoomId::parse(s).unwrap()
+    }
+
+    fn user_id(s: &str) -> OwnedUserId {
+        OwnedUserId::try_from(s).unwrap()
+    }
+
+    #[test]
+    fn new_cache_is_empty() {
+        let cache = new_cache();
+        let guard = cache.try_read().unwrap();
+        assert!(guard.is_empty());
+    }
+
+    #[tokio::test]
+    async fn get_typing_users_empty_cache() {
+        let cache = new_cache();
+        let result = get_typing_users(&cache, "!room:matrix.org").await;
+        assert!(result.is_ok());
+        assert!(result.unwrap().users.is_empty());
+    }
+
+    #[tokio::test]
+    async fn get_typing_users_populated_cache() {
+        let cache = new_cache();
+        {
+            let mut guard = cache.write().await;
+            guard.insert(
+                room_id("!room:matrix.org"),
+                vec![user_id("@alice:matrix.org"), user_id("@bob:matrix.org")],
+            );
+        }
+
+        let result = get_typing_users(&cache, "!room:matrix.org").await.unwrap();
+        assert_eq!(result.users.len(), 2);
+        assert!(result.users.contains(&"@alice:matrix.org".to_string()));
+        assert!(result.users.contains(&"@bob:matrix.org".to_string()));
+    }
+
+    #[tokio::test]
+    async fn get_typing_users_wrong_room() {
+        let cache = new_cache();
+        {
+            let mut guard = cache.write().await;
+            guard.insert(
+                room_id("!room1:matrix.org"),
+                vec![user_id("@alice:matrix.org")],
+            );
+        }
+
+        let result = get_typing_users(&cache, "!room2:matrix.org").await.unwrap();
+        assert!(result.users.is_empty());
+    }
+
+    #[tokio::test]
+    async fn get_typing_users_invalid_room_id() {
+        let cache = new_cache();
+        let result = get_typing_users(&cache, "not-a-room").await;
+        assert!(result.is_err());
+    }
+}

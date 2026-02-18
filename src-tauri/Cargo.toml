@@ -18,6 +18,9 @@ dirs = "6"
 tracing = "0.1"
 tracing-subscriber = "0.3"
 
+[dev-dependencies]
+serial_test = "3"
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
