@@ -64,8 +64,16 @@ messagesArea model =
             [ p [ class "placeholder" ] [ text "No messages yet." ] ]
 
     else
+        let
+            loadingEl =
+                if model.loadingOlder then
+                    [ p [ class "loading-older" ] [ text "Loading older messages..." ] ]
+
+                else
+                    []
+        in
         div [ id "messages" ]
-            (renderGrouped model.timeZone model.messages)
+            (loadingEl ++ renderGrouped model.timeZone model.messages)
 
 
 renderGrouped : Time.Zone -> List Message -> List (Html Msg)

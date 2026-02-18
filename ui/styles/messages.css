@@ -11,6 +11,13 @@
   font-size: 0.85rem;
 }
 
+#messages .loading-older {
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 0.75rem;
+  padding: 0.5rem 0;
+}
+
 .message {
   max-width: 72ch;
   padding: 0.2rem 0;

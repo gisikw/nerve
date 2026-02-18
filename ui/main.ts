@@ -18,6 +18,7 @@ const commands: Record<string, string> = {
   logout: "logout",
   listRooms: "list_rooms",
   getMessages: "get_messages",
+  getOlderMessages: "get_messages",
   sendMessage: "send_message",
   sendReaction: "send_reaction",
   getTyping: "get_typing",
@@ -150,6 +151,57 @@ const mediaObserver = new MutationObserver((mutations) => {
 });
 
 mediaObserver.observe(document.body, { childList: true, subtree: true });
+
+// Scroll-near-top detection for paginated message loading.
+// When the user scrolls within 200px of the top of #messages, fire the
+// onScrollNearTop port so Elm can request older messages.
+function setupScrollSentinel() {
+  const el = document.getElementById("messages");
+  if (!el) {
+    requestAnimationFrame(setupScrollSentinel);
+    return;
+  }
+  let ticking = false;
+  el.addEventListener("scroll", () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      if (el.scrollTop < 200) {
+        app.ports.onScrollNearTop.send(null);
+      }
+      const nearBottom =
+        el.scrollTop + el.clientHeight >= el.scrollHeight - 100;
+      if (nearBottom) {
+        app.ports.onScrollNearBottom.send(null);
+      }
+      ticking = false;
+    });
+  });
+}
+setupScrollSentinel();
+
+// Preserve scroll position when older messages are prepended.
+// We observe DOM mutations on #messages and adjust scrollTop by the
+// height delta so the user's viewport doesn't jump.
+function setupScrollPreservation() {
+  const el = document.getElementById("messages");
+  if (!el) {
+    requestAnimationFrame(setupScrollPreservation);
+    return;
+  }
+  let prevScrollHeight = el.scrollHeight;
+  const observer = new MutationObserver(() => {
+    const newScrollHeight = el.scrollHeight;
+    const delta = newScrollHeight - prevScrollHeight;
+    if (delta > 0 && el.scrollTop < 400) {
+      // Content was prepended while near the top — adjust scroll
+      el.scrollTop += delta;
+    }
+    prevScrollHeight = newScrollHeight;
+  });
+  observer.observe(el, { childList: true, subtree: true });
+}
+setupScrollPreservation();
 
 // Check session on startup
 invoke("check_session")

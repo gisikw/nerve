@@ -26,6 +26,7 @@ type alias Model =
     , selectedRoomId : Maybe String
     , messages : List Message
     , messagesLoading : Bool
+    , loadingOlder : Bool
     , composeText : String
     , drafts : Dict String String
     , timeZone : Time.Zone
@@ -34,6 +35,7 @@ type alias Model =
     , switcherIndex : Int
     , typingUsers : List String
     , paginationToken : Maybe String
+    , hasOlderHistory : Bool
     }
 
 
@@ -73,6 +75,9 @@ type Msg
       -- Typing
     | PollTyping
     | SendTypingNotice Bool
+      -- Pagination
+    | LoadOlderMessages
+    | ResumePolling
 
 
 initialModel : Model
@@ -86,6 +91,7 @@ initialModel =
     , selectedRoomId = Nothing
     , messages = []
     , messagesLoading = False
+    , loadingOlder = False
     , composeText = ""
     , drafts = Dict.empty
     , timeZone = Time.utc
@@ -94,4 +100,5 @@ initialModel =
     , switcherIndex = 0
     , typingUsers = []
     , paginationToken = Nothing
+    , hasOlderHistory = False
     }

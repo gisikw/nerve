@@ -4,6 +4,7 @@ module Commands exposing
     , logout
     , listRooms
     , getMessages
+    , getOlderMessages
     , sendMessage
     , sendReaction
     , getTyping
@@ -55,6 +56,16 @@ getMessages : String -> Cmd msg
 getMessages roomId =
     send "getMessages"
         (E.object [ ( "roomId", E.string roomId ) ])
+
+
+getOlderMessages : String -> String -> Cmd msg
+getOlderMessages roomId fromToken =
+    send "getOlderMessages"
+        (E.object
+            [ ( "roomId", E.string roomId )
+            , ( "from", E.string fromToken )
+            ]
+        )
 
 
 sendMessage : String -> String -> Cmd msg

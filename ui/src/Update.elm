@@ -65,11 +65,13 @@ update msg model =
                 | selectedRoomId = Just roomId
                 , messages = []
                 , messagesLoading = True
+                , loadingOlder = False
                 , switcherOpen = False
                 , typingUsers = []
                 , composeText = restoredText
                 , drafts = updatedDrafts
                 , paginationToken = Nothing
+                , hasOlderHistory = False
                 , rooms =
                     List.map
                         (\r ->
@@ -134,12 +136,18 @@ update msg model =
             ( model, Commands.listRooms )
 
         PollMessages ->
-            case model.selectedRoomId of
-                Just roomId ->
-                    ( model, Commands.getMessages roomId )
+            -- Skip polling while viewing older paginated history to avoid
+            -- blowing away prepended messages
+            if model.hasOlderHistory then
+                ( model, Cmd.none )
 
-                Nothing ->
-                    ( model, Cmd.none )
+            else
+                case model.selectedRoomId of
+                    Just roomId ->
+                        ( model, Commands.getMessages roomId )
+
+                    Nothing ->
+                        ( model, Cmd.none )
 
         -- DOM effects (fire-and-forget results)
         DomNoOp ->
@@ -216,6 +224,31 @@ update msg model =
 
                 Nothing ->
                     ( model, Cmd.none )
+
+        -- Pagination
+        LoadOlderMessages ->
+            case ( model.selectedRoomId, model.paginationToken, model.loadingOlder ) of
+                ( Just roomId, Just token, False ) ->
+                    ( { model | loadingOlder = True }
+                    , Commands.getOlderMessages roomId token
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        ResumePolling ->
+            if model.hasOlderHistory then
+                case model.selectedRoomId of
+                    Just roomId ->
+                        ( { model | hasOlderHistory = False }
+                        , Commands.getMessages roomId
+                        )
+
+                    Nothing ->
+                        ( { model | hasOlderHistory = False }, Cmd.none )
+
+            else
+                ( model, Cmd.none )
 
         -- Time zone
         GotTimeZone zone ->
@@ -339,6 +372,21 @@ dispatchTag tag payload model =
 
                 Err _ ->
                     ( { model | messagesLoading = False }, Cmd.none )
+
+        "getOlderMessages" ->
+            case D.decodeValue Decode.messagesResponse payload of
+                Ok resp ->
+                    ( { model
+                        | messages = resp.messages ++ model.messages
+                        , loadingOlder = False
+                        , paginationToken = resp.endToken
+                        , hasOlderHistory = True
+                      }
+                    , Cmd.none
+                    )
+
+                Err _ ->
+                    ( { model | loadingOlder = False }, Cmd.none )
 
         "sendMessage" ->
             -- After sending, refresh messages

@@ -2,6 +2,8 @@ port module Ports exposing
     ( sendToTauri
     , receiveFromTauri
     , resizeComposeInput
+    , onScrollNearTop
+    , onScrollNearBottom
     )
 
 import Json.Encode as E
@@ -17,3 +19,13 @@ port receiveFromTauri : (E.Value -> msg) -> Sub msg
 Called after text changes and after send (to reset height).
 -}
 port resizeComposeInput : () -> Cmd msg
+
+
+{-| Fired by JS when the messages container is scrolled near the top.
+-}
+port onScrollNearTop : (() -> msg) -> Sub msg
+
+
+{-| Fired by JS when the messages container is scrolled back near the bottom.
+-}
+port onScrollNearBottom : (() -> msg) -> Sub msg
