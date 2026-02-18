@@ -69,6 +69,7 @@ update msg model =
                 , typingUsers = []
                 , composeText = restoredText
                 , drafts = updatedDrafts
+                , paginationToken = Nothing
                 , rooms =
                     List.map
                         (\r ->
@@ -326,9 +327,13 @@ dispatchTag tag payload model =
                     ( model, Cmd.none )
 
         "getMessages" ->
-            case D.decodeValue Decode.messageList payload of
-                Ok messages ->
-                    ( { model | messages = messages, messagesLoading = False }
+            case D.decodeValue Decode.messagesResponse payload of
+                Ok resp ->
+                    ( { model
+                        | messages = resp.messages
+                        , messagesLoading = False
+                        , paginationToken = resp.endToken
+                      }
                     , scrollToBottom
                     )
 

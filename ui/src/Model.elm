@@ -33,6 +33,7 @@ type alias Model =
     , switcherQuery : String
     , switcherIndex : Int
     , typingUsers : List String
+    , paginationToken : Maybe String
     }
 
 
@@ -92,4 +93,5 @@ initialModel =
     , switcherQuery = ""
     , switcherIndex = 0
     , typingUsers = []
+    , paginationToken = Nothing
     }

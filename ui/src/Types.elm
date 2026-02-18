@@ -1,6 +1,7 @@
 module Types exposing
     ( Room
     , Message
+    , MessagesResponse
     , Reaction
     , SessionStatus
     , LoginResult
@@ -33,6 +34,12 @@ type alias Message =
     , msgType : String
     , mediaUrl : Maybe String
     , reactions : List Reaction
+    }
+
+
+type alias MessagesResponse =
+    { messages : List Message
+    , endToken : Maybe String
     }
 
 

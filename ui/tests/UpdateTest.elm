@@ -228,14 +228,19 @@ suite =
                             E.object
                                 [ ( "tag", E.string "getMessages" )
                                 , ( "payload"
-                                  , E.list identity
-                                        [ E.object
-                                            [ ( "event_id", E.string "$e1" )
-                                            , ( "sender", E.string "@a:x" )
-                                            , ( "body", E.string "hi" )
-                                            , ( "timestamp", E.int 1700000000000 )
-                                            , ( "msg_type", E.string "text" )
-                                            ]
+                                  , E.object
+                                        [ ( "messages"
+                                          , E.list identity
+                                                [ E.object
+                                                    [ ( "event_id", E.string "$e1" )
+                                                    , ( "sender", E.string "@a:x" )
+                                                    , ( "body", E.string "hi" )
+                                                    , ( "timestamp", E.int 1700000000000 )
+                                                    , ( "msg_type", E.string "text" )
+                                                    ]
+                                                ]
+                                          )
+                                        , ( "end_token", E.string "t123_abc" )
                                         ]
                                   )
                                 ]
@@ -246,6 +251,7 @@ suite =
                     Expect.all
                         [ \m -> Expect.equal 1 (List.length m.messages)
                         , \m -> Expect.equal False m.messagesLoading
+                        , \m -> Expect.equal (Just "t123_abc") m.paginationToken
                         ]
                         newModel
             , test "error during login sets loginError" <|

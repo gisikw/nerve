@@ -1,7 +1,7 @@
 use tauri::State;
 
 use crate::client::{self, MatrixState};
-use crate::messages::{self, MessageInfo};
+use crate::messages::{self, MessagesResponse};
 use crate::rooms::{self, RoomInfo};
 use crate::typing::{self, TypingStatus};
 
@@ -114,15 +114,17 @@ pub async fn list_rooms(state: State<'_, MatrixState>) -> Result<Vec<RoomInfo>, 
     }
 }
 
-/// Get recent messages for a room.
+/// Get recent messages for a room. Optionally pass a pagination token
+/// (`from`) to load older history.
 #[tauri::command]
 pub async fn get_messages(
     state: State<'_, MatrixState>,
     room_id: String,
-) -> Result<Vec<MessageInfo>, String> {
+    from: Option<String>,
+) -> Result<MessagesResponse, String> {
     let guard = state.client.lock().await;
     if let Some(ref client) = *guard {
-        messages::fetch_messages(client, &room_id, 50)
+        messages::fetch_messages(client, &room_id, 50, from.as_deref())
             .await
             .map_err(|e| format!("Failed to fetch messages for room {room_id}: {e}"))
     } else {

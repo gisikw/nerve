@@ -30,6 +30,16 @@ pub struct MessageInfo {
     pub reactions: Vec<ReactionInfo>,
 }
 
+/// Response from fetching messages, includes a pagination token for loading
+/// older history.
+#[derive(Serialize)]
+pub struct MessagesResponse {
+    pub messages: Vec<MessageInfo>,
+    /// Pagination token for fetching older messages. `None` when the beginning
+    /// of the room timeline has been reached.
+    pub end_token: Option<String>,
+}
+
 /// Convert an mxc:// URI to an HTTP download URL via the homeserver.
 fn mxc_to_http(client: &Client, source: &MediaSource) -> Option<String> {
     let mxc_uri = match source {
@@ -110,11 +120,16 @@ impl ReactionAccumulator {
 }
 
 /// Fetch recent messages for a room. Returns newest-last.
+///
+/// If `from_token` is `None`, fetches the most recent messages.
+/// If `from_token` is `Some`, fetches messages older than the token
+/// (for backward pagination / scroll-back).
 pub async fn fetch_messages(
     client: &Client,
     room_id: &str,
     limit: u32,
-) -> Result<Vec<MessageInfo>> {
+    from_token: Option<&str>,
+) -> Result<MessagesResponse> {
     let room_id = error::parse_room_id(room_id)?;
     let room = client
         .get_room(&room_id)
@@ -125,7 +140,8 @@ pub async fn fetch_messages(
         .map(|id| id.to_string())
         .unwrap_or_default();
 
-    let options = MessagesOptions::backward().from(None::<&str>);
+    let mut options = MessagesOptions::backward().from(from_token);
+    options.limit = limit.into();
     let response = room.messages(options).await?;
 
     let mut messages: Vec<MessageInfo> = Vec::new();
@@ -206,7 +222,10 @@ pub async fn fetch_messages(
         messages = messages.split_off(messages.len() - limit as usize);
     }
 
-    Ok(messages)
+    Ok(MessagesResponse {
+        messages,
+        end_token: response.end,
+    })
 }
 
 /// Send a text message to a room.

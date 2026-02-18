@@ -124,7 +124,10 @@ export function handleCommand(
       }));
 
     case "get_messages":
-      return state.messages[args.roomId as string] ?? [];
+      return {
+        messages: state.messages[args.roomId as string] ?? [],
+        end_token: null,
+      };
 
     case "send_message": {
       const roomId = args.roomId as string;

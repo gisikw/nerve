@@ -3,6 +3,7 @@ module Decode exposing
     , roomList
     , message
     , messageList
+    , messagesResponse
     , reaction
     , sessionStatus
     , loginResult
@@ -75,6 +76,13 @@ andMap argDecoder funcDecoder =
 messageList : Decoder (List Message)
 messageList =
     D.list message
+
+
+messagesResponse : Decoder MessagesResponse
+messagesResponse =
+    D.map2 MessagesResponse
+        (D.field "messages" (D.list message))
+        (D.maybe (D.field "end_token" D.string))
 
 
 sessionStatus : Decoder SessionStatus
