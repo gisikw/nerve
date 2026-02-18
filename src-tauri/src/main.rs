@@ -28,6 +28,7 @@ fn main() {
             commands::send_reaction,
             commands::get_typing,
             commands::send_typing_notice,
+            commands::get_media,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

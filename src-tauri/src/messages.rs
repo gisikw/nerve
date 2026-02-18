@@ -40,32 +40,54 @@ pub struct MessagesResponse {
     pub end_token: Option<String>,
 }
 
-/// Convert an mxc:// URI to an HTTP download URL via the homeserver.
-fn mxc_to_http(client: &Client, source: &MediaSource) -> Option<String> {
-    let mxc_uri = match source {
-        MediaSource::Plain(uri) => uri,
-        MediaSource::Encrypted(_) => return None,
+/// Return the mxc:// URI string for a media source, if plain (not encrypted).
+fn mxc_uri_string(source: &MediaSource) -> Option<String> {
+    match source {
+        MediaSource::Plain(uri) => Some(uri.to_string()),
+        MediaSource::Encrypted(_) => None,
+    }
+}
+
+/// Download media bytes from the homeserver via the SDK (handles authenticated
+/// media automatically) and return them as a `data:` URI.
+pub async fn download_media(client: &Client, mxc_uri: &str) -> Result<String> {
+    use base64::Engine;
+    use matrix_sdk::media::{MediaFormat, MediaRequestParameters};
+
+    let uri = error::parse_mxc_uri(mxc_uri)?;
+
+    let request = MediaRequestParameters {
+        source: MediaSource::Plain(uri),
+        format: MediaFormat::File,
     };
 
-    let (server_name, media_id) = mxc_uri.parts().ok()?;
-    let homeserver = client.homeserver();
-    let url = format!(
-        "{}/_matrix/media/v3/download/{}/{}",
-        homeserver.as_str().trim_end_matches('/'),
-        server_name,
-        media_id,
-    );
-    Some(url)
+    let data = client.media().get_media_content(&request, true).await?;
+
+    // Sniff content type from magic bytes
+    let content_type = if data.starts_with(&[0x89, 0x50, 0x4E, 0x47]) {
+        "image/png"
+    } else if data.starts_with(&[0xFF, 0xD8, 0xFF]) {
+        "image/jpeg"
+    } else if data.starts_with(b"GIF8") {
+        "image/gif"
+    } else if data.starts_with(b"RIFF") && data.len() > 12 && &data[8..12] == b"WEBP" {
+        "image/webp"
+    } else {
+        "application/octet-stream"
+    };
+
+    let b64 = base64::engine::general_purpose::STANDARD.encode(&data);
+    Ok(format!("data:{content_type};base64,{b64}"))
 }
 
 /// Extract body, msg_type, and media_url from a message type.
-fn extract_content(client: &Client, msgtype: &MessageType) -> (String, String, Option<String>) {
+fn extract_content(msgtype: &MessageType) -> (String, String, Option<String>) {
     match msgtype {
         MessageType::Text(t) => (t.body.clone(), "text".to_string(), None),
         MessageType::Notice(n) => (n.body.clone(), "notice".to_string(), None),
         MessageType::Emote(e) => (format!("* {}", e.body), "emote".to_string(), None),
         MessageType::Image(img) => {
-            let url = mxc_to_http(client, &img.source);
+            let url = mxc_uri_string(&img.source);
             let caption = img.caption().unwrap_or(&img.body);
             (caption.to_string(), "image".to_string(), url)
         }
@@ -173,7 +195,7 @@ pub async fn fetch_messages(
                 if let Some(Relation::Replacement(replacement)) = &original.content.relates_to {
                     let target_id = replacement.event_id.to_string();
                     let (body, msg_type, media_url) =
-                        extract_content(client, &replacement.new_content.msgtype);
+                        extract_content(&replacement.new_content.msgtype);
                     if let Some(target) = messages.iter_mut().find(|m| m.event_id == target_id) {
                         target.body = body;
                         target.msg_type = msg_type;
@@ -183,7 +205,7 @@ pub async fn fetch_messages(
                 }
 
                 let (body, msg_type, media_url) =
-                    extract_content(client, &original.content.msgtype);
+                    extract_content(&original.content.msgtype);
 
                 messages.push(MessageInfo {
                     event_id: msg.event_id().to_string(),

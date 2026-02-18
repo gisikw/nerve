@@ -96,6 +96,61 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+// Resolve mxc:// image sources via the backend's authenticated media download.
+// Uses a MutationObserver to catch <img> elements Elm renders with mxc:// src
+// and replaces them with data: URIs fetched through the Tauri get_media command.
+const resolvedMedia = new Map<string, string>();
+const pendingMedia = new Set<string>();
+
+async function resolveMxcImage(img: HTMLImageElement) {
+  const mxcUri = img.dataset.mxcUri ?? img.getAttribute("src");
+  if (!mxcUri || !mxcUri.startsWith("mxc://")) return;
+
+  // Stash the mxc URI and clear src to prevent browser 404
+  img.dataset.mxcUri = mxcUri;
+  img.removeAttribute("src");
+
+  // Already resolved?
+  const cached = resolvedMedia.get(mxcUri);
+  if (cached) {
+    img.src = cached;
+    return;
+  }
+
+  // Already in flight?
+  if (pendingMedia.has(mxcUri)) return;
+  pendingMedia.add(mxcUri);
+
+  try {
+    const dataUri = (await invoke("get_media", { mxcUri })) as string;
+    resolvedMedia.set(mxcUri, dataUri);
+    // Update all images waiting for this URI
+    document
+      .querySelectorAll<HTMLImageElement>(`img[data-mxc-uri="${CSS.escape(mxcUri)}"]`)
+      .forEach((el) => {
+        el.src = dataUri;
+      });
+  } catch (err) {
+    console.error("Failed to resolve media:", mxcUri, err);
+  } finally {
+    pendingMedia.delete(mxcUri);
+  }
+}
+
+const mediaObserver = new MutationObserver((mutations) => {
+  for (const mutation of mutations) {
+    for (const node of mutation.addedNodes) {
+      if (node instanceof HTMLImageElement) {
+        resolveMxcImage(node);
+      } else if (node instanceof HTMLElement) {
+        node.querySelectorAll<HTMLImageElement>("img").forEach(resolveMxcImage);
+      }
+    }
+  }
+});
+
+mediaObserver.observe(document.body, { childList: true, subtree: true });
+
 // Check session on startup
 invoke("check_session")
   .then((result) => {

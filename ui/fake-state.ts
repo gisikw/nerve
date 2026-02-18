@@ -167,6 +167,10 @@ export function handleCommand(
     case "send_typing_notice":
       return null;
 
+    case "get_media":
+      // In dev mode, return a 1x1 transparent PNG as placeholder
+      return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+
     default:
       throw new Error(`Unknown command: ${command}`);
   }

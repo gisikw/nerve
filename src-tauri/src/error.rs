@@ -16,6 +16,9 @@ pub enum NerveError {
     #[error("invalid server name '{0}': {1}")]
     InvalidServerName(String, matrix_sdk::ruma::IdParseError),
 
+    #[error("invalid mxc URI: '{0}'")]
+    InvalidMxcUri(String),
+
     #[error("room not found: {0}")]
     RoomNotFound(String),
 
@@ -56,6 +59,16 @@ pub fn parse_server_name(
 ) -> Result<matrix_sdk::ruma::OwnedServerName> {
     matrix_sdk::ruma::ServerName::parse(server_name)
         .map_err(|e| NerveError::InvalidServerName(server_name.to_string(), e))
+}
+
+/// Validate and return an OwnedMxcUri from a string.
+pub fn parse_mxc_uri(
+    mxc_uri: &str,
+) -> Result<matrix_sdk::ruma::OwnedMxcUri> {
+    let uri = matrix_sdk::ruma::OwnedMxcUri::from(mxc_uri);
+    uri.validate()
+        .map_err(|_| NerveError::InvalidMxcUri(mxc_uri.to_string()))?;
+    Ok(uri)
 }
 
 #[cfg(test)]

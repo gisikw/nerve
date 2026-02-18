@@ -194,3 +194,20 @@ pub async fn send_typing_notice(
         Err("Not logged in".to_string())
     }
 }
+
+/// Download media from an mxc:// URI and return it as a data: URI.
+/// Uses the SDK's authenticated media download (handles Matrix v1.11+).
+#[tauri::command]
+pub async fn get_media(
+    state: State<'_, MatrixState>,
+    mxc_uri: String,
+) -> Result<String, String> {
+    let guard = state.client.lock().await;
+    if let Some(ref client) = *guard {
+        messages::download_media(client, &mxc_uri)
+            .await
+            .map_err(|e| format!("Failed to download media {mxc_uri}: {e}"))
+    } else {
+        Err("Not logged in".to_string())
+    }
+}
