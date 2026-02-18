@@ -8,12 +8,13 @@ Supports:
   - *italic* (`*text*`)
   - `inline code` (`` `text` ``)
   - Fenced code blocks (` ``` `)
+  - > blockquotes
   - [links](url) (`[text](url)`)
   - Line breaks (preserved)
 
 -}
 
-import Html exposing (Html, a, br, code, em, pre, span, strong, text)
+import Html exposing (Html, a, blockquote, br, code, em, p, pre, span, strong, text)
 import Html.Attributes exposing (class, href, rel, target)
 
 
@@ -56,6 +57,18 @@ renderLines lines acc =
                         :: acc
                     )
 
+            else if String.startsWith "> " line then
+                let
+                    ( quoteLines, remaining ) =
+                        takeWhileQuote (line :: rest) []
+                in
+                renderLines remaining
+                    ([ blockquote [ class "blockquote" ]
+                        (List.map (\ql -> p [] (renderInline ql)) quoteLines)
+                     ]
+                        :: acc
+                    )
+
             else
                 renderLines rest (renderInline line :: acc)
 
@@ -72,6 +85,23 @@ takeUntilClosingFence lines acc =
 
             else
                 takeUntilClosingFence rest (line :: acc)
+
+
+takeWhileQuote : List String -> List String -> ( List String, List String )
+takeWhileQuote lines acc =
+    case lines of
+        [] ->
+            ( List.reverse acc, [] )
+
+        line :: rest ->
+            if String.startsWith "> " line then
+                takeWhileQuote rest (String.dropLeft 2 line :: acc)
+
+            else if line == ">" then
+                takeWhileQuote rest ("" :: acc)
+
+            else
+                ( List.reverse acc, lines )
 
 
 renderInline : String -> List (Html msg)

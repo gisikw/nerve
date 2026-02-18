@@ -4,37 +4,6 @@
   height: 100%;
 }
 
-#main-view header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 0.85rem;
-  background: var(--bg-surface);
-  border-bottom: 1px solid var(--border);
-  min-height: 40px;
-}
-
-#main-view header span {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text);
-  letter-spacing: -0.01em;
-}
-
-#main-view header button {
-  padding: 0.3rem 0.6rem;
-  font-size: 0.7rem;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  margin-top: 0;
-}
-
-#main-view header button:hover {
-  border-color: var(--accent);
-  color: var(--text);
-}
-
 #layout {
   display: flex;
   flex: 1;
@@ -69,6 +38,9 @@
 }
 
 #room-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 0.55rem 1rem;
   border-bottom: 1px solid var(--border);
   background: var(--bg-surface);
@@ -78,4 +50,18 @@
   font-size: 0.9rem;
   font-weight: 600;
   letter-spacing: -0.01em;
+}
+
+#room-header #logout-btn {
+  padding: 0.25rem 0.55rem;
+  font-size: 0.7rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  margin-top: 0;
+}
+
+#room-header #logout-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
 }

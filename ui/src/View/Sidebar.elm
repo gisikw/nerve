@@ -57,17 +57,6 @@ roomItem selectedId room =
         , if hasTyping then
             span [ class "typing-badge" ] [ text "..." ]
 
-          else if room.notificationCount > 0 then
-            span [ class "unread-badge" ]
-                [ text
-                    (if room.notificationCount > 99 then
-                        "99+"
-
-                     else
-                        String.fromInt room.notificationCount
-                    )
-                ]
-
           else
             text ""
         ]

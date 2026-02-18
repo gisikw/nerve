@@ -1,6 +1,6 @@
 #sidebar {
-  width: 240px;
-  min-width: 240px;
+  width: 15rem;
+  min-width: 10rem;
   background: var(--bg-surface);
   border-right: 1px solid var(--border);
   display: flex;

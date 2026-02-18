@@ -55,6 +55,8 @@ app.ports.resizeComposeInput.subscribe(() => {
     if (!el) return;
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
+    // Show scrollbar only when at max height
+    el.style.overflowY = el.scrollHeight > el.offsetHeight ? "auto" : "hidden";
   });
 });
 
@@ -62,7 +64,7 @@ app.ports.resizeComposeInput.subscribe(() => {
 const ZOOM_STEP = 1;
 const ZOOM_MIN = 10;
 const ZOOM_MAX = 22;
-const ZOOM_DEFAULT = 14;
+const ZOOM_DEFAULT = 16;
 
 function getZoom(): number {
   const stored = localStorage.getItem("nerve-font-size");

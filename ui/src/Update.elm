@@ -3,6 +3,7 @@ module Update exposing (filteredRooms, update)
 import Browser.Dom
 import Commands
 import Decode
+import Dict
 import Json.Decode as D
 import Model exposing (Model, Msg(..), Page(..))
 import Ports
@@ -42,16 +43,37 @@ update msg model =
 
         -- Rooms
         SelectRoom roomId ->
+            let
+                -- Save current compose text as draft for the old room
+                updatedDrafts =
+                    case model.selectedRoomId of
+                        Just oldRoomId ->
+                            if String.isEmpty (String.trim model.composeText) then
+                                Dict.remove oldRoomId model.drafts
+
+                            else
+                                Dict.insert oldRoomId model.composeText model.drafts
+
+                        Nothing ->
+                            model.drafts
+
+                -- Restore draft for the new room
+                restoredText =
+                    Dict.get roomId updatedDrafts |> Maybe.withDefault ""
+            in
             ( { model
                 | selectedRoomId = Just roomId
                 , messages = []
                 , messagesLoading = True
                 , switcherOpen = False
                 , typingUsers = []
+                , composeText = restoredText
+                , drafts = updatedDrafts
               }
             , Cmd.batch
                 [ Commands.getMessages roomId
                 , focusCompose
+                , scrollToBottomForce
                 ]
             )
 
@@ -379,5 +401,18 @@ scrollToBottom =
 
                 else
                     Task.succeed ()
+            )
+        |> Task.attempt (\_ -> DomNoOp)
+
+
+{-| Unconditionally scroll the messages container to the bottom.
+Used when switching rooms where we always want to land at the latest messages.
+-}
+scrollToBottomForce : Cmd Msg
+scrollToBottomForce =
+    Browser.Dom.getViewportOf "messages"
+        |> Task.andThen
+            (\viewport ->
+                Browser.Dom.setViewportOf "messages" 0 viewport.scene.height
             )
         |> Task.attempt (\_ -> DomNoOp)

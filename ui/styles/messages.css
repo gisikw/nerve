@@ -79,6 +79,17 @@
   padding: 0;
 }
 
+.message-body .blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 0.65rem;
+  margin: 0.3rem 0;
+  color: var(--text-muted);
+}
+
+.message-body .blockquote p {
+  margin: 0.15rem 0;
+}
+
 .message-body a {
   color: var(--accent);
   text-decoration: none;

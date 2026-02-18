@@ -2,8 +2,8 @@ module Main exposing (main)
 
 import Browser
 import Browser.Events
-import Html exposing (Html, button, div, header, input, li, span, text, ul)
-import Html.Attributes exposing (autofocus, class, id, placeholder, type_, value)
+import Html exposing (Html, div, input, li, span, text, ul)
+import Html.Attributes exposing (autofocus, class, id, placeholder, spellcheck, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Json.Decode as D
 import Model exposing (Model, Msg(..), Page(..), initialModel)
@@ -45,12 +45,7 @@ view model =
 mainView : Model -> Html Msg
 mainView model =
     div [ id "main-view", class "view" ]
-        ([ header []
-            [ span [] [ text "Nerve" ]
-            , button [ id "logout-btn", onClick Logout ]
-                [ text "Log out" ]
-            ]
-         , div [ id "layout" ]
+        ([ div [ id "layout" ]
             [ View.Sidebar.view model
             , Html.main_ [ id "chat" ]
                 [ View.Messages.view model ]
@@ -81,6 +76,7 @@ switcherModal model =
                 , onInput SetSwitcherQuery
                 , onSwitcherKey
                 , autofocus True
+                , spellcheck False
                 ]
                 []
             , ul [ id "switcher-results" ]
@@ -120,15 +116,24 @@ onClickStop =
 onSwitcherKey : Html.Attribute Msg
 onSwitcherKey =
     Html.Events.preventDefaultOn "keydown"
-        (D.field "key" D.string
+        (D.map2 Tuple.pair
+            (D.field "key" D.string)
+            (D.field "shiftKey" D.bool)
             |> D.andThen
-                (\key ->
+                (\( key, shift ) ->
                     case key of
                         "ArrowUp" ->
                             D.succeed ( SwitcherUp, True )
 
                         "ArrowDown" ->
                             D.succeed ( SwitcherDown, True )
+
+                        "Tab" ->
+                            if shift then
+                                D.succeed ( SwitcherUp, True )
+
+                            else
+                                D.succeed ( SwitcherDown, True )
 
                         "Enter" ->
                             D.succeed ( SwitcherSelect, True )

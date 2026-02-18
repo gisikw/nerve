@@ -36,7 +36,9 @@ roomHeader model =
                 |> Maybe.withDefault ""
     in
     div [ id "room-header" ]
-        [ h2 [ id "room-name" ] [ text roomName ] ]
+        [ h2 [ id "room-name" ] [ text roomName ]
+        , button [ id "logout-btn", onClick Logout ] [ text "Log out" ]
+        ]
 
 
 messagesArea : Model -> Html Msg

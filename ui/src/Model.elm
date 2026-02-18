@@ -5,6 +5,7 @@ module Model exposing
     , initialModel
     )
 
+import Dict exposing (Dict)
 import Json.Encode as E
 import Time
 import Types exposing (..)
@@ -26,6 +27,7 @@ type alias Model =
     , messages : List Message
     , messagesLoading : Bool
     , composeText : String
+    , drafts : Dict String String
     , timeZone : Time.Zone
     , switcherOpen : Bool
     , switcherQuery : String
@@ -84,6 +86,7 @@ initialModel =
     , messages = []
     , messagesLoading = False
     , composeText = ""
+    , drafts = Dict.empty
     , timeZone = Time.utc
     , switcherOpen = False
     , switcherQuery = ""
