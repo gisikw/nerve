@@ -51,9 +51,11 @@ be ticketed for remediation. No grandfathering.
   types are declared in `src/elm.d.ts`. New ports get type declarations.
 - **All JS DOM operations are port-initiated.** JS must not attach its own
   event listeners or timers to drive behavior. Every JS side-effect is
-  triggered by an Elm port call. The one exception is the Tauri IPC bridge
-  itself (the `sendToTauri`/`receiveFromTauri` subscription), which is
-  infrastructure, not behavior.
+  triggered by an Elm port call. Exceptions are infrastructure that
+  operates outside Elm's managed DOM tree: the Tauri IPC bridge
+  (`sendToTauri`/`receiveFromTauri`) and zoom control (which mutates
+  `document.documentElement.style.fontSize` and persists to
+  `localStorage` — both inaccessible from Elm).
 - **The test for "should this be JS?" is capability, not convenience.**
   Valid reasons for JS: the operation requires imperative DOM measurement
   (`scrollHeight`, `getBoundingClientRect`), direct style mutation that

@@ -3,6 +3,7 @@
 
 mod client;
 mod commands;
+mod error;
 mod messages;
 mod rooms;
 mod typing;

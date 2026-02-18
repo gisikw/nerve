@@ -1,9 +1,10 @@
 use std::path::PathBuf;
 
-use matrix_sdk::{config::SyncSettings, Client, ServerName};
+use matrix_sdk::{config::SyncSettings, Client};
 use tokio::sync::Mutex;
 use tracing::info;
 
+use crate::error::{self, Result};
 use crate::typing::{self, TypingCache};
 
 /// Shared Matrix client state, managed across Tauri commands.
@@ -28,7 +29,7 @@ pub fn data_dir() -> PathBuf {
 }
 
 /// Persist the homeserver name so we can restore the session on next launch.
-pub fn save_homeserver(homeserver: &str) -> anyhow::Result<()> {
+pub fn save_homeserver(homeserver: &str) -> Result<()> {
     let dir = data_dir();
     std::fs::create_dir_all(&dir)?;
     std::fs::write(dir.join("homeserver"), homeserver)?;
@@ -50,8 +51,8 @@ pub fn clear_homeserver() {
 
 /// Build a Matrix client for the given homeserver, with a persistent sqlite
 /// store for crypto state and session data.
-pub async fn build_client(homeserver: &str) -> anyhow::Result<Client> {
-    let server_name = ServerName::parse(homeserver)?;
+pub async fn build_client(homeserver: &str) -> Result<Client> {
+    let server_name = error::parse_server_name(homeserver)?;
     let store_path = data_dir().join("matrix-store");
 
     let client = Client::builder()
@@ -64,7 +65,7 @@ pub async fn build_client(homeserver: &str) -> anyhow::Result<Client> {
 }
 
 /// Log in with username and password. Returns the user ID on success.
-pub async fn login(client: &Client, username: &str, password: &str) -> anyhow::Result<String> {
+pub async fn login(client: &Client, username: &str, password: &str) -> Result<String> {
     let response = client
         .matrix_auth()
         .login_username(username, password)

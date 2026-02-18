@@ -7,6 +7,8 @@ use matrix_sdk::Client;
 use serde::Serialize;
 use tokio::sync::RwLock;
 
+use crate::error::{self, NerveError, Result};
+
 /// Shared cache of who is currently typing in each room.
 pub type TypingCache = Arc<RwLock<HashMap<OwnedRoomId, Vec<OwnedUserId>>>>;
 
@@ -43,8 +45,8 @@ pub struct TypingStatus {
 pub async fn get_typing_users(
     cache: &TypingCache,
     room_id: &str,
-) -> anyhow::Result<TypingStatus> {
-    let room_id = matrix_sdk::ruma::RoomId::parse(room_id)?;
+) -> Result<TypingStatus> {
+    let room_id = error::parse_room_id(room_id)?;
     let guard = cache.read().await;
     let users = guard
         .get(&*room_id)
@@ -58,11 +60,11 @@ pub async fn send_typing(
     client: &Client,
     room_id: &str,
     typing: bool,
-) -> anyhow::Result<()> {
-    let room_id = matrix_sdk::ruma::RoomId::parse(room_id)?;
+) -> Result<()> {
+    let room_id = error::parse_room_id(room_id)?;
     let room = client
         .get_room(&room_id)
-        .ok_or_else(|| anyhow::anyhow!("Room not found"))?;
+        .ok_or_else(|| NerveError::RoomNotFound(room_id.to_string()))?;
     room.typing_notice(typing).await?;
     Ok(())
 }

@@ -9,6 +9,8 @@ use matrix_sdk::ruma::OwnedEventId;
 use matrix_sdk::Client;
 use serde::Serialize;
 
+use crate::error::{self, NerveError, Result};
+
 #[derive(Serialize, Clone)]
 pub struct ReactionInfo {
     pub emoji: String,
@@ -112,11 +114,11 @@ pub async fn fetch_messages(
     client: &Client,
     room_id: &str,
     limit: u32,
-) -> anyhow::Result<Vec<MessageInfo>> {
-    let room_id = matrix_sdk::ruma::RoomId::parse(room_id)?;
+) -> Result<Vec<MessageInfo>> {
+    let room_id = error::parse_room_id(room_id)?;
     let room = client
         .get_room(&room_id)
-        .ok_or_else(|| anyhow::anyhow!("Room not found"))?;
+        .ok_or_else(|| NerveError::RoomNotFound(room_id.to_string()))?;
 
     let self_user_id = client
         .user_id()
@@ -212,11 +214,11 @@ pub async fn send_message(
     client: &Client,
     room_id: &str,
     body: &str,
-) -> anyhow::Result<()> {
-    let room_id = matrix_sdk::ruma::RoomId::parse(room_id)?;
+) -> Result<()> {
+    let room_id = error::parse_room_id(room_id)?;
     let room = client
         .get_room(&room_id)
-        .ok_or_else(|| anyhow::anyhow!("Room not found"))?;
+        .ok_or_else(|| NerveError::RoomNotFound(room_id.to_string()))?;
 
     let content = RoomMessageEventContent::text_plain(body);
     room.send(content).await?;
@@ -229,12 +231,12 @@ pub async fn send_reaction(
     room_id: &str,
     event_id: &str,
     emoji: &str,
-) -> anyhow::Result<()> {
-    let room_id = matrix_sdk::ruma::RoomId::parse(room_id)?;
-    let event_id = OwnedEventId::try_from(event_id)?;
+) -> Result<()> {
+    let room_id = error::parse_room_id(room_id)?;
+    let event_id = error::parse_event_id(event_id)?;
     let room = client
         .get_room(&room_id)
-        .ok_or_else(|| anyhow::anyhow!("Room not found"))?;
+        .ok_or_else(|| NerveError::RoomNotFound(room_id.to_string()))?;
 
     let content = ReactionEventContent::new(
         matrix_sdk::ruma::events::relation::Annotation::new(event_id, emoji.to_string()),

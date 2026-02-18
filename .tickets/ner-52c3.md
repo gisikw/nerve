@@ -1,6 +1,6 @@
 ---
 id: ner-52c3
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-02-18T01:29:49Z
