@@ -51,7 +51,28 @@ roomHeader model =
     div [ id "room-header" ]
         [ div [ id "room-info" ]
             (h2 [ id "room-name" ] [ text roomName ] :: topicEl)
-        , button [ id "logout-btn", onClick Logout ] [ text "Log out" ]
+        , div [ id "room-header-actions" ]
+            [ button
+                [ id "tts-toggle"
+                , class
+                    (if model.ttsEnabled then
+                        "active"
+
+                     else
+                        ""
+                    )
+                , onClick ToggleTTS
+                , title
+                    (if model.ttsEnabled then
+                        "Disable text-to-speech"
+
+                     else
+                        "Enable text-to-speech"
+                    )
+                ]
+                [ speakerIcon ]
+            , button [ id "logout-btn", onClick Logout ] [ text "Log out" ]
+            ]
         ]
 
 
@@ -213,6 +234,12 @@ renderMessage zone pinnedIds isGroupStart msg =
          , Just
             (div [ class "message-actions" ]
                 [ button
+                    [ class "message-action-btn"
+                    , onClick (SpeakMessage msg.body)
+                    , title "Speak"
+                    ]
+                    [ speakerIcon ]
+                , button
                     [ class "message-action-btn"
                     , onClick pinAction
                     , title pinLabel
@@ -389,6 +416,24 @@ pinIcon =
         ]
         [ Svg.line [ SvgA.x1 "12", SvgA.y1 "17", SvgA.x2 "12", SvgA.y2 "22" ] []
         , Svg.path [ SvgA.d "M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z" ] []
+        ]
+
+
+speakerIcon : Html msg
+speakerIcon =
+    Svg.svg
+        [ SvgA.viewBox "0 0 24 24"
+        , SvgA.width "14"
+        , SvgA.height "14"
+        , SvgA.fill "none"
+        , SvgA.stroke "currentColor"
+        , SvgA.strokeWidth "2"
+        , SvgA.strokeLinecap "round"
+        , SvgA.strokeLinejoin "round"
+        ]
+        [ Svg.polygon [ SvgA.points "11 5 6 9 2 9 2 15 6 15 11 19 11 5" ] []
+        , Svg.path [ SvgA.d "M15.54 8.46a5 5 0 0 1 0 7.07" ] []
+        , Svg.path [ SvgA.d "M19.07 4.93a10 10 0 0 1 0 14.14" ] []
         ]
 
 

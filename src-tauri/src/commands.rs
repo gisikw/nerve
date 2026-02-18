@@ -4,6 +4,7 @@ use crate::client::{self, MatrixState};
 use crate::messages::{self, MessagesResponse};
 use crate::rooms::{self, CreateRoomResult, RoomInfo};
 use crate::streams::{self, StreamState};
+use crate::tts;
 use crate::typing::{self, TypingStatus};
 
 #[derive(serde::Serialize)]
@@ -336,6 +337,12 @@ pub async fn get_streams(
     streams::get_streams(&state.stream_cache, &room_id)
         .await
         .map_err(|e| format!("Failed to get streams for room {room_id}: {e}"))
+}
+
+/// Synthesize text to speech and return base64-encoded mp3 audio.
+#[tauri::command]
+pub async fn speak_text(text: String) -> Result<String, String> {
+    tts::synthesize(&text).await
 }
 
 /// Send a stream button action back to a room.

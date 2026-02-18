@@ -172,6 +172,26 @@ export function handleCommand(
       // In dev mode, return a 1x1 transparent PNG as placeholder
       return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
 
+    case "speak_text":
+      // In dev mode, return a tiny silent mp3 (no actual TTS)
+      return "";
+
+    case "send_image":
+    case "mark_read":
+    case "get_pinned_events":
+      return [];
+
+    case "pin_message":
+    case "unpin_message":
+    case "create_room":
+      return null;
+
+    case "get_streams":
+      return [];
+
+    case "send_stream_action":
+      return null;
+
     default:
       throw new Error(`Unknown command: ${command}`);
   }

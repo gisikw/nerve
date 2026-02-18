@@ -16,6 +16,7 @@ module Commands exposing
     , createRoom
     , getStreams
     , sendStreamAction
+    , speakText
     )
 
 import Json.Encode as E
@@ -169,3 +170,9 @@ sendStreamAction roomId streamId buttonId =
             , ( "buttonId", E.string buttonId )
             ]
         )
+
+
+speakText : String -> Cmd msg
+speakText body =
+    send "speakText"
+        (E.object [ ( "text", E.string body ) ])

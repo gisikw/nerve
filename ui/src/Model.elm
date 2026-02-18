@@ -45,6 +45,8 @@ type alias Model =
     , streams : List StreamState
     , streamsPanelOpen : Bool
     , streamsCollapsed : Set String
+    , ttsEnabled : Bool
+    , lastMessageId : Maybe String
     }
 
 
@@ -103,6 +105,9 @@ type Msg
     | PollStreams
     | ToggleStreamCollapsed String -- streamId
     | StreamButtonClick String String -- streamId buttonId
+      -- Text-to-speech
+    | ToggleTTS
+    | SpeakMessage String -- message body
 
 
 initialModel : Model
@@ -134,4 +139,6 @@ initialModel =
     , streams = []
     , streamsPanelOpen = False
     , streamsCollapsed = Set.empty
+    , ttsEnabled = False
+    , lastMessageId = Nothing
     }

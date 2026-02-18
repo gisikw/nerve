@@ -347,6 +347,19 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
+        -- Text-to-speech
+        ToggleTTS ->
+            let
+                newEnabled =
+                    not model.ttsEnabled
+            in
+            ( { model | ttsEnabled = newEnabled }
+            , Ports.saveTtsEnabled (E.bool newEnabled)
+            )
+
+        SpeakMessage body ->
+            ( model, Commands.speakText body )
+
         -- Time zone
         GotTimeZone zone ->
             ( { model | timeZone = zone }, Cmd.none )
@@ -460,20 +473,46 @@ dispatchTag tag payload model =
             case D.decodeValue Decode.messagesResponse payload of
                 Ok resp ->
                     let
+                        lastMsg =
+                            List.reverse resp.messages |> List.head
+
                         markReadCmd =
-                            case ( model.selectedRoomId, List.reverse resp.messages |> List.head ) of
-                                ( Just roomId, Just lastMsg ) ->
-                                    Commands.markRead roomId lastMsg.eventId
+                            case ( model.selectedRoomId, lastMsg ) of
+                                ( Just roomId, Just msg_ ) ->
+                                    Commands.markRead roomId msg_.eventId
 
                                 _ ->
                                     Cmd.none
+
+                        newLastId =
+                            lastMsg |> Maybe.map .eventId
+
+                        -- Auto-speak: if TTS enabled, there's a new message from
+                        -- someone else, and we already had messages loaded (not
+                        -- initial load), speak the latest message body.
+                        ttsCmd =
+                            if model.ttsEnabled && model.lastMessageId /= Nothing then
+                                case lastMsg of
+                                    Just msg_ ->
+                                        if Just msg_.eventId /= model.lastMessageId && msg_.sender /= Maybe.withDefault "" model.userId && msg_.msgType /= "image" then
+                                            Commands.speakText msg_.body
+
+                                        else
+                                            Cmd.none
+
+                                    Nothing ->
+                                        Cmd.none
+
+                            else
+                                Cmd.none
                     in
                     ( { model
                         | messages = resp.messages
                         , messagesLoading = False
                         , paginationToken = resp.endToken
+                        , lastMessageId = newLastId
                       }
-                    , Cmd.batch [ scrollToBottom, markReadCmd ]
+                    , Cmd.batch [ scrollToBottom, markReadCmd, ttsCmd ]
                     )
 
                 Err _ ->
@@ -595,6 +634,9 @@ dispatchTag tag payload model =
             ( model, Cmd.none )
 
         "sendTypingNotice" ->
+            ( model, Cmd.none )
+
+        "speakText" ->
             ( model, Cmd.none )
 
         "error" ->

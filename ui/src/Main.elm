@@ -38,8 +38,16 @@ init flags =
                 |> Result.withDefault []
                 |> Set.fromList
 
+        ttsEnabled =
+            flags
+                |> D.decodeValue (D.field "ttsEnabled" D.bool)
+                |> Result.withDefault False
+
         model =
-            { initialModel | archivedRoomIds = archivedIds }
+            { initialModel
+                | archivedRoomIds = archivedIds
+                , ttsEnabled = ttsEnabled
+            }
     in
     ( model, Task.perform GotTimeZone Time.here )
 

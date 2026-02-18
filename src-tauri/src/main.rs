@@ -7,6 +7,7 @@ mod error;
 mod messages;
 mod rooms;
 mod streams;
+mod tts;
 mod typing;
 
 use client::MatrixState;
@@ -38,6 +39,7 @@ fn main() {
             commands::create_room,
             commands::get_streams,
             commands::send_stream_action,
+            commands::speak_text,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

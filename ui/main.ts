@@ -10,10 +10,12 @@ const invoke = tauriInvoke ?? fakeInvoke;
 const archivedRooms: string[] = JSON.parse(
   localStorage.getItem("nerve-archived-rooms") ?? "[]",
 );
+const ttsEnabled: boolean =
+  localStorage.getItem("nerve-tts-enabled") === "true";
 
 const app = Elm.Main.init({
   node: document.getElementById("app"),
-  flags: { archivedRooms },
+  flags: { archivedRooms, ttsEnabled },
 });
 
 // Command map: Elm command names -> Tauri invoke names
@@ -36,6 +38,7 @@ const commands: Record<string, string> = {
   createRoom: "create_room",
   getStreams: "get_streams",
   sendStreamAction: "send_stream_action",
+  speakText: "speak_text",
 };
 
 // Listen for outgoing commands from Elm
@@ -53,6 +56,10 @@ app.ports.sendToTauri.subscribe(async (msg) => {
 
   try {
     const result = await invoke(tauriCmd, msg.args ?? {});
+    // For TTS responses, play the audio before forwarding to Elm
+    if (msg.command === "speakText" && typeof result === "string") {
+      ttsEnqueue(result);
+    }
     app.ports.receiveFromTauri.send({ tag: msg.command, payload: result });
   } catch (err) {
     app.ports.receiveFromTauri.send({ tag: "error", payload: String(err) });
@@ -78,6 +85,50 @@ app.ports.resizeComposeInput.subscribe(() => {
 app.ports.saveArchivedRooms.subscribe((ids: string[]) => {
   localStorage.setItem("nerve-archived-rooms", JSON.stringify(ids));
 });
+
+// Persist TTS enabled state to localStorage
+app.ports.saveTtsEnabled.subscribe((enabled: boolean) => {
+  localStorage.setItem("nerve-tts-enabled", String(enabled));
+  if (!enabled) {
+    // Stop any in-progress playback
+    ttsStopAll();
+  }
+});
+
+// ---------- TTS audio playback queue ----------
+
+let ttsCurrentAudio: HTMLAudioElement | null = null;
+const ttsQueue: string[] = [];
+
+function ttsPlayNext() {
+  if (ttsQueue.length === 0) {
+    ttsCurrentAudio = null;
+    return;
+  }
+  const base64 = ttsQueue.shift()!;
+  const audio = new Audio(`data:audio/mpeg;base64,${base64}`);
+  ttsCurrentAudio = audio;
+  audio.addEventListener("ended", ttsPlayNext);
+  audio.addEventListener("error", ttsPlayNext);
+  audio.play().catch(() => ttsPlayNext());
+}
+
+function ttsEnqueue(base64: string) {
+  if (ttsCurrentAudio) {
+    ttsQueue.push(base64);
+  } else {
+    ttsQueue.push(base64);
+    ttsPlayNext();
+  }
+}
+
+function ttsStopAll() {
+  ttsQueue.length = 0;
+  if (ttsCurrentAudio) {
+    ttsCurrentAudio.pause();
+    ttsCurrentAudio = null;
+  }
+}
 
 // Zoom: Cmd/Ctrl + / - / 0 to adjust base font size
 const ZOOM_STEP = 1;

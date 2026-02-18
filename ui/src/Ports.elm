@@ -5,6 +5,7 @@ port module Ports exposing
     , onScrollNearTop
     , onScrollNearBottom
     , saveArchivedRooms
+    , saveTtsEnabled
     )
 
 import Json.Encode as E
@@ -35,3 +36,8 @@ port onScrollNearBottom : (() -> msg) -> Sub msg
 {-| Persist archived room IDs to localStorage.
 -}
 port saveArchivedRooms : E.Value -> Cmd msg
+
+
+{-| Persist TTS enabled state to localStorage.
+-}
+port saveTtsEnabled : E.Value -> Cmd msg
