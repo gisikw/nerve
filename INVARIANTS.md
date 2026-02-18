@@ -14,7 +14,7 @@ be ticketed for remediation. No grandfathering.
 ## Architecture
 
 - **Tauri is the shell, not the application.** The Rust backend owns Matrix
-  state (sync, E2EE, room list, message store). The frontend is a view layer
+  state (sync, room list, message store). The frontend is a view layer
   that renders what the backend tells it. Business logic does not live in
   JavaScript.
 - **matrix-rust-sdk is the Matrix layer.** No raw HTTP calls to the Matrix
@@ -25,17 +25,6 @@ be ticketed for remediation. No grandfathering.
 - **Events flow one direction for state.** Backend emits events to frontend
   via Tauri's event system. Frontend sends commands to backend via IPC.
   The frontend never mutates backend state directly.
-
-## E2EE
-
-- **E2EE is not optional.** All rooms are encrypted. The client does not
-  support unencrypted rooms as a first-class path. If an unencrypted room
-  exists, it works, but no design decisions optimize for it.
-- **Key backup and verification must work before launch.** A Matrix client
-  without working key backup is a data loss vector. This blocks MVP.
-- **Crypto state is persistent.** The SDK's crypto store is backed by a
-  persistent store (sled or sqlite). Losing crypto state means losing
-  message history. Treat the store path as critical data.
 
 ## Frontend
 
@@ -100,7 +89,7 @@ be ticketed for remediation. No grandfathering.
   cover all state transitions and JSON parsing.
 - **Fake backend** (`ui/fake-state.ts`) is a stateful in-memory simulator
   that replaces Tauri when running in a browser via `npx vite`. Supports
-  all six commands, maintains message and session state across round-trips,
+  all commands, maintains message and session state across round-trips,
   and exposes a driver interface for external test scripts. See the Fake
   Backend section below for details.
 - **Rust unit tests** (`#[cfg(test)] mod tests` inline or `*_test.rs`) verify
@@ -142,7 +131,7 @@ be ticketed for remediation. No grandfathering.
   spent on navigation instead of reasoning. 500 lines fits in one read and
   leaves room to think.
 - **Split along behavioral seams, not alphabetically.** A file should be
-  one coherent unit: room sync, message rendering, crypto operations,
+  one coherent unit: room sync, message rendering, typing state,
   notification decisions. Not "functions A-M" and "functions N-Z".
 - **Tests mirror source files.** `rooms.rs` → `rooms_test.rs` (or inline
   `#[cfg(test)] mod tests`). Frontend test files mirror component files.
@@ -169,7 +158,9 @@ be ticketed for remediation. No grandfathering.
   variables, `CamelCase` for types, `SCREAMING_SNAKE` for constants.
   No project-specific naming schemes.
 - **Tauri commands are `verb_noun`.** `send_message`, `list_rooms`,
-  `get_room_messages`. The frontend calls these by name — clarity matters.
+  `get_room_messages`. Single-word auth commands (`login`, `logout`) are
+  fine — they're universally understood without a noun. The frontend calls
+  these by name — clarity matters.
 - **Elm follows Elm conventions.** `CamelCase` module names matching file
   names (`View/Login.elm` → `View.Login`). `camelCase` for functions and
   values. Ports use `camelCase` (`sendToTauri`, `receiveFromTauri`).
@@ -283,6 +274,13 @@ New scenes are defined in `screenshot.ts` as arrays of driver actions.
 - Chromium in the nix store (auto-detected via `find /nix/store`)
 - `puppeteer-core` and `tsx` (dev dependencies)
 - Fake backend (Vite plugin) — starts automatically
+
+## Secrets
+
+- **No hostnames, credentials, or environment-specific values in tracked
+  files.** Use environment variables or gitignored config. Homeserver URLs,
+  usernames, API keys — none of these belong in source. If a script needs
+  a default, it reads from an env var, not a hardcoded string.
 
 ## Policy
 
