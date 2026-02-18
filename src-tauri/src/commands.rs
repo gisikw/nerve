@@ -3,6 +3,7 @@ use tauri::State;
 use crate::client::{self, MatrixState};
 use crate::messages::{self, MessageInfo};
 use crate::rooms::{self, RoomInfo};
+use crate::typing::{self, TypingStatus};
 
 #[derive(serde::Serialize)]
 pub struct LoginResult {
@@ -25,7 +26,7 @@ pub async fn check_session(state: State<'_, MatrixState>) -> Result<SessionStatu
         let logged_in = client::try_restore_session(client).await;
         let user_id = client.user_id().map(|id| id.to_string());
         if logged_in {
-            client::spawn_sync(client.clone());
+            client::spawn_sync(client.clone(), state.typing_cache.clone());
         }
         return Ok(SessionStatus { logged_in, user_id });
     }
@@ -35,7 +36,7 @@ pub async fn check_session(state: State<'_, MatrixState>) -> Result<SessionStatu
         if let Ok(restored) = client::build_client(&homeserver).await {
             if client::try_restore_session(&restored).await {
                 let user_id = restored.user_id().map(|id| id.to_string());
-                client::spawn_sync(restored.clone());
+                client::spawn_sync(restored.clone(), state.typing_cache.clone());
                 *guard = Some(restored);
                 return Ok(SessionStatus {
                     logged_in: true,
@@ -70,7 +71,7 @@ pub async fn login(
     // Persist homeserver for session restore on next launch.
     let _ = client::save_homeserver(&homeserver);
 
-    client::spawn_sync(new_client.clone());
+    client::spawn_sync(new_client.clone(), state.typing_cache.clone());
 
     let mut guard = state.client.lock().await;
     *guard = Some(new_client);
@@ -99,7 +100,7 @@ pub async fn logout(state: State<'_, MatrixState>) -> Result<(), String> {
 pub async fn list_rooms(state: State<'_, MatrixState>) -> Result<Vec<RoomInfo>, String> {
     let guard = state.client.lock().await;
     if let Some(ref client) = *guard {
-        Ok(rooms::collect_rooms(client).await)
+        Ok(rooms::collect_rooms(client, &state.typing_cache).await)
     } else {
         Err("Not logged in".to_string())
     }
@@ -151,6 +152,34 @@ pub async fn send_reaction(
         messages::send_reaction(client, &room_id, &event_id, &emoji)
             .await
             .map_err(|e| format!("Failed to send reaction: {e}"))
+    } else {
+        Err("Not logged in".to_string())
+    }
+}
+
+/// Get users currently typing in a room.
+#[tauri::command]
+pub async fn get_typing(
+    state: State<'_, MatrixState>,
+    room_id: String,
+) -> Result<TypingStatus, String> {
+    typing::get_typing_users(&state.typing_cache, &room_id)
+        .await
+        .map_err(|e| format!("Failed to get typing status: {e}"))
+}
+
+/// Send a typing indicator to a room.
+#[tauri::command]
+pub async fn send_typing_notice(
+    state: State<'_, MatrixState>,
+    room_id: String,
+    is_typing: bool,
+) -> Result<(), String> {
+    let guard = state.client.lock().await;
+    if let Some(ref client) = *guard {
+        typing::send_typing(client, &room_id, is_typing)
+            .await
+            .map_err(|e| format!("Failed to send typing notice: {e}"))
     } else {
         Err("Not logged in".to_string())
     }

@@ -25,9 +25,13 @@ roomItem selectedId room =
         isSelected =
             selectedId == Just room.id
 
+        hasTyping =
+            not (List.isEmpty room.typingUsers)
+
         classes =
             [ ( "selected", isSelected )
             , ( "unread", room.notificationCount > 0 )
+            , ( "typing", hasTyping )
             ]
                 |> List.filter Tuple.second
                 |> List.map Tuple.first
@@ -41,14 +45,19 @@ roomItem selectedId room =
           else
             class classes
         ]
-        [ text
-            (if room.isDirect then
-                room.name
+        [ span [ class "room-name-text" ]
+            [ text
+                (if room.isDirect then
+                    room.name
 
-             else
-                "# " ++ room.name
-            )
-        , if room.notificationCount > 0 then
+                 else
+                    "# " ++ room.name
+                )
+            ]
+        , if hasTyping then
+            span [ class "typing-badge" ] [ text "..." ]
+
+          else if room.notificationCount > 0 then
             span [ class "unread-badge" ]
                 [ text
                     (if room.notificationCount > 99 then

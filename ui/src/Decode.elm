@@ -6,6 +6,7 @@ module Decode exposing
     , reaction
     , sessionStatus
     , loginResult
+    , typingStatus
     )
 
 import Json.Decode as D exposing (Decoder)
@@ -14,11 +15,12 @@ import Types exposing (..)
 
 room : Decoder Room
 room =
-    D.map4 Room
+    D.map5 Room
         (D.field "id" D.string)
         (D.field "name" D.string)
         (D.field "is_direct" D.bool)
         (D.field "notification_count" D.int)
+        (optionalField "typing_users" (D.list D.string) [])
 
 
 roomList : Decoder (List Room)
@@ -86,3 +88,9 @@ loginResult : Decoder LoginResult
 loginResult =
     D.map LoginResult
         (D.field "user_id" D.string)
+
+
+typingStatus : Decoder TypingStatus
+typingStatus =
+    D.map TypingStatus
+        (D.field "users" (D.list D.string))

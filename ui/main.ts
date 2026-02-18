@@ -20,6 +20,8 @@ const commands: Record<string, string> = {
   getMessages: "get_messages",
   sendMessage: "send_message",
   sendReaction: "send_reaction",
+  getTyping: "get_typing",
+  sendTypingNotice: "send_typing_notice",
 };
 
 // Listen for outgoing commands from Elm

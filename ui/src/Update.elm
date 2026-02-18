@@ -47,6 +47,7 @@ update msg model =
                 , messages = []
                 , messagesLoading = True
                 , switcherOpen = False
+                , typingUsers = []
               }
             , Cmd.batch
                 [ Commands.getMessages roomId
@@ -56,7 +57,22 @@ update msg model =
 
         -- Compose
         SetComposeText s ->
-            ( { model | composeText = s }, Ports.resizeComposeInput () )
+            let
+                typingCmd =
+                    case model.selectedRoomId of
+                        Just roomId ->
+                            if not (String.isEmpty s) then
+                                Commands.sendTypingNotice roomId True
+
+                            else
+                                Commands.sendTypingNotice roomId False
+
+                        Nothing ->
+                            Cmd.none
+            in
+            ( { model | composeText = s }
+            , Cmd.batch [ Ports.resizeComposeInput (), typingCmd ]
+            )
 
         SubmitMessage ->
             case model.selectedRoomId of
@@ -68,6 +84,7 @@ update msg model =
                         ( { model | composeText = "" }
                         , Cmd.batch
                             [ Commands.sendMessage roomId model.composeText
+                            , Commands.sendTypingNotice roomId False
                             , Ports.resizeComposeInput ()
                             ]
                         )
@@ -150,6 +167,23 @@ update msg model =
                 Nothing ->
                     ( { model | switcherOpen = False }, Cmd.none )
 
+        -- Typing
+        PollTyping ->
+            case model.selectedRoomId of
+                Just roomId ->
+                    ( model, Commands.getTyping roomId )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        SendTypingNotice isTyping ->
+            case model.selectedRoomId of
+                Just roomId ->
+                    ( model, Commands.sendTypingNotice roomId isTyping )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
         -- Time zone
         GotTimeZone zone ->
             ( { model | timeZone = zone }, Cmd.none )
@@ -231,7 +265,14 @@ dispatchTag tag payload model =
         "listRooms" ->
             case D.decodeValue Decode.roomList payload of
                 Ok rooms ->
-                    ( { model | rooms = rooms }, Cmd.none )
+                    let
+                        typingUsers =
+                            model.selectedRoomId
+                                |> Maybe.andThen (\rid -> List.filter (\r -> r.id == rid) rooms |> List.head)
+                                |> Maybe.map .typingUsers
+                                |> Maybe.withDefault []
+                    in
+                    ( { model | rooms = rooms, typingUsers = typingUsers }, Cmd.none )
 
                 Err _ ->
                     ( model, Cmd.none )
@@ -263,6 +304,17 @@ dispatchTag tag payload model =
 
                 Nothing ->
                     ( model, Cmd.none )
+
+        "getTyping" ->
+            case D.decodeValue Decode.typingStatus payload of
+                Ok status ->
+                    ( { model | typingUsers = status.users }, Cmd.none )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
+        "sendTypingNotice" ->
+            ( model, Cmd.none )
 
         "error" ->
             case D.decodeValue D.string payload of

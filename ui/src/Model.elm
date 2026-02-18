@@ -30,6 +30,7 @@ type alias Model =
     , switcherOpen : Bool
     , switcherQuery : String
     , switcherIndex : Int
+    , typingUsers : List String
     }
 
 
@@ -66,6 +67,9 @@ type Msg
     | SwitcherSelect
       -- Time zone
     | GotTimeZone Time.Zone
+      -- Typing
+    | PollTyping
+    | SendTypingNotice Bool
 
 
 initialModel : Model
@@ -84,4 +88,5 @@ initialModel =
     , switcherOpen = False
     , switcherQuery = ""
     , switcherIndex = 0
+    , typingUsers = []
     }

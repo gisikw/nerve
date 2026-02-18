@@ -21,6 +21,7 @@ view model =
             div [ id "room-content" ]
                 [ roomHeader model
                 , messagesArea model
+                , typingIndicator model
                 , composeBar model
                 ]
 
@@ -212,6 +213,33 @@ formatTime zone tsMillis =
                 String.fromInt n
     in
     String.fromInt hour12 ++ ":" ++ pad minutes ++ " " ++ ampm
+
+
+typingIndicator : Model -> Html Msg
+typingIndicator model =
+    if List.isEmpty model.typingUsers then
+        text ""
+
+    else
+        let
+            names =
+                List.map formatSender model.typingUsers
+
+            label =
+                case names of
+                    [ one ] ->
+                        one ++ " is typing..."
+
+                    [ a, b ] ->
+                        a ++ " and " ++ b ++ " are typing..."
+
+                    _ ->
+                        String.join ", " (List.take 2 names) ++ " and others are typing..."
+        in
+        div [ id "typing-indicator" ]
+            [ span [ class "typing-dots" ] [ text "..." ]
+            , span [ class "typing-text" ] [ text label ]
+            ]
 
 
 composeBar : Model -> Html Msg

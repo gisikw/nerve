@@ -12,6 +12,7 @@ interface FakeRoom {
   name: string;
   is_direct: boolean;
   notification_count: number;
+  typing_users: string[];
 }
 
 interface FakeReaction {
@@ -58,10 +59,10 @@ function makeMessage(
 const BASE_TIME = 1708200000000; // 2024-02-17T16:00:00Z
 
 const initialRooms: FakeRoom[] = [
-  { id: "!nerve:example.chat", name: "nerve", is_direct: false, notification_count: 0 },
-  { id: "!ops:example.chat", name: "ops", is_direct: false, notification_count: 2 },
-  { id: "!exo-dm:example.chat", name: "Exo", is_direct: true, notification_count: 0 },
-  { id: "!project-nerve:example.chat", name: "project-nerve", is_direct: false, notification_count: 0 },
+  { id: "!nerve:example.chat", name: "nerve", is_direct: false, notification_count: 0, typing_users: [] },
+  { id: "!ops:example.chat", name: "ops", is_direct: false, notification_count: 2, typing_users: [] },
+  { id: "!exo-dm:example.chat", name: "Exo", is_direct: true, notification_count: 0, typing_users: [] },
+  { id: "!project-nerve:example.chat", name: "project-nerve", is_direct: false, notification_count: 0, typing_users: [] },
 ];
 
 function initialMessages(): Record<string, FakeMessage[]> {
@@ -92,6 +93,7 @@ export const state = {
   userId: "@kevin:example.chat" as string | null,
   rooms: [...initialRooms],
   messages: initialMessages(),
+  typingUsers: {} as Record<string, string[]>,
 };
 
 // --- Elm command handlers ---
@@ -116,7 +118,10 @@ export function handleCommand(
       return null;
 
     case "list_rooms":
-      return state.rooms;
+      return state.rooms.map((r) => ({
+        ...r,
+        typing_users: state.typingUsers[r.id] ?? r.typing_users,
+      }));
 
     case "get_messages":
       return state.messages[args.roomId as string] ?? [];
@@ -153,6 +158,12 @@ export function handleCommand(
       return null;
     }
 
+    case "get_typing":
+      return { users: state.typingUsers[args.roomId as string] ?? [] };
+
+    case "send_typing_notice":
+      return null;
+
     default:
       throw new Error(`Unknown command: ${command}`);
   }
@@ -187,6 +198,7 @@ export function handleDriverAction(
         name: action.name as string,
         is_direct: (action.is_direct as boolean) ?? false,
         notification_count: (action.notification_count as number) ?? 0,
+        typing_users: [],
       });
       if (!state.messages[action.id as string]) {
         state.messages[action.id as string] = [];
@@ -238,6 +250,12 @@ export function handleDriverAction(
         },
       };
 
+    case "set_typing": {
+      const roomId = action.roomId as string;
+      state.typingUsers[roomId] = (action.users as string[]) ?? [];
+      return { ok: true };
+    }
+
     case "reset":
       state.loggedIn = true;
       state.userId = "@kevin:example.chat";
@@ -246,6 +264,7 @@ export function handleDriverAction(
         delete state.messages[key];
       }
       Object.assign(state.messages, initialMessages());
+      state.typingUsers = {};
       return { ok: true };
 
     default:

@@ -4,15 +4,19 @@ use matrix_sdk::{config::SyncSettings, Client, ServerName};
 use tokio::sync::Mutex;
 use tracing::info;
 
+use crate::typing::{self, TypingCache};
+
 /// Shared Matrix client state, managed across Tauri commands.
 pub struct MatrixState {
     pub client: Mutex<Option<Client>>,
+    pub typing_cache: TypingCache,
 }
 
 impl MatrixState {
     pub fn new() -> Self {
         Self {
             client: Mutex::new(None),
+            typing_cache: typing::new_cache(),
         }
     }
 }
@@ -80,7 +84,9 @@ pub async fn try_restore_session(client: &Client) -> bool {
 }
 
 /// Start the sync loop in the background. Call after login or session restore.
-pub fn spawn_sync(client: Client) {
+/// Registers the typing event handler before starting sync.
+pub fn spawn_sync(client: Client, typing_cache: TypingCache) {
+    typing::register_handler(&client, typing_cache);
     tokio::spawn(Box::pin(async move {
         info!("Starting sync loop");
         if let Err(e) = client.sync(SyncSettings::default()).await {

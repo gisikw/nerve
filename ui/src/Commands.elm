@@ -6,6 +6,8 @@ module Commands exposing
     , getMessages
     , sendMessage
     , sendReaction
+    , getTyping
+    , sendTypingNotice
     )
 
 import Json.Encode as E
@@ -72,5 +74,21 @@ sendReaction roomId eventId emoji =
             [ ( "roomId", E.string roomId )
             , ( "eventId", E.string eventId )
             , ( "emoji", E.string emoji )
+            ]
+        )
+
+
+getTyping : String -> Cmd msg
+getTyping roomId =
+    send "getTyping"
+        (E.object [ ( "roomId", E.string roomId ) ])
+
+
+sendTypingNotice : String -> Bool -> Cmd msg
+sendTypingNotice roomId isTyping =
+    send "sendTypingNotice"
+        (E.object
+            [ ( "roomId", E.string roomId )
+            , ( "isTyping", E.bool isTyping )
             ]
         )

@@ -5,6 +5,7 @@ mod client;
 mod commands;
 mod messages;
 mod rooms;
+mod typing;
 
 use client::MatrixState;
 
@@ -24,6 +25,8 @@ fn main() {
             commands::get_messages,
             commands::send_message,
             commands::send_reaction,
+            commands::get_typing,
+            commands::send_typing_notice,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

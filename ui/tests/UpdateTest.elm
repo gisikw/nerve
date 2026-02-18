@@ -272,9 +272,9 @@ suite =
         ]
 
 
-testRoom : { id : String, name : String, isDirect : Bool, notificationCount : Int }
+testRoom : { id : String, name : String, isDirect : Bool, notificationCount : Int, typingUsers : List String }
 testRoom =
-    { id = "!test:x", name = "Test", isDirect = False, notificationCount = 0 }
+    { id = "!test:x", name = "Test", isDirect = False, notificationCount = 0, typingUsers = [] }
 
 
 testMessage : { eventId : String, sender : String, body : String, timestamp : Int, msgType : String, mediaUrl : Maybe String, reactions : List a }

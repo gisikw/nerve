@@ -5,6 +5,7 @@ module Types exposing
     , SessionStatus
     , LoginResult
     , LoginForm
+    , TypingStatus
     )
 
 
@@ -13,6 +14,7 @@ type alias Room =
     , name : String
     , isDirect : Bool
     , notificationCount : Int
+    , typingUsers : List String
     }
 
 
@@ -49,4 +51,9 @@ type alias LoginForm =
     { homeserver : String
     , username : String
     , password : String
+    }
+
+
+type alias TypingStatus =
+    { users : List String
     }

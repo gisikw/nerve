@@ -155,6 +155,7 @@ subscriptions model =
                         Just _ ->
                             Sub.batch
                                 [ Time.every 3000 (\_ -> PollMessages)
+                                , Time.every 2000 (\_ -> PollTyping)
                                 , Browser.Events.onKeyDown printableKeyDecoder
                                 ]
 
