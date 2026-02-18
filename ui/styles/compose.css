@@ -28,7 +28,23 @@
   border-color: var(--accent);
 }
 
-#compose button {
-  padding: 0.45rem 0.85rem;
+#compose .send-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
   margin-top: 0;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition);
+  flex-shrink: 0;
+}
+
+#compose .send-btn:hover {
+  background: var(--accent-hover, #234a73);
 }

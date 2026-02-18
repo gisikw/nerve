@@ -25,6 +25,7 @@ suite =
                                 , isDirect = False
                                 , notificationCount = 5
                                 , typingUsers = []
+                                , topic = Nothing
                                 }
                             )
             , test "decodes a direct room with zero notifications" <|
@@ -41,6 +42,7 @@ suite =
                                 , isDirect = True
                                 , notificationCount = 0
                                 , typingUsers = []
+                                , topic = Nothing
                                 }
                             )
             ]

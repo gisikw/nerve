@@ -4,6 +4,8 @@ import Html exposing (Html, button, div, form, h2, img, p, span, text, textarea)
 import Html.Attributes exposing (alt, class, id, placeholder, rows, src, title, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Json.Decode as D
+import Svg
+import Svg.Attributes as SvgA
 import Markdown
 import Model exposing (Model, Msg(..))
 import Time
@@ -29,14 +31,24 @@ view model =
 roomHeader : Model -> Html Msg
 roomHeader model =
     let
-        roomName =
+        selectedRoom =
             model.selectedRoomId
                 |> Maybe.andThen (\rid -> List.filter (\r -> r.id == rid) model.rooms |> List.head)
-                |> Maybe.map .name
-                |> Maybe.withDefault ""
+
+        roomName =
+            selectedRoom |> Maybe.map .name |> Maybe.withDefault ""
+
+        topicEl =
+            case selectedRoom |> Maybe.andThen .topic of
+                Just t ->
+                    [ span [ id "room-topic" ] [ text t ] ]
+
+                Nothing ->
+                    []
     in
     div [ id "room-header" ]
-        [ h2 [ id "room-name" ] [ text roomName ]
+        [ div [ id "room-info" ]
+            (h2 [ id "room-name" ] [ text roomName ] :: topicEl)
         , button [ id "logout-btn", onClick Logout ] [ text "Log out" ]
         ]
 
@@ -256,7 +268,25 @@ composeBar model =
             , onEnter SubmitMessage
             ]
             []
-        , Html.button [ type_ "submit" ] [ text "Send" ]
+        , Html.button [ type_ "submit", class "send-btn", title "Send message" ]
+            [ sendIcon ]
+        ]
+
+
+sendIcon : Html msg
+sendIcon =
+    Svg.svg
+        [ SvgA.viewBox "0 0 24 24"
+        , SvgA.width "18"
+        , SvgA.height "18"
+        , SvgA.fill "none"
+        , SvgA.stroke "currentColor"
+        , SvgA.strokeWidth "2"
+        , SvgA.strokeLinecap "round"
+        , SvgA.strokeLinejoin "round"
+        ]
+        [ Svg.line [ SvgA.x1 "22", SvgA.y1 "2", SvgA.x2 "11", SvgA.y2 "13" ] []
+        , Svg.polygon [ SvgA.points "22 2 15 22 11 13 2 9 22 2" ] []
         ]
 
 

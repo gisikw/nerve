@@ -11,6 +11,8 @@ pub struct RoomInfo {
     pub is_direct: bool,
     pub notification_count: u64,
     pub typing_users: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub topic: Option<String>,
 }
 
 /// Collect room info from the client's current state.
@@ -35,12 +37,15 @@ pub async fn collect_rooms(client: &Client, typing_cache: &TypingCache) -> Vec<R
                 let is_direct = room.is_direct().await.unwrap_or(false);
                 let notification_count = room.unread_notification_counts().notification_count;
 
+                let topic = room.topic();
+
                 RoomInfo {
                     id: room.room_id().to_string(),
                     name,
                     is_direct,
                     notification_count,
                     typing_users,
+                    topic,
                 }
             }
         })

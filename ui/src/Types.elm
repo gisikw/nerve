@@ -16,6 +16,7 @@ type alias Room =
     , isDirect : Bool
     , notificationCount : Int
     , typingUsers : List String
+    , topic : Maybe String
     }
 
 

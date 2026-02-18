@@ -13,6 +13,7 @@ interface FakeRoom {
   is_direct: boolean;
   notification_count: number;
   typing_users: string[];
+  topic?: string;
 }
 
 interface FakeReaction {
@@ -59,7 +60,7 @@ function makeMessage(
 const BASE_TIME = 1708200000000; // 2024-02-17T16:00:00Z
 
 const initialRooms: FakeRoom[] = [
-  { id: "!nerve:example.chat", name: "nerve", is_direct: false, notification_count: 0, typing_users: [] },
+  { id: "!nerve:example.chat", name: "nerve", is_direct: false, notification_count: 0, typing_users: [], topic: "Tauri + Elm Matrix client" },
   { id: "!ops:example.chat", name: "ops", is_direct: false, notification_count: 2, typing_users: [] },
   { id: "!exo-dm:example.chat", name: "Exo", is_direct: true, notification_count: 0, typing_users: [] },
   { id: "!project-nerve:example.chat", name: "project-nerve", is_direct: false, notification_count: 0, typing_users: [] },

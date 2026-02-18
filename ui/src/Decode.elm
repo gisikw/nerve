@@ -22,6 +22,7 @@ room =
         (D.field "is_direct" D.bool)
         (D.field "notification_count" D.int)
         (optionalField "typing_users" (D.list D.string) [])
+        |> andMap (D.maybe (D.field "topic" D.string))
 
 
 roomList : Decoder (List Room)
