@@ -5,9 +5,11 @@ import Commands
 import Decode
 import Dict
 import Emoji
+import Json.Encode as E
 import Json.Decode as D
 import Model exposing (Model, Msg(..), Page(..))
 import Ports
+import Set
 import Task
 import Types exposing (Room)
 
@@ -266,6 +268,28 @@ update msg model =
 
             else
                 ( model, Cmd.none )
+
+        -- Room archiving
+        ArchiveRoom roomId ->
+            let
+                newArchived =
+                    Set.insert roomId model.archivedRoomIds
+            in
+            ( { model | archivedRoomIds = newArchived }
+            , saveArchivedCmd newArchived
+            )
+
+        UnarchiveRoom roomId ->
+            let
+                newArchived =
+                    Set.remove roomId model.archivedRoomIds
+            in
+            ( { model | archivedRoomIds = newArchived }
+            , saveArchivedCmd newArchived
+            )
+
+        ToggleArchived ->
+            ( { model | showArchived = not model.showArchived }, Cmd.none )
 
         -- Time zone
         GotTimeZone zone ->
@@ -526,3 +550,8 @@ scrollToBottomForce =
                 Browser.Dom.setViewportOf "messages" 0 viewport.scene.height
             )
         |> Task.attempt (\_ -> DomNoOp)
+
+
+saveArchivedCmd : Set.Set String -> Cmd msg
+saveArchivedCmd archived =
+    Ports.saveArchivedRooms (E.list E.string (Set.toList archived))

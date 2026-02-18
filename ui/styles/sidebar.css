@@ -76,6 +76,84 @@
   flex-shrink: 0;
 }
 
+/* Room action button (archive/unarchive) — hidden by default, shown on hover */
+.room-action-btn {
+  display: none;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.65rem;
+  flex-shrink: 0;
+  opacity: 0.5;
+  transition: opacity var(--transition);
+}
+
+.room-action-btn:hover {
+  opacity: 1;
+}
+
+#room-list li:hover .room-action-btn,
+.archived-rooms li:hover .room-action-btn {
+  display: block;
+}
+
+/* Archived section */
+.sidebar-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.65rem;
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  cursor: pointer;
+  user-select: none;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.sidebar-section-header:hover {
+  color: var(--text-muted);
+}
+
+.section-toggle {
+  font-size: 0.55rem;
+}
+
+.archived-rooms {
+  list-style: none;
+  padding: 0;
+}
+
+.archived-rooms li {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.65rem;
+  cursor: pointer;
+  font-size: 0.775rem;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background var(--transition), color var(--transition);
+  border-radius: 4px;
+  margin: 0 0.35rem;
+}
+
+.archived-rooms li:hover {
+  background: var(--bg-hover);
+  color: var(--text-muted);
+}
+
+.archived-rooms li .room-name-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
 #sidebar-actions {
   padding: 0.35rem;
   border-top: 1px solid var(--border);

@@ -7,8 +7,13 @@ const tauriInvoke = window.__TAURI__?.core?.invoke as
 
 const invoke = tauriInvoke ?? fakeInvoke;
 
+const archivedRooms: string[] = JSON.parse(
+  localStorage.getItem("nerve-archived-rooms") ?? "[]",
+);
+
 const app = Elm.Main.init({
   node: document.getElementById("app"),
+  flags: { archivedRooms },
 });
 
 // Command map: Elm command names -> Tauri invoke names
@@ -60,6 +65,11 @@ app.ports.resizeComposeInput.subscribe(() => {
     // Show scrollbar only when at max height
     el.style.overflowY = el.scrollHeight > el.offsetHeight ? "auto" : "hidden";
   });
+});
+
+// Persist archived room IDs to localStorage
+app.ports.saveArchivedRooms.subscribe((ids: string[]) => {
+  localStorage.setItem("nerve-archived-rooms", JSON.stringify(ids));
 });
 
 // Zoom: Cmd/Ctrl + / - / 0 to adjust base font size

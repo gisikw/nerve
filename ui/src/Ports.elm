@@ -4,6 +4,7 @@ port module Ports exposing
     , resizeComposeInput
     , onScrollNearTop
     , onScrollNearBottom
+    , saveArchivedRooms
     )
 
 import Json.Encode as E
@@ -29,3 +30,8 @@ port onScrollNearTop : (() -> msg) -> Sub msg
 {-| Fired by JS when the messages container is scrolled back near the bottom.
 -}
 port onScrollNearBottom : (() -> msg) -> Sub msg
+
+
+{-| Persist archived room IDs to localStorage.
+-}
+port saveArchivedRooms : E.Value -> Cmd msg

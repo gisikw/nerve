@@ -7,6 +7,7 @@ module Model exposing
 
 import Dict exposing (Dict)
 import Json.Encode as E
+import Set exposing (Set)
 import Time
 import Types exposing (..)
 
@@ -37,6 +38,8 @@ type alias Model =
     , typingUsers : List String
     , paginationToken : Maybe String
     , hasOlderHistory : Bool
+    , archivedRoomIds : Set String
+    , showArchived : Bool
     }
 
 
@@ -82,6 +85,10 @@ type Msg
       -- Pagination
     | LoadOlderMessages
     | ResumePolling
+      -- Room archiving
+    | ArchiveRoom String
+    | UnarchiveRoom String
+    | ToggleArchived
 
 
 initialModel : Model
@@ -106,4 +113,6 @@ initialModel =
     , typingUsers = []
     , paginationToken = Nothing
     , hasOlderHistory = False
+    , archivedRoomIds = Set.empty
+    , showArchived = False
     }

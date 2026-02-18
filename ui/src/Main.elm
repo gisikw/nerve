@@ -8,6 +8,7 @@ import Html.Events exposing (onClick, onInput)
 import Json.Decode as D
 import Model exposing (Model, Msg(..), Page(..), initialModel)
 import Ports
+import Set
 import Task
 import Time
 import Types exposing (Room)
@@ -17,7 +18,7 @@ import View.Messages
 import View.Sidebar
 
 
-main : Program () Model Msg
+main : Program D.Value Model Msg
 main =
     Browser.element
         { init = init
@@ -27,9 +28,19 @@ main =
         }
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( initialModel, Task.perform GotTimeZone Time.here )
+init : D.Value -> ( Model, Cmd Msg )
+init flags =
+    let
+        archivedIds =
+            flags
+                |> D.decodeValue (D.field "archivedRooms" (D.list D.string))
+                |> Result.withDefault []
+                |> Set.fromList
+
+        model =
+            { initialModel | archivedRoomIds = archivedIds }
+    in
+    ( model, Task.perform GotTimeZone Time.here )
 
 
 view : Model -> Html Msg
