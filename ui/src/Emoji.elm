@@ -1,0 +1,321 @@
+module Emoji exposing (replaceShortcodes, search)
+
+import Dict exposing (Dict)
+
+
+{-| Replace all :shortcode: patterns in the string with their emoji.
+-}
+replaceShortcodes : String -> String
+replaceShortcodes input =
+    replaceHelper input ""
+
+
+replaceHelper : String -> String -> String
+replaceHelper remaining acc =
+    case findNextShortcode remaining of
+        Nothing ->
+            acc ++ remaining
+
+        Just ( before, code, after ) ->
+            case Dict.get code shortcodes of
+                Just emoji ->
+                    replaceHelper after (acc ++ before ++ emoji)
+
+                Nothing ->
+                    replaceHelper after (acc ++ before ++ ":" ++ code ++ ":")
+
+
+{-| Find the next :shortcode: in the string.
+Returns (text before, shortcode without colons, text after) or Nothing.
+-}
+findNextShortcode : String -> Maybe ( String, String, String )
+findNextShortcode s =
+    case String.indices ":" s of
+        [] ->
+            Nothing
+
+        firstColon :: rest ->
+            let
+                after =
+                    String.dropLeft (firstColon + 1) s
+
+                before =
+                    String.left firstColon s
+            in
+            case String.indices ":" after of
+                [] ->
+                    Nothing
+
+                secondColon :: _ ->
+                    let
+                        code =
+                            String.left secondColon after
+
+                        remainder =
+                            String.dropLeft (secondColon + 1) after
+                    in
+                    if String.isEmpty code || String.contains " " code || String.contains "\n" code then
+                        -- Not a valid shortcode (empty or contains space/newline).
+                        -- Skip past this colon and try again.
+                        case findNextShortcode after of
+                            Nothing ->
+                                Nothing
+
+                            Just ( b2, c2, a2 ) ->
+                                Just ( before ++ ":" ++ b2, c2, a2 )
+
+                    else
+                        Just ( before, code, remainder )
+
+
+{-| Search for emoji matching a partial shortcode (without the leading colon).
+Returns up to 8 matches as (shortcode, emoji) tuples.
+-}
+search : String -> List ( String, String )
+search query =
+    if String.isEmpty query then
+        []
+
+    else
+        let
+            q =
+                String.toLower query
+        in
+        Dict.toList shortcodes
+            |> List.filter (\( code, _ ) -> String.startsWith q code)
+            |> List.sortBy Tuple.first
+            |> List.take 8
+
+
+shortcodes : Dict String String
+shortcodes =
+    Dict.fromList
+        [ ( "smile", "\u{1F604}" )
+        , ( "laughing", "\u{1F606}" )
+        , ( "grin", "\u{1F601}" )
+        , ( "joy", "\u{1F602}" )
+        , ( "rofl", "\u{1F923}" )
+        , ( "smiley", "\u{1F603}" )
+        , ( "wink", "\u{1F609}" )
+        , ( "blush", "\u{1F60A}" )
+        , ( "innocent", "\u{1F607}" )
+        , ( "heart_eyes", "\u{1F60D}" )
+        , ( "kissing_heart", "\u{1F618}" )
+        , ( "thinking", "\u{1F914}" )
+        , ( "raised_eyebrow", "\u{1F928}" )
+        , ( "neutral_face", "\u{1F610}" )
+        , ( "expressionless", "\u{1F611}" )
+        , ( "unamused", "\u{1F612}" )
+        , ( "rolling_eyes", "\u{1F644}" )
+        , ( "grimacing", "\u{1F62C}" )
+        , ( "relieved", "\u{1F60C}" )
+        , ( "pensive", "\u{1F614}" )
+        , ( "sleepy", "\u{1F62A}" )
+        , ( "drooling_face", "\u{1F924}" )
+        , ( "sleeping", "\u{1F634}" )
+        , ( "mask", "\u{1F637}" )
+        , ( "cowboy", "\u{1F920}" )
+        , ( "sunglasses", "\u{1F60E}" )
+        , ( "nerd", "\u{1F913}" )
+        , ( "monocle", "\u{1F9D0}" )
+        , ( "confused", "\u{1F615}" )
+        , ( "worried", "\u{1F61F}" )
+        , ( "frowning", "\u{2639}\u{FE0F}" )
+        , ( "open_mouth", "\u{1F62E}" )
+        , ( "hushed", "\u{1F62F}" )
+        , ( "astonished", "\u{1F632}" )
+        , ( "flushed", "\u{1F633}" )
+        , ( "pleading", "\u{1F97A}" )
+        , ( "cry", "\u{1F622}" )
+        , ( "sob", "\u{1F62D}" )
+        , ( "scream", "\u{1F631}" )
+        , ( "sweat", "\u{1F613}" )
+        , ( "angry", "\u{1F620}" )
+        , ( "rage", "\u{1F621}" )
+        , ( "exploding_head", "\u{1F92F}" )
+        , ( "skull", "\u{1F480}" )
+        , ( "poop", "\u{1F4A9}" )
+        , ( "clown", "\u{1F921}" )
+        , ( "ghost", "\u{1F47B}" )
+        , ( "alien", "\u{1F47D}" )
+        , ( "robot", "\u{1F916}" )
+        , ( "wave", "\u{1F44B}" )
+        , ( "ok_hand", "\u{1F44C}" )
+        , ( "pinching_hand", "\u{1F90F}" )
+        , ( "v", "\u{270C}\u{FE0F}" )
+        , ( "crossed_fingers", "\u{1F91E}" )
+        , ( "metal", "\u{1F918}" )
+        , ( "call_me", "\u{1F919}" )
+        , ( "point_left", "\u{1F448}" )
+        , ( "point_right", "\u{1F449}" )
+        , ( "point_up", "\u{1F446}" )
+        , ( "point_down", "\u{1F447}" )
+        , ( "thumbsup", "\u{1F44D}" )
+        , ( "+1", "\u{1F44D}" )
+        , ( "thumbsdown", "\u{1F44E}" )
+        , ( "-1", "\u{1F44E}" )
+        , ( "fist", "\u{270A}" )
+        , ( "punch", "\u{1F44A}" )
+        , ( "clap", "\u{1F44F}" )
+        , ( "raised_hands", "\u{1F64C}" )
+        , ( "handshake", "\u{1F91D}" )
+        , ( "pray", "\u{1F64F}" )
+        , ( "writing_hand", "\u{270D}\u{FE0F}" )
+        , ( "muscle", "\u{1F4AA}" )
+        , ( "brain", "\u{1F9E0}" )
+        , ( "eyes", "\u{1F440}" )
+        , ( "eye", "\u{1F441}\u{FE0F}" )
+        , ( "heart", "\u{2764}\u{FE0F}" )
+        , ( "orange_heart", "\u{1F9E1}" )
+        , ( "yellow_heart", "\u{1F49B}" )
+        , ( "green_heart", "\u{1F49A}" )
+        , ( "blue_heart", "\u{1F499}" )
+        , ( "purple_heart", "\u{1F49C}" )
+        , ( "black_heart", "\u{1F5A4}" )
+        , ( "broken_heart", "\u{1F494}" )
+        , ( "fire", "\u{1F525}" )
+        , ( "100", "\u{1F4AF}" )
+        , ( "star", "\u{2B50}" )
+        , ( "sparkles", "\u{2728}" )
+        , ( "zap", "\u{26A1}" )
+        , ( "boom", "\u{1F4A5}" )
+        , ( "tada", "\u{1F389}" )
+        , ( "confetti_ball", "\u{1F38A}" )
+        , ( "trophy", "\u{1F3C6}" )
+        , ( "medal", "\u{1F3C5}" )
+        , ( "rocket", "\u{1F680}" )
+        , ( "airplane", "\u{2708}\u{FE0F}" )
+        , ( "sun", "\u{2600}\u{FE0F}" )
+        , ( "moon", "\u{1F319}" )
+        , ( "cloud", "\u{2601}\u{FE0F}" )
+        , ( "umbrella", "\u{2602}\u{FE0F}" )
+        , ( "snowflake", "\u{2744}\u{FE0F}" )
+        , ( "rainbow", "\u{1F308}" )
+        , ( "dog", "\u{1F436}" )
+        , ( "cat", "\u{1F431}" )
+        , ( "fox", "\u{1F98A}" )
+        , ( "bear", "\u{1F43B}" )
+        , ( "unicorn", "\u{1F984}" )
+        , ( "bug", "\u{1F41B}" )
+        , ( "butterfly", "\u{1F98B}" )
+        , ( "turtle", "\u{1F422}" )
+        , ( "octopus", "\u{1F419}" )
+        , ( "crab", "\u{1F980}" )
+        , ( "bee", "\u{1F41D}" )
+        , ( "flower", "\u{1F33A}" )
+        , ( "rose", "\u{1F339}" )
+        , ( "sunflower", "\u{1F33B}" )
+        , ( "tree", "\u{1F333}" )
+        , ( "cactus", "\u{1F335}" )
+        , ( "mushroom", "\u{1F344}" )
+        , ( "pizza", "\u{1F355}" )
+        , ( "hamburger", "\u{1F354}" )
+        , ( "fries", "\u{1F35F}" )
+        , ( "hotdog", "\u{1F32D}" )
+        , ( "taco", "\u{1F32E}" )
+        , ( "burrito", "\u{1F32F}" )
+        , ( "egg", "\u{1F95A}" )
+        , ( "coffee", "\u{2615}" )
+        , ( "beer", "\u{1F37A}" )
+        , ( "wine", "\u{1F377}" )
+        , ( "cocktail", "\u{1F378}" )
+        , ( "cake", "\u{1F370}" )
+        , ( "cookie", "\u{1F36A}" )
+        , ( "chocolate", "\u{1F36B}" )
+        , ( "candy", "\u{1F36C}" )
+        , ( "apple", "\u{1F34E}" )
+        , ( "lemon", "\u{1F34B}" )
+        , ( "watermelon", "\u{1F349}" )
+        , ( "avocado", "\u{1F951}" )
+        , ( "eggplant", "\u{1F346}" )
+        , ( "corn", "\u{1F33D}" )
+        , ( "check", "\u{2705}" )
+        , ( "x", "\u{274C}" )
+        , ( "warning", "\u{26A0}\u{FE0F}" )
+        , ( "question", "\u{2753}" )
+        , ( "exclamation", "\u{2757}" )
+        , ( "bulb", "\u{1F4A1}" )
+        , ( "mag", "\u{1F50D}" )
+        , ( "lock", "\u{1F512}" )
+        , ( "unlock", "\u{1F513}" )
+        , ( "key", "\u{1F511}" )
+        , ( "hammer", "\u{1F528}" )
+        , ( "wrench", "\u{1F527}" )
+        , ( "gear", "\u{2699}\u{FE0F}" )
+        , ( "link", "\u{1F517}" )
+        , ( "paperclip", "\u{1F4CE}" )
+        , ( "scissors", "\u{2702}\u{FE0F}" )
+        , ( "pencil", "\u{270F}\u{FE0F}" )
+        , ( "memo", "\u{1F4DD}" )
+        , ( "book", "\u{1F4D6}" )
+        , ( "inbox", "\u{1F4E5}" )
+        , ( "outbox", "\u{1F4E4}" )
+        , ( "envelope", "\u{2709}\u{FE0F}" )
+        , ( "bell", "\u{1F514}" )
+        , ( "speaker", "\u{1F50A}" )
+        , ( "mute", "\u{1F507}" )
+        , ( "hourglass", "\u{231B}" )
+        , ( "stopwatch", "\u{23F1}\u{FE0F}" )
+        , ( "calendar", "\u{1F4C5}" )
+        , ( "chart", "\u{1F4C8}" )
+        , ( "pin", "\u{1F4CC}" )
+        , ( "clipboard", "\u{1F4CB}" )
+        , ( "flag", "\u{1F6A9}" )
+        , ( "construction", "\u{1F6A7}" )
+        , ( "recycle", "\u{267B}\u{FE0F}" )
+        , ( "white_check_mark", "\u{2705}" )
+        , ( "ballot_box_with_check", "\u{2611}\u{FE0F}" )
+        , ( "heavy_check_mark", "\u{2714}\u{FE0F}" )
+        , ( "laugh", "\u{1F606}" )
+        , ( "lol", "\u{1F602}" )
+        , ( "haha", "\u{1F602}" )
+        , ( "love", "\u{2764}\u{FE0F}" )
+        , ( "like", "\u{1F44D}" )
+        , ( "dislike", "\u{1F44E}" )
+        , ( "yes", "\u{2705}" )
+        , ( "no", "\u{274C}" )
+        , ( "shrug", "\u{1F937}" )
+        , ( "facepalm", "\u{1F926}" )
+        , ( "salute", "\u{1FAE1}" )
+        , ( "party", "\u{1F389}" )
+        , ( "gift", "\u{1F381}" )
+        , ( "balloon", "\u{1F388}" )
+        , ( "crown", "\u{1F451}" )
+        , ( "gem", "\u{1F48E}" )
+        , ( "money", "\u{1F4B0}" )
+        , ( "dollar", "\u{1F4B5}" )
+        , ( "pill", "\u{1F48A}" )
+        , ( "bandage", "\u{1FA79}" )
+        , ( "microbe", "\u{1F9A0}" )
+        , ( "dna", "\u{1F9EC}" )
+        , ( "satellite", "\u{1F6F0}\u{FE0F}" )
+        , ( "computer", "\u{1F4BB}" )
+        , ( "keyboard", "\u{2328}\u{FE0F}" )
+        , ( "printer", "\u{1F5A8}\u{FE0F}" )
+        , ( "phone", "\u{1F4F1}" )
+        , ( "tv", "\u{1F4FA}" )
+        , ( "camera", "\u{1F4F7}" )
+        , ( "video", "\u{1F4F9}" )
+        , ( "microphone", "\u{1F3A4}" )
+        , ( "headphones", "\u{1F3A7}" )
+        , ( "musical_note", "\u{1F3B5}" )
+        , ( "art", "\u{1F3A8}" )
+        , ( "guitar", "\u{1F3B8}" )
+        , ( "dice", "\u{1F3B2}" )
+        , ( "joker", "\u{1F0CF}" )
+        , ( "tent", "\u{26FA}" )
+        , ( "camping", "\u{1F3D5}\u{FE0F}" )
+        , ( "mountain", "\u{26F0}\u{FE0F}" )
+        , ( "beach", "\u{1F3D6}\u{FE0F}" )
+        , ( "house", "\u{1F3E0}" )
+        , ( "office", "\u{1F3E2}" )
+        , ( "hospital", "\u{1F3E5}" )
+        , ( "bank", "\u{1F3E6}" )
+        , ( "car", "\u{1F697}" )
+        , ( "bus", "\u{1F68C}" )
+        , ( "bike", "\u{1F6B2}" )
+        , ( "ship", "\u{1F6A2}" )
+        , ( "earth", "\u{1F30D}" )
+        , ( "globe", "\u{1F30E}" )
+        , ( "map", "\u{1F5FA}\u{FE0F}" )
+        ]

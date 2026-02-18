@@ -4,6 +4,7 @@ import Browser.Dom
 import Commands
 import Decode
 import Dict
+import Emoji
 import Json.Decode as D
 import Model exposing (Model, Msg(..), Page(..))
 import Ports
@@ -93,10 +94,13 @@ update msg model =
         -- Compose
         SetComposeText s ->
             let
+                replaced =
+                    Emoji.replaceShortcodes s
+
                 typingCmd =
                     case model.selectedRoomId of
                         Just roomId ->
-                            if not (String.isEmpty s) then
+                            if not (String.isEmpty replaced) then
                                 Commands.sendTypingNotice roomId True
 
                             else
@@ -105,7 +109,7 @@ update msg model =
                         Nothing ->
                             Cmd.none
             in
-            ( { model | composeText = s }
+            ( { model | composeText = replaced }
             , Cmd.batch [ Ports.resizeComposeInput (), typingCmd ]
             )
 
