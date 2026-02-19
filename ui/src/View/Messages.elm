@@ -271,6 +271,21 @@ messageBody msg =
             Nothing ->
                 div [ class "message-body" ] [ text msg.body ]
 
+    else if msg.msgType == "audio" then
+        case msg.mediaUrl of
+            Just url ->
+                div [ class "audio-container" ]
+                    [ button
+                        [ class "audio-play-btn"
+                        , attribute "data-mxc-audio" url
+                        , title "Play voice message"
+                        ]
+                        [ playIcon, span [] [ text "Voice message" ] ]
+                    ]
+
+            Nothing ->
+                div [ class "message-body" ] [ text "[audio]" ]
+
     else
         div [ class "message-body" ] (Markdown.render msg.body)
 
@@ -397,6 +412,30 @@ composeBar model =
             , onEnter SubmitMessage
             ]
             []
+        , Html.button
+            [ type_ "button"
+            , class
+                (if model.recording then
+                    "voice-btn recording"
+
+                 else
+                    "voice-btn"
+                )
+            , onClick ToggleRecording
+            , title
+                (if model.recording then
+                    "Stop recording"
+
+                 else
+                    "Record voice message"
+                )
+            ]
+            [ if model.recording then
+                stopIcon
+
+              else
+                micIcon
+            ]
         , Html.button [ type_ "submit", class "send-btn", title "Send message" ]
             [ sendIcon ]
         ]
@@ -434,6 +473,50 @@ speakerIcon =
         [ Svg.polygon [ SvgA.points "11 5 6 9 2 9 2 15 6 15 11 19 11 5" ] []
         , Svg.path [ SvgA.d "M15.54 8.46a5 5 0 0 1 0 7.07" ] []
         , Svg.path [ SvgA.d "M19.07 4.93a10 10 0 0 1 0 14.14" ] []
+        ]
+
+
+playIcon : Html msg
+playIcon =
+    Svg.svg
+        [ SvgA.viewBox "0 0 24 24"
+        , SvgA.width "16"
+        , SvgA.height "16"
+        , SvgA.fill "currentColor"
+        , SvgA.stroke "none"
+        ]
+        [ Svg.polygon [ SvgA.points "6 3 20 12 6 21 6 3" ] []
+        ]
+
+
+micIcon : Html msg
+micIcon =
+    Svg.svg
+        [ SvgA.viewBox "0 0 24 24"
+        , SvgA.width "18"
+        , SvgA.height "18"
+        , SvgA.fill "none"
+        , SvgA.stroke "currentColor"
+        , SvgA.strokeWidth "2"
+        , SvgA.strokeLinecap "round"
+        , SvgA.strokeLinejoin "round"
+        ]
+        [ Svg.path [ SvgA.d "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" ] []
+        , Svg.path [ SvgA.d "M19 10v2a7 7 0 0 1-14 0v-2" ] []
+        , Svg.line [ SvgA.x1 "12", SvgA.y1 "19", SvgA.x2 "12", SvgA.y2 "22" ] []
+        ]
+
+
+stopIcon : Html msg
+stopIcon =
+    Svg.svg
+        [ SvgA.viewBox "0 0 24 24"
+        , SvgA.width "18"
+        , SvgA.height "18"
+        , SvgA.fill "currentColor"
+        , SvgA.stroke "none"
+        ]
+        [ Svg.rect [ SvgA.x "6", SvgA.y "6", SvgA.width "12", SvgA.height "12", SvgA.rx "2" ] []
         ]
 
 

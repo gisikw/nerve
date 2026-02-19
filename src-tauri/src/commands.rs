@@ -261,6 +261,37 @@ pub async fn send_image(
     }
 }
 
+/// Send a voice message to a room. Accepts base64-encoded audio data.
+#[tauri::command]
+pub async fn send_voice_message(
+    state: State<'_, MatrixState>,
+    room_id: String,
+    filename: String,
+    data: String,
+    mime_type: String,
+    duration_ms: Option<u64>,
+) -> Result<(), String> {
+    use base64::Engine;
+    let guard = state.client.lock().await;
+    if let Some(ref client) = *guard {
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(&data)
+            .map_err(|e| format!("Invalid base64 data: {e}"))?;
+        messages::send_voice_message(
+            client,
+            &room_id,
+            &filename,
+            bytes,
+            &mime_type,
+            duration_ms,
+        )
+        .await
+        .map_err(|e| format!("Failed to send voice message to room {room_id}: {e}"))
+    } else {
+        Err("Not logged in".to_string())
+    }
+}
+
 /// Download media from an mxc:// URI and return it as a data: URI.
 /// Uses the SDK's authenticated media download (handles Matrix v1.11+).
 #[tauri::command]

@@ -92,7 +92,10 @@ fn extract_content(msgtype: &MessageType) -> (String, String, Option<String>) {
             (caption.to_string(), "image".to_string(), url)
         }
         MessageType::File(_) => ("[file]".to_string(), "other".to_string(), None),
-        MessageType::Audio(_) => ("[audio]".to_string(), "other".to_string(), None),
+        MessageType::Audio(audio) => {
+            let url = mxc_uri_string(&audio.source);
+            (audio.body.clone(), "audio".to_string(), url)
+        }
         MessageType::Video(_) => ("[video]".to_string(), "other".to_string(), None),
         _ => ("[unsupported]".to_string(), "other".to_string(), None),
     }
@@ -332,6 +335,50 @@ pub async fn send_image(
         .info(Box::new(image_info)),
     ));
 
+    room.send(content).await?;
+    Ok(())
+}
+
+/// Send a voice/audio message to a room. Takes raw bytes, uploads to the
+/// homeserver's media repository, then sends an m.audio message with the
+/// resulting mxc URI and optional voice flag.
+pub async fn send_voice_message(
+    client: &Client,
+    room_id: &str,
+    filename: &str,
+    data: Vec<u8>,
+    mime_type: &str,
+    duration_ms: Option<u64>,
+) -> Result<()> {
+    use matrix_sdk::ruma::events::room::message::{AudioInfo, AudioMessageEventContent};
+
+    let room_id = error::parse_room_id(room_id)?;
+    let room = client
+        .get_room(&room_id)
+        .ok_or_else(|| NerveError::RoomNotFound(room_id.to_string()))?;
+
+    let content_type: mime::Mime = mime_type
+        .parse()
+        .unwrap_or(mime::APPLICATION_OCTET_STREAM);
+
+    let mxc_uri = client
+        .media()
+        .upload(&content_type, data.clone(), None)
+        .await?
+        .content_uri;
+
+    let mut audio_info = AudioInfo::new();
+    audio_info.mimetype = Some(mime_type.to_string());
+    audio_info.size = Some((data.len() as u32).into());
+    if let Some(ms) = duration_ms {
+        audio_info.duration = Some(std::time::Duration::from_millis(ms));
+    }
+
+    let audio_content =
+        AudioMessageEventContent::new(filename.to_string(), MediaSource::Plain(mxc_uri))
+            .info(Some(Box::new(audio_info)));
+
+    let content = RoomMessageEventContent::new(MessageType::Audio(audio_content));
     room.send(content).await?;
     Ok(())
 }

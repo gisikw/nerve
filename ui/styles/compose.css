@@ -48,3 +48,37 @@
 #compose .send-btn:hover {
   background: var(--accent-hover, #234a73);
 }
+
+#compose .voice-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  margin-top: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: color var(--transition), border-color var(--transition), background var(--transition);
+  flex-shrink: 0;
+}
+
+#compose .voice-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+#compose .voice-btn.recording {
+  color: #e53e3e;
+  border-color: #e53e3e;
+  background: rgba(229, 62, 62, 0.1);
+  animation: recording-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes recording-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}

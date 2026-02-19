@@ -360,6 +360,17 @@ update msg model =
         SpeakMessage body ->
             ( model, Commands.speakText body )
 
+        -- Voice recording
+        ToggleRecording ->
+            if model.recording then
+                ( model, Ports.stopRecording () )
+
+            else
+                ( model, Ports.startRecording () )
+
+        RecordingStateChanged isRecording ->
+            ( { model | recording = isRecording }, Cmd.none )
+
         -- Time zone
         GotTimeZone zone ->
             ( { model | timeZone = zone }, Cmd.none )
@@ -544,6 +555,15 @@ dispatchTag tag payload model =
 
         "sendImage" ->
             -- After image upload, refresh messages
+            case model.selectedRoomId of
+                Just roomId ->
+                    ( model, Commands.getMessages roomId )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        "sendVoiceMessage" ->
+            -- After voice message upload, refresh messages
             case model.selectedRoomId of
                 Just roomId ->
                     ( model, Commands.getMessages roomId )

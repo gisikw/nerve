@@ -39,6 +39,7 @@ const commands: Record<string, string> = {
   getStreams: "get_streams",
   sendStreamAction: "send_stream_action",
   speakText: "speak_text",
+  sendVoiceMessage: "send_voice_message",
 };
 
 // Listen for outgoing commands from Elm
@@ -167,6 +168,8 @@ document.addEventListener("keydown", (e) => {
     e.preventDefault(); // Let Elm handle Cmd+/
   } else if (e.key === ".") {
     e.preventDefault(); // Let Elm handle Cmd+.
+  } else if (e.key === "V" && e.shiftKey) {
+    e.preventDefault(); // Let Elm handle Cmd+Shift+V (voice recording)
   }
 });
 
@@ -507,6 +510,166 @@ document.addEventListener("paste", (e) => {
     }
   }
 });
+
+// ---------- Audio message playback ----------
+
+let currentPlayingAudio: HTMLAudioElement | null = null;
+let currentPlayingBtn: HTMLElement | null = null;
+
+document.addEventListener("click", async (e) => {
+  const btn = (e.target as HTMLElement).closest<HTMLElement>(
+    "[data-mxc-audio]",
+  );
+  if (!btn) return;
+
+  const mxcUri = btn.dataset.mxcAudio;
+  if (!mxcUri) return;
+
+  // If this button is already playing, stop it
+  if (currentPlayingBtn === btn && currentPlayingAudio) {
+    currentPlayingAudio.pause();
+    currentPlayingAudio = null;
+    btn.classList.remove("playing");
+    currentPlayingBtn = null;
+    return;
+  }
+
+  // Stop any currently playing audio
+  if (currentPlayingAudio) {
+    currentPlayingAudio.pause();
+    currentPlayingBtn?.classList.remove("playing");
+    currentPlayingAudio = null;
+    currentPlayingBtn = null;
+  }
+
+  // Check cache first
+  let dataUri = resolvedMedia.get(mxcUri);
+  if (!dataUri) {
+    btn.classList.add("loading");
+    try {
+      dataUri = (await invoke("get_media", { mxcUri })) as string;
+      resolvedMedia.set(mxcUri, dataUri);
+    } catch (err) {
+      console.error("Failed to download audio:", mxcUri, err);
+      btn.classList.remove("loading");
+      return;
+    }
+    btn.classList.remove("loading");
+  }
+
+  const audio = new Audio(dataUri);
+  currentPlayingAudio = audio;
+  currentPlayingBtn = btn;
+  btn.classList.add("playing");
+
+  audio.addEventListener("ended", () => {
+    btn.classList.remove("playing");
+    currentPlayingAudio = null;
+    currentPlayingBtn = null;
+  });
+  audio.addEventListener("error", () => {
+    btn.classList.remove("playing");
+    currentPlayingAudio = null;
+    currentPlayingBtn = null;
+  });
+
+  audio.play().catch(() => {
+    btn.classList.remove("playing");
+    currentPlayingAudio = null;
+    currentPlayingBtn = null;
+  });
+});
+
+// ---------- Voice recording (press-to-talk) ----------
+
+let mediaRecorder: MediaRecorder | null = null;
+let recordingChunks: Blob[] = [];
+let recordingStartTime = 0;
+
+async function startRecording() {
+  if (mediaRecorder && mediaRecorder.state !== "inactive") return;
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    // Prefer webm/opus (widely supported), fall back to whatever the browser offers
+    const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+      ? "audio/webm;codecs=opus"
+      : "audio/webm";
+    mediaRecorder = new MediaRecorder(stream, { mimeType });
+    recordingChunks = [];
+    recordingStartTime = Date.now();
+
+    mediaRecorder.addEventListener("dataavailable", (e) => {
+      if (e.data.size > 0) recordingChunks.push(e.data);
+    });
+
+    mediaRecorder.addEventListener("stop", async () => {
+      const durationMs = Date.now() - recordingStartTime;
+      // Stop all tracks to release the microphone
+      stream.getTracks().forEach((t) => t.stop());
+
+      if (recordingChunks.length === 0) return;
+
+      const blob = new Blob(recordingChunks, { type: mimeType });
+      const roomId = getSelectedRoomId();
+      if (!roomId) return;
+
+      // Convert to base64
+      const base64 = await blobToBase64(blob);
+      const ext = mimeType.includes("webm") ? "webm" : "ogg";
+
+      try {
+        await invoke("send_voice_message", {
+          roomId,
+          filename: `voice-message.${ext}`,
+          data: base64,
+          mimeType: mimeType.split(";")[0], // "audio/webm"
+          durationMs: Math.round(durationMs),
+        });
+        app.ports.receiveFromTauri.send({
+          tag: "sendVoiceMessage",
+          payload: null,
+        });
+      } catch (err) {
+        console.error("Failed to send voice message:", err);
+        app.ports.receiveFromTauri.send({
+          tag: "error",
+          payload: `Voice message failed: ${err}`,
+        });
+      }
+    });
+
+    mediaRecorder.start();
+    app.ports.onRecordingState.send(true);
+  } catch (err) {
+    console.error("Failed to start recording:", err);
+    app.ports.onRecordingState.send(false);
+  }
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== "inactive") {
+    mediaRecorder.stop();
+    mediaRecorder = null;
+  }
+  app.ports.onRecordingState.send(false);
+}
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      resolve(result.split(",", 2)[1]);
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+// Listen for recording commands from Elm
+app.ports.startRecording.subscribe(() => startRecording());
+app.ports.stopRecording.subscribe(() => stopRecording());
 
 // Check session on startup
 invoke("check_session")

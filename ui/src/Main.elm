@@ -162,6 +162,7 @@ shortcutsModal =
                 , shortcut [ "\u{2318}/Ctrl", "/" ] "This help"
                 , shortcut [ "\u{2318}/Ctrl", "." ] "Toggle streams panel"
                 , shortcut [ "\u{2318}/Ctrl", "+/\u{2212}/0" ] "Zoom in / out / reset"
+                , shortcut [ "\u{2318}/Ctrl", "Shift", "V" ] "Record voice message"
                 , shortcut [ "Enter" ] "Send message"
                 , shortcut [ "Shift", "Enter" ] "New line"
                 , shortcut [ "Esc" ] "Close modal"
@@ -228,6 +229,7 @@ subscriptions model =
                                 , Browser.Events.onKeyDown printableKeyDecoder
                                 , Ports.onScrollNearTop (\_ -> LoadOlderMessages)
                                 , Ports.onScrollNearBottom (\_ -> ResumePolling)
+                                , Ports.onRecordingState RecordingStateChanged
                                 ]
 
                         Nothing ->
@@ -274,15 +276,22 @@ printableKeyDecoder =
 -}
 cmdKDecoder : D.Decoder Msg
 cmdKDecoder =
-    D.map3
-        (\key ctrl meta ->
-            if (ctrl || meta) && key == "k" then
+    D.map4
+        (\key ctrl meta shift ->
+            let
+                mod =
+                    ctrl || meta
+            in
+            if mod && shift && key == "V" then
+                Just ToggleRecording
+
+            else if mod && key == "k" then
                 Just OpenSwitcher
 
-            else if (ctrl || meta) && key == "/" then
+            else if mod && key == "/" then
                 Just OpenShortcuts
 
-            else if (ctrl || meta) && key == "." then
+            else if mod && key == "." then
                 Just ToggleStreamsPanel
 
             else if key == "Escape" then
@@ -294,6 +303,7 @@ cmdKDecoder =
         (D.field "key" D.string)
         (D.field "ctrlKey" D.bool)
         (D.field "metaKey" D.bool)
+        (D.field "shiftKey" D.bool)
         |> D.andThen
             (\maybe ->
                 case maybe of

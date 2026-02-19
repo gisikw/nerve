@@ -6,6 +6,9 @@ port module Ports exposing
     , onScrollNearBottom
     , saveArchivedRooms
     , saveTtsEnabled
+    , startRecording
+    , stopRecording
+    , onRecordingState
     )
 
 import Json.Encode as E
@@ -41,3 +44,18 @@ port saveArchivedRooms : E.Value -> Cmd msg
 {-| Persist TTS enabled state to localStorage.
 -}
 port saveTtsEnabled : E.Value -> Cmd msg
+
+
+{-| Tell JS to start recording audio from the microphone.
+-}
+port startRecording : () -> Cmd msg
+
+
+{-| Tell JS to stop recording and send the voice message.
+-}
+port stopRecording : () -> Cmd msg
+
+
+{-| Fired by JS when recording state changes (true = recording, false = stopped).
+-}
+port onRecordingState : (Bool -> msg) -> Sub msg

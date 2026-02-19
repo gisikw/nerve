@@ -183,6 +183,41 @@
   font-size: 0.8rem;
 }
 
+/* Audio/voice messages */
+
+.audio-container {
+  margin-top: 0.25rem;
+}
+
+.audio-play-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition);
+}
+
+.audio-play-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.audio-play-btn.playing {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.audio-play-btn.loading {
+  opacity: 0.6;
+  cursor: wait;
+}
+
 /* Typing indicator */
 
 #typing-indicator {

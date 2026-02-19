@@ -47,6 +47,7 @@ type alias Model =
     , streamsCollapsed : Set String
     , ttsEnabled : Bool
     , lastMessageId : Maybe String
+    , recording : Bool
     }
 
 
@@ -108,6 +109,9 @@ type Msg
       -- Text-to-speech
     | ToggleTTS
     | SpeakMessage String -- message body
+      -- Voice recording
+    | ToggleRecording
+    | RecordingStateChanged Bool
 
 
 initialModel : Model
@@ -141,4 +145,5 @@ initialModel =
     , streamsCollapsed = Set.empty
     , ttsEnabled = False
     , lastMessageId = Nothing
+    , recording = False
     }

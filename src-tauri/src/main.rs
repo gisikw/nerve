@@ -33,6 +33,7 @@ fn main() {
             commands::send_typing_notice,
             commands::get_media,
             commands::send_image,
+            commands::send_voice_message,
             commands::get_pinned_events,
             commands::pin_message,
             commands::unpin_message,
