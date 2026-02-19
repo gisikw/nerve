@@ -38,29 +38,36 @@ be ticketed for remediation. No grandfathering.
   Good line height, sensible max-width, monospace for code blocks, proper
   quote styling. This is a daily-driver client, not a prototype.
 
-### Elm/JS boundary
+### Svelte conventions
 
-- **Elm owns behavior. JS is plumbing.** Decisions about *what happens*
-  live in the Elm architecture (Model/Update/Subscriptions). The JS glue
-  layer (`main.ts`) does exactly two things: (1) bridge Elm ports to Tauri
-  IPC, and (2) perform DOM operations that Elm cannot express (measuring
-  `scrollHeight`, etc.). If a behavior can be expressed as an Elm
-  subscription, decoder, or `Browser.Dom` task, it must be — even if the
-  JS version would be fewer lines.
-- **JS glue is typed.** The glue layer is TypeScript, not JavaScript. Port
-  types are declared in `src/elm.d.ts`. New ports get type declarations.
-- **All JS DOM operations are port-initiated.** JS must not attach its own
-  event listeners or timers to drive behavior. Every JS side-effect is
-  triggered by an Elm port call. Exceptions are infrastructure that
-  operates outside Elm's managed DOM tree: the Tauri IPC bridge
-  (`sendToTauri`/`receiveFromTauri`) and zoom control (which mutates
-  `document.documentElement.style.fontSize` and persists to
-  `localStorage` — both inaccessible from Elm).
-- **The test for "should this be JS?" is capability, not convenience.**
-  Valid reasons for JS: the operation requires imperative DOM measurement
-  (`scrollHeight`, `getBoundingClientRect`), direct style mutation that
-  Elm's virtual DOM can't express, or WebAPI access not exposed by
-  `Browser.Dom`. "It's faster to write in JS" is not a valid reason.
+- **Svelte 5 with runes.** Use `$state`, `$derived`, `$effect`, `$props`
+  — not the Svelte 4 store syntax (`writable`, `derived`, `$:`). Runes
+  are the reactivity model going forward.
+- **No SvelteKit.** This is a Tauri SPA. Vite is the build tool. No
+  router, no server-side rendering, no `+page.svelte` conventions.
+- **Components are TypeScript.** All `<script>` blocks use `lang="ts"`.
+- **Stores are `.svelte.ts` files.** Reactive state lives in
+  `src/lib/stores/*.svelte.ts` using module-level `$state` runes. These
+  files export getter functions and mutation functions — not raw state
+  variables. Components call `getRooms()`, not `rooms`.
+- **Tauri IPC via typed wrapper.** `src/lib/tauri.ts` exports typed
+  functions for every Tauri command and event subscription. Components
+  never call `window.__TAURI__` directly.
+- **CSS uses existing design tokens.** Components use `<style>` blocks
+  with scoped CSS, referencing the CSS custom properties from
+  `styles/base.css` (`var(--accent)`, `var(--bg-surface)`, etc.).
+  Global styles stay in `styles/*.css`.
+- **`main.ts` is infrastructure.** It mounts the Svelte app and handles
+  concerns outside Svelte's component tree: zoom control, mxc:// image
+  resolution, TTS playback, audio playback. These are DOM-level concerns
+  that don't belong in components.
+
+### Legacy Elm code
+
+The Elm source (`src/*.elm`, `src/View/*.elm`) remains in tree but is no
+longer the build target. It will be removed after the Svelte migration is
+complete (ner-777d). The `elm.d.ts` type declarations and `elm.json` are
+also legacy artifacts retained for reference during porting.
 
 ## Specifications and Tests
 
@@ -86,9 +93,9 @@ be ticketed for remediation. No grandfathering.
 
 ### Test layers
 
-- **Elm unit tests** (`ui/tests/*.elm`) verify decoders, update logic, and
-  view helpers. Run with `cd ui && npx elm-test`. These are fast, pure, and
-  cover all state transitions and JSON parsing.
+- **Elm unit tests** (`ui/tests/*.elm`) are legacy from the Elm frontend.
+  They verify decoders and update logic for the Elm codebase and will be
+  replaced as features are ported to Svelte.
 - **Fake backend** (`ui/fake-state.ts`) is a stateful in-memory simulator
   that replaces Tauri when running in a browser via `npx vite`. Supports
   all commands, maintains message and session state across round-trips,
@@ -163,9 +170,10 @@ be ticketed for remediation. No grandfathering.
   `get_room_messages`. Single-word auth commands (`login`, `logout`) are
   fine — they're universally understood without a noun. The frontend calls
   these by name — clarity matters.
-- **Elm follows Elm conventions.** `CamelCase` module names matching file
-  names (`View/Login.elm` → `View.Login`). `camelCase` for functions and
-  values. Ports use `camelCase` (`sendToTauri`, `receiveFromTauri`).
+- **Svelte follows Svelte conventions.** `PascalCase` for component
+  filenames (`Login.svelte`, `RoomList.svelte`). `camelCase` for
+  functions, variables, and store files (`rooms.svelte.ts`).
+  Props use `$props()`, not the legacy `export let` syntax.
 
 ## Build
 
@@ -191,8 +199,9 @@ toggle session state.
   to route Elm commands to the Vite server.
 - **`ui/vite-plugin-fake.ts`** — Vite plugin that mounts HTTP middleware
   and a WebSocket server. Loaded in `vite.config.js`.
-- **`ui/main.ts`** — Falls through to `fakeInvoke` when `window.__TAURI__`
-  is absent. No Elm changes required.
+- **`ui/main.ts`** — Mounts the Svelte app. The `invoke` function in
+  `src/lib/tauri.ts` falls through to `fakeInvoke` when `window.__TAURI__`
+  is absent.
 
 ### Running
 
@@ -228,9 +237,10 @@ All responses are JSON: `{"ok": true}` on success, `{"ok": false, "error": "..."
 - **State lives server-side.** The Vite Node process holds state; the
   browser fetches it. This lets external drivers and the browser see the
   same state without cross-frame messaging.
-- **No Elm changes.** The fake backend is invisible to Elm. Same ports,
-  same JSON shapes, same polling. The only difference is `main.ts`
-  routing to `fetch()` instead of `invoke()`.
+- **No frontend changes.** The fake backend is invisible to the Svelte
+  app. Same command names, same JSON shapes. The `invoke` function in
+  `src/lib/tauri.ts` routes to `fetch()` instead of Tauri IPC when
+  running in a browser.
 - **Seed data is realistic.** Rooms and messages reflect actual usage
   patterns (group rooms, DMs, notices, multi-party conversation) so the
   UI renders representatively without setup.
