@@ -1,0 +1,202 @@
+<script lang="ts">
+  import { onMount, tick } from "svelte";
+  import type { Message } from "./lib/tauri";
+  import { getPinnedEvents, unpinMessage } from "./lib/tauri";
+  import {
+    getMessageList,
+    isLoading,
+    loadMessages,
+    loadOlderMessages,
+    clearMessages,
+  } from "./lib/stores/messages.svelte";
+  import { getSelectedRoomId } from "./lib/stores/rooms.svelte";
+  import { getTypingUsers } from "./lib/stores/typing.svelte";
+  import MessageItem from "./MessageItem.svelte";
+
+  // --- Pinned state ---
+  let pinnedIds = $state<Set<string>>(new Set());
+  let showPinned = $state(false);
+
+  // --- Pagination ---
+  let loadingOlder = $state(false);
+
+  // --- Scroll container ref ---
+  let messagesEl: HTMLDivElement | undefined = $state();
+
+  // --- Derived ---
+  let messages = $derived(getMessageList());
+  let loading = $derived(isLoading());
+  let selectedRoomId = $derived(getSelectedRoomId());
+
+  let typingUsers = $derived(selectedRoomId ? getTypingUsers(selectedRoomId) : []);
+
+  let pinnedMessages = $derived(
+    messages.filter((m) => pinnedIds.has(m.event_id)),
+  );
+
+  // --- Room switch: load messages + pinned events ---
+  $effect(() => {
+    const roomId = selectedRoomId;
+    if (!roomId) return;
+
+    // Reset state for new room
+    pinnedIds = new Set();
+    showPinned = false;
+    loadingOlder = false;
+
+    loadMessages(roomId);
+    getPinnedEvents(roomId)
+      .then((ids) => { pinnedIds = new Set(ids); })
+      .catch(() => {});
+  });
+
+  // --- Autoscroll on new messages ---
+  let prevMessageCount = $state(0);
+
+  $effect(() => {
+    const count = messages.length;
+    if (count > prevMessageCount && messagesEl) {
+      const el = messagesEl;
+      const nearBottom =
+        el.scrollTop + el.clientHeight >= el.scrollHeight - 100;
+      if (nearBottom) {
+        tick().then(() => {
+          el.scrollTop = el.scrollHeight;
+        });
+      }
+    }
+    prevMessageCount = count;
+  });
+
+  // Force scroll to bottom on room switch
+  $effect(() => {
+    // Track room changes
+    const _roomId = selectedRoomId;
+    if (!_roomId) return;
+    // Wait for messages to render, then scroll
+    tick().then(() => {
+      if (messagesEl) {
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+    });
+  });
+
+  // --- Scroll handler for pagination ---
+  function handleScroll() {
+    if (!messagesEl || !selectedRoomId) return;
+    if (messagesEl.scrollTop < 50 && !loadingOlder && !loading) {
+      loadOlder();
+    }
+  }
+
+  async function loadOlder() {
+    const roomId = selectedRoomId;
+    if (!roomId) return;
+    loadingOlder = true;
+    const prevHeight = messagesEl?.scrollHeight ?? 0;
+    await loadOlderMessages(roomId);
+    loadingOlder = false;
+    // Restore scroll position after prepending
+    await tick();
+    if (messagesEl) {
+      messagesEl.scrollTop = messagesEl.scrollHeight - prevHeight;
+    }
+  }
+
+  // --- Pinned bar ---
+  function togglePinned() {
+    showPinned = !showPinned;
+  }
+
+  function handleUnpin(eventId: string) {
+    const roomId = selectedRoomId;
+    if (!roomId) return;
+    unpinMessage(roomId, eventId).then(() => {
+      getPinnedEvents(roomId)
+        .then((ids) => { pinnedIds = new Set(ids); })
+        .catch(() => {});
+    });
+  }
+
+  // --- Grouping logic: 5 minute gap or sender change ---
+  function isGroupStart(messages: Message[], index: number): boolean {
+    if (index === 0) return true;
+    const prev = messages[index - 1];
+    const curr = messages[index];
+    return (
+      prev.sender !== curr.sender ||
+      curr.timestamp - prev.timestamp >= 300_000
+    );
+  }
+
+  // --- Typing indicator ---
+  function formatSender(userId: string): string {
+    const parts = userId.split(":");
+    return parts[0]?.slice(1) ?? userId;
+  }
+
+  function typingLabel(users: string[]): string {
+    const names = users.map(formatSender);
+    if (names.length === 1) return `${names[0]} is typing...`;
+    if (names.length === 2) return `${names[0]} and ${names[1]} are typing...`;
+    return `${names.slice(0, 2).join(", ")} and others are typing...`;
+  }
+</script>
+
+<!-- Pinned bar -->
+{#if pinnedIds.size > 0}
+  <div id="pinned-bar" class:expanded={showPinned}>
+    <button class="pinned-bar-header" onclick={togglePinned}>
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="17" x2="12" y2="22" />
+        <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z" />
+      </svg>
+      <span class="pinned-bar-label">{pinnedIds.size} pinned</span>
+      <span class="pinned-bar-toggle">{showPinned ? "Hide" : "Show"}</span>
+    </button>
+
+    {#if showPinned}
+      <div class="pinned-bar-messages">
+        {#each pinnedMessages as msg (msg.event_id)}
+          <div class="pinned-message-preview">
+            <span class="pinned-preview-sender">{formatSender(msg.sender)}</span>
+            <span class="pinned-preview-body">{msg.body.slice(0, 120)}</span>
+            <button
+              class="pinned-preview-unpin"
+              title="Unpin"
+              onclick={() => handleUnpin(msg.event_id)}
+            >Unpin</button>
+          </div>
+        {/each}
+      </div>
+    {/if}
+  </div>
+{/if}
+
+<!-- Messages area -->
+<div id="messages" bind:this={messagesEl} onscroll={handleScroll}>
+  {#if loading && messages.length === 0}
+    <p class="placeholder">Loading...</p>
+  {:else if messages.length === 0}
+    <p class="placeholder">No messages yet.</p>
+  {:else}
+    {#if loadingOlder}
+      <p class="loading-older">Loading older messages...</p>
+    {/if}
+    {#each messages as msg, i (msg.event_id)}
+      <MessageItem
+        message={msg}
+        isGroupStart={isGroupStart(messages, i)}
+        isPinned={pinnedIds.has(msg.event_id)}
+      />
+    {/each}
+  {/if}
+</div>
+
+<!-- Typing indicator -->
+{#if typingUsers.length > 0}
+  <div id="typing-indicator">
+    <span class="typing-dots">...</span>
+    <span class="typing-text">{typingLabel(typingUsers)}</span>
+  </div>
+{/if}

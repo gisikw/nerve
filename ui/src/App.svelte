@@ -17,6 +17,7 @@
   import { subscribeToEvents as subscribeStreamEvents } from "./lib/stores/streams.svelte";
   import Login from "./Login.svelte";
   import Sidebar from "./Sidebar.svelte";
+  import MessageList from "./MessageList.svelte";
 
   onMount(() => {
     initSession();
@@ -63,7 +64,7 @@
             </div>
           </div>
           <div id="room-content">
-            <p class="status">Message rendering will be ported in ner-f968.</p>
+            <MessageList />
           </div>
         {:else}
           <div id="no-room-selected">
