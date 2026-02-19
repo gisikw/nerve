@@ -18,6 +18,7 @@
   import Login from "./Login.svelte";
   import Sidebar from "./Sidebar.svelte";
   import MessageList from "./MessageList.svelte";
+  import ComposeBar from "./ComposeBar.svelte";
 
   onMount(() => {
     initSession();
@@ -65,6 +66,7 @@
           </div>
           <div id="room-content">
             <MessageList />
+            <ComposeBar />
           </div>
         {:else}
           <div id="no-room-selected">
