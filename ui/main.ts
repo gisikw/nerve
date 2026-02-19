@@ -132,14 +132,17 @@ function ttsStopAll() {
 }
 
 // Zoom: Cmd/Ctrl + / - / 0 to adjust base font size
-const ZOOM_STEP = 1;
-const ZOOM_MIN = 10;
-const ZOOM_MAX = 22;
-const ZOOM_DEFAULT = 16;
+const ZOOM_STEP = 2;
+const ZOOM_MIN = 16;
+const ZOOM_MAX = 40;
+const ZOOM_DEFAULT = 27;
 
 function getZoom(): number {
   const stored = localStorage.getItem("nerve-font-size");
-  return stored ? parseInt(stored, 10) : ZOOM_DEFAULT;
+  if (!stored) return ZOOM_DEFAULT;
+  const val = parseInt(stored, 10);
+  // If stored value is from old default (16), reset to new default
+  return val < ZOOM_MIN ? ZOOM_DEFAULT : val;
 }
 
 function setZoom(size: number) {
