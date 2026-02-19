@@ -1,5 +1,6 @@
 #compose {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   gap: 0.4rem;
   padding: 0.55rem 0.85rem;
@@ -81,4 +82,42 @@
 @keyframes recording-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
+}
+
+/* Attachment thumbnail strip above compose input */
+#compose-attachment {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+#compose-attachment img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+#compose-attachment .remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--bg-hover, rgba(255, 255, 255, 0.1));
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  transition: color var(--transition), border-color var(--transition);
+}
+
+#compose-attachment .remove-btn:hover {
+  color: #e53e3e;
+  border-color: #e53e3e;
 }

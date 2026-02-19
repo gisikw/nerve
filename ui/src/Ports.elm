@@ -9,6 +9,9 @@ port module Ports exposing
     , startRecording
     , stopRecording
     , onRecordingState
+    , onImageAttached
+    , clearImageAttachment
+    , sendImageMessage
     )
 
 import Json.Encode as E
@@ -59,3 +62,18 @@ port stopRecording : () -> Cmd msg
 {-| Fired by JS when recording state changes (true = recording, false = stopped).
 -}
 port onRecordingState : (Bool -> msg) -> Sub msg
+
+
+{-| Fired by JS when user pastes/drops an image. Sends a preview data: URL.
+-}
+port onImageAttached : (String -> msg) -> Sub msg
+
+
+{-| Tell JS to discard the pending image file.
+-}
+port clearImageAttachment : () -> Cmd msg
+
+
+{-| Tell JS to send the pending image with a message body.
+-}
+port sendImageMessage : E.Value -> Cmd msg

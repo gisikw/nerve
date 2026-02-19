@@ -401,44 +401,71 @@ composeBar model =
 
                 Nothing ->
                     []
+
+        attachmentPreview =
+            case model.pendingImage of
+                Just previewUrl ->
+                    [ div [ id "compose-attachment" ]
+                        [ img [ src previewUrl, alt "Attachment preview" ] []
+                        , button
+                            [ type_ "button"
+                            , class "remove-btn"
+                            , onClick ClearAttachment
+                            , title "Remove attachment"
+                            ]
+                            [ text "\u{00D7}" ]
+                        ]
+                    ]
+
+                Nothing ->
+                    []
     in
     form ([ id "compose", onSubmit SubmitMessage ] ++ roomIdAttr)
-        [ textarea
-            [ id "compose-input"
-            , placeholder "Send a message..."
-            , rows 1
-            , value model.composeText
-            , onInput SetComposeText
-            , onEnter SubmitMessage
-            ]
-            []
-        , Html.button
-            [ type_ "button"
-            , class
-                (if model.recording then
-                    "voice-btn recording"
+        (attachmentPreview
+            ++ [ textarea
+                    [ id "compose-input"
+                    , placeholder
+                        (case model.pendingImage of
+                            Just _ ->
+                                "Add a message..."
 
-                 else
-                    "voice-btn"
-                )
-            , onClick ToggleRecording
-            , title
-                (if model.recording then
-                    "Stop recording"
+                            Nothing ->
+                                "Send a message..."
+                        )
+                    , rows 1
+                    , value model.composeText
+                    , onInput SetComposeText
+                    , onEnter SubmitMessage
+                    ]
+                    []
+               , Html.button
+                    [ type_ "button"
+                    , class
+                        (if model.recording then
+                            "voice-btn recording"
 
-                 else
-                    "Record voice message"
-                )
-            ]
-            [ if model.recording then
-                stopIcon
+                         else
+                            "voice-btn"
+                        )
+                    , onClick ToggleRecording
+                    , title
+                        (if model.recording then
+                            "Stop recording"
 
-              else
-                micIcon
-            ]
-        , Html.button [ type_ "submit", class "send-btn", title "Send message" ]
-            [ sendIcon ]
-        ]
+                         else
+                            "Record voice message"
+                        )
+                    ]
+                    [ if model.recording then
+                        stopIcon
+
+                      else
+                        micIcon
+                    ]
+               , Html.button [ type_ "submit", class "send-btn", title "Send message" ]
+                    [ sendIcon ]
+               ]
+        )
 
 
 pinIcon : Html msg

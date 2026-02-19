@@ -48,6 +48,7 @@ type alias Model =
     , ttsEnabled : Bool
     , lastMessageId : Maybe String
     , recording : Bool
+    , pendingImage : Maybe String
     }
 
 
@@ -112,6 +113,9 @@ type Msg
       -- Voice recording
     | ToggleRecording
     | RecordingStateChanged Bool
+      -- Image attachment
+    | ImageAttached String
+    | ClearAttachment
 
 
 initialModel : Model
@@ -146,4 +150,5 @@ initialModel =
     , ttsEnabled = False
     , lastMessageId = Nothing
     , recording = False
+    , pendingImage = Nothing
     }

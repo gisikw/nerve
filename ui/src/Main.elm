@@ -230,6 +230,7 @@ subscriptions model =
                                 , Ports.onScrollNearTop (\_ -> LoadOlderMessages)
                                 , Ports.onScrollNearBottom (\_ -> ResumePolling)
                                 , Ports.onRecordingState RecordingStateChanged
+                                , Ports.onImageAttached ImageAttached
                                 ]
 
                         Nothing ->

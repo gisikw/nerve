@@ -78,6 +78,7 @@ update msg model =
                 , pinnedEventIds = Set.empty
                 , showPinned = False
                 , streams = []
+                , pendingImage = Nothing
                 , rooms =
                     List.map
                         (\r ->
@@ -123,17 +124,33 @@ update msg model =
         SubmitMessage ->
             case model.selectedRoomId of
                 Just roomId ->
-                    if String.isEmpty (String.trim model.composeText) then
-                        ( model, Cmd.none )
+                    case model.pendingImage of
+                        Just _ ->
+                            ( { model | composeText = "", pendingImage = Nothing }
+                            , Cmd.batch
+                                [ Ports.sendImageMessage
+                                    (E.object
+                                        [ ( "roomId", E.string roomId )
+                                        , ( "body", E.string (String.trim model.composeText) )
+                                        ]
+                                    )
+                                , Commands.sendTypingNotice roomId False
+                                , Ports.resizeComposeInput ()
+                                ]
+                            )
 
-                    else
-                        ( { model | composeText = "" }
-                        , Cmd.batch
-                            [ Commands.sendMessage roomId model.composeText
-                            , Commands.sendTypingNotice roomId False
-                            , Ports.resizeComposeInput ()
-                            ]
-                        )
+                        Nothing ->
+                            if String.isEmpty (String.trim model.composeText) then
+                                ( model, Cmd.none )
+
+                            else
+                                ( { model | composeText = "" }
+                                , Cmd.batch
+                                    [ Commands.sendMessage roomId model.composeText
+                                    , Commands.sendTypingNotice roomId False
+                                    , Ports.resizeComposeInput ()
+                                    ]
+                                )
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -370,6 +387,15 @@ update msg model =
 
         RecordingStateChanged isRecording ->
             ( { model | recording = isRecording }, Cmd.none )
+
+        -- Image attachment
+        ImageAttached previewUrl ->
+            ( { model | pendingImage = Just previewUrl }, Cmd.none )
+
+        ClearAttachment ->
+            ( { model | pendingImage = Nothing }
+            , Ports.clearImageAttachment ()
+            )
 
         -- Time zone
         GotTimeZone zone ->

@@ -279,7 +279,7 @@ function setupScrollPreservation() {
 }
 setupScrollPreservation();
 
-// ---------- Image drop zone + caption modal ----------
+// ---------- Image attachment (compose-area flow) ----------
 
 // Mime type mapping for common image types
 function imageMime(file: File): string | null {
@@ -336,109 +336,69 @@ function createDropOverlay(): HTMLDivElement {
   return overlay;
 }
 
-function showCaptionModal(
-  file: File,
-  previewUrl: string,
-  roomId: string,
-): void {
-  // Remove any existing modal
-  document.getElementById("caption-modal-backdrop")?.remove();
+// Pending image state — File lives in JS, Elm just knows the preview URL
+let pendingImageFile: File | null = null;
+let pendingImagePreviewUrl: string | null = null;
 
-  const backdrop = document.createElement("div");
-  backdrop.id = "caption-modal-backdrop";
-  backdrop.innerHTML = `
-    <div class="caption-modal">
-      <div class="caption-modal-preview">
-        <img src="${previewUrl}" alt="${file.name}" />
-      </div>
-      <div class="caption-modal-filename">${file.name}</div>
-      <input type="text" class="caption-modal-input" placeholder="Add a caption (optional)" autocomplete="off" />
-      <div class="caption-modal-actions">
-        <button class="caption-modal-cancel">Cancel</button>
-        <button class="caption-modal-send">Send</button>
-      </div>
-    </div>
-  `;
+function attachImage(file: File) {
+  // Discard any previous pending image
+  if (pendingImagePreviewUrl) URL.revokeObjectURL(pendingImagePreviewUrl);
 
-  document.body.appendChild(backdrop);
-
-  const input = backdrop.querySelector(
-    ".caption-modal-input",
-  ) as HTMLInputElement;
-  const sendBtn = backdrop.querySelector(
-    ".caption-modal-send",
-  ) as HTMLButtonElement;
-  const cancelBtn = backdrop.querySelector(
-    ".caption-modal-cancel",
-  ) as HTMLButtonElement;
-
-  input.focus();
-
-  async function doSend() {
-    const caption = input.value.trim() || undefined;
-    const mimeType = imageMime(file);
-    if (!mimeType) {
-      console.error("Unsupported image type:", file.type, file.name);
-      backdrop.remove();
-      return;
-    }
-
-    // Show uploading state
-    sendBtn.textContent = "Uploading...";
-    sendBtn.disabled = true;
-    cancelBtn.disabled = true;
-
-    try {
-      const base64 = await readFileAsBase64(file);
-      await invoke("send_image", {
-        roomId,
-        filename: file.name,
-        data: base64,
-        mimeType,
-        caption: caption ?? null,
-      });
-      // Tell Elm to refresh messages
-      app.ports.receiveFromTauri.send({
-        tag: "sendImage",
-        payload: null,
-      });
-    } catch (err) {
-      console.error("Failed to upload image:", err);
-      app.ports.receiveFromTauri.send({
-        tag: "error",
-        payload: `Image upload failed: ${err}`,
-      });
-    } finally {
-      backdrop.remove();
-    }
-  }
-
-  sendBtn.addEventListener("click", doSend);
-  cancelBtn.addEventListener("click", () => backdrop.remove());
-
-  // Enter to send, Escape to cancel
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      doSend();
-    } else if (e.key === "Escape") {
-      backdrop.remove();
-    }
-  });
-
-  // Click outside modal to cancel
-  backdrop.addEventListener("click", (e) => {
-    if (e.target === backdrop) backdrop.remove();
-  });
+  pendingImageFile = file;
+  pendingImagePreviewUrl = URL.createObjectURL(file);
+  app.ports.onImageAttached.send(pendingImagePreviewUrl);
 }
 
-function handleImageFiles(files: FileList, roomId: string) {
+function clearPendingImage() {
+  if (pendingImagePreviewUrl) URL.revokeObjectURL(pendingImagePreviewUrl);
+  pendingImageFile = null;
+  pendingImagePreviewUrl = null;
+}
+
+// Elm tells us to discard the pending image (user clicked X)
+app.ports.clearImageAttachment.subscribe(() => {
+  clearPendingImage();
+});
+
+// Elm tells us to send image + message body
+app.ports.sendImageMessage.subscribe(async (msg: { roomId: string; body: string }) => {
+  const file = pendingImageFile;
+  if (!file) return;
+
+  const mimeType = imageMime(file);
+  if (!mimeType) {
+    console.error("Unsupported image type:", file.type, file.name);
+    clearPendingImage();
+    return;
+  }
+
+  try {
+    const base64 = await readFileAsBase64(file);
+    const caption = msg.body || null;
+    await invoke("send_image", {
+      roomId: msg.roomId,
+      filename: file.name,
+      data: base64,
+      mimeType,
+      caption,
+    });
+    app.ports.receiveFromTauri.send({ tag: "sendImage", payload: null });
+  } catch (err) {
+    console.error("Failed to upload image:", err);
+    app.ports.receiveFromTauri.send({
+      tag: "error",
+      payload: `Image upload failed: ${err}`,
+    });
+  } finally {
+    clearPendingImage();
+  }
+});
+
+function handleImageFiles(files: FileList) {
   for (const file of Array.from(files)) {
     if (!imageMime(file)) continue;
-    const previewUrl = URL.createObjectURL(file);
-    showCaptionModal(file, previewUrl, roomId);
-    // Only handle the first image per drop
-    break;
+    attachImage(file);
+    break; // Only handle the first image
   }
 }
 
@@ -485,16 +445,13 @@ document.addEventListener("drop", (e) => {
     dropOverlay = null;
   }
 
-  const roomId = getSelectedRoomId();
-  if (!roomId || !e.dataTransfer?.files.length) return;
-
-  handleImageFiles(e.dataTransfer.files, roomId);
+  if (!getSelectedRoomId() || !e.dataTransfer?.files.length) return;
+  handleImageFiles(e.dataTransfer.files);
 });
 
 // Also support paste from clipboard
 document.addEventListener("paste", (e) => {
-  const roomId = getSelectedRoomId();
-  if (!roomId) return;
+  if (!getSelectedRoomId()) return;
 
   const items = e.clipboardData?.items;
   if (!items) return;
@@ -504,8 +461,7 @@ document.addEventListener("paste", (e) => {
       e.preventDefault();
       const file = item.getAsFile();
       if (!file) continue;
-      const previewUrl = URL.createObjectURL(file);
-      showCaptionModal(file, previewUrl, roomId);
+      attachImage(file);
       break;
     }
   }
