@@ -111,6 +111,11 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 600;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  margin-top: 0;
 }
 
 .sidebar-section-header:hover {
