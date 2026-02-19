@@ -218,15 +218,11 @@ subscriptions model =
         , case model.page of
             MainPage ->
                 Sub.batch
-                    [ Time.every 5000 (\_ -> PollRooms)
-                    , Browser.Events.onKeyDown cmdKDecoder
+                    [ Browser.Events.onKeyDown cmdKDecoder
                     , case model.selectedRoomId of
                         Just _ ->
                             Sub.batch
-                                [ Time.every 3000 (\_ -> PollMessages)
-                                , Time.every 2000 (\_ -> PollTyping)
-                                , Time.every 2000 (\_ -> PollStreams)
-                                , Browser.Events.onKeyDown printableKeyDecoder
+                                [ Browser.Events.onKeyDown printableKeyDecoder
                                 , Ports.onScrollNearTop (\_ -> LoadOlderMessages)
                                 , Ports.onScrollNearBottom (\_ -> ResumePolling)
                                 , Ports.onRecordingState RecordingStateChanged

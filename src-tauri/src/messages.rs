@@ -2,12 +2,15 @@ use std::collections::HashMap;
 
 use matrix_sdk::room::MessagesOptions;
 use matrix_sdk::ruma::events::reaction::ReactionEventContent;
-use matrix_sdk::ruma::events::room::message::{MessageType, Relation, RoomMessageEventContent};
+use matrix_sdk::ruma::events::room::message::{
+    MessageType, OriginalSyncRoomMessageEvent, Relation, RoomMessageEventContent,
+};
 use matrix_sdk::ruma::events::room::MediaSource;
 use matrix_sdk::ruma::events::{AnySyncMessageLikeEvent, AnySyncTimelineEvent};
 use matrix_sdk::ruma::OwnedEventId;
 use matrix_sdk::Client;
 use serde::Serialize;
+use tauri::{AppHandle, Emitter};
 
 use crate::error::{self, NerveError, Result};
 
@@ -78,6 +81,31 @@ pub async fn download_media(client: &Client, mxc_uri: &str) -> Result<String> {
 
     let b64 = base64::engine::general_purpose::STANDARD.encode(&data);
     Ok(format!("data:{content_type};base64,{b64}"))
+}
+
+/// Payload emitted as a `messages-updated` Tauri event.
+#[derive(Clone, Serialize)]
+pub struct MessagesUpdatedEvent {
+    pub room_id: String,
+}
+
+/// Register an event handler that emits `messages-updated` when new messages
+/// arrive in any room. The frontend uses this to fetch fresh messages instead
+/// of polling.
+pub fn register_handler(client: &Client, app_handle: AppHandle) {
+    client.add_event_handler(
+        move |_event: OriginalSyncRoomMessageEvent, room: matrix_sdk::Room| {
+            let app_handle = app_handle.clone();
+            async move {
+                let _ = app_handle.emit(
+                    "messages-updated",
+                    MessagesUpdatedEvent {
+                        room_id: room.room_id().to_string(),
+                    },
+                );
+            }
+        },
+    );
 }
 
 /// Extract body, msg_type, and media_url from a message type.

@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use matrix_sdk::{config::SyncSettings, Client};
+use tauri::AppHandle;
 use tokio::sync::Mutex;
 use tracing::info;
 
@@ -88,10 +89,19 @@ pub async fn try_restore_session(client: &Client) -> bool {
 }
 
 /// Start the sync loop in the background. Call after login or session restore.
-/// Registers event handlers (typing, streams) before starting sync.
-pub fn spawn_sync(client: Client, typing_cache: TypingCache, stream_cache: StreamCache) {
-    typing::register_handler(&client, typing_cache);
-    streams::register_handler(&client, stream_cache);
+/// Registers event handlers (typing, streams, rooms, messages) before starting
+/// sync. Handlers emit Tauri events via the `AppHandle` so the frontend
+/// receives push updates instead of polling.
+pub fn spawn_sync(
+    client: Client,
+    typing_cache: TypingCache,
+    stream_cache: StreamCache,
+    app_handle: AppHandle,
+) {
+    typing::register_handler(&client, typing_cache, app_handle.clone());
+    streams::register_handler(&client, stream_cache, app_handle.clone());
+    crate::rooms::register_handler(&client, app_handle.clone());
+    crate::messages::register_handler(&client, app_handle.clone());
     tokio::spawn(Box::pin(async move {
         info!("Starting sync loop");
         if let Err(e) = client.sync(SyncSettings::default()).await {

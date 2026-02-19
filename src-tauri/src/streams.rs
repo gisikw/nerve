@@ -4,6 +4,7 @@ use std::sync::Arc;
 use matrix_sdk::ruma::OwnedRoomId;
 use matrix_sdk::Client;
 use serde::{Deserialize, Serialize};
+use tauri::{AppHandle, Emitter};
 use tokio::sync::RwLock;
 
 use crate::error::{self, NerveError, Result};
@@ -61,17 +62,26 @@ pub fn new_cache() -> StreamCache {
     Arc::new(RwLock::new(HashMap::new()))
 }
 
+/// Payload emitted as a `streams-updated` Tauri event.
+#[derive(Clone, Serialize)]
+pub struct StreamsUpdatedEvent {
+    pub room_id: String,
+    pub streams: Vec<StreamState>,
+}
+
 /// Register a raw sync event handler that catches our custom event type.
 ///
 /// We use `Raw<AnySyncTimelineEvent>` to get the raw JSON bytes, then
 /// check the type field ourselves and deserialize the content if it matches.
-pub fn register_handler(client: &Client, cache: StreamCache) {
+/// On every change, emits a `streams-updated` Tauri event.
+pub fn register_handler(client: &Client, cache: StreamCache, app_handle: AppHandle) {
     use matrix_sdk::ruma::events::AnySyncTimelineEvent;
     use matrix_sdk::ruma::serde::Raw;
 
     client.add_event_handler(
         move |raw: Raw<AnySyncTimelineEvent>, room: matrix_sdk::Room| {
             let cache = cache.clone();
+            let app_handle = app_handle.clone();
             async move {
                 // Deserialize just enough to check the type
                 let envelope: RawEventEnvelope = match serde_json::from_str(raw.json().get()) {
@@ -91,7 +101,7 @@ pub fn register_handler(client: &Client, cache: StreamCache) {
 
                 let room_id = room.room_id().to_owned();
                 let mut guard = cache.write().await;
-                let room_streams = guard.entry(room_id).or_default();
+                let room_streams = guard.entry(room_id.clone()).or_default();
 
                 match content.action.as_str() {
                     "open" => {
@@ -125,6 +135,14 @@ pub fn register_handler(client: &Client, cache: StreamCache) {
                     }
                     _ => {}
                 }
+
+                // Emit current streams for this room
+                let streams: Vec<StreamState> =
+                    room_streams.values().cloned().collect();
+                let _ = app_handle.emit("streams-updated", StreamsUpdatedEvent {
+                    room_id: room_id.to_string(),
+                    streams,
+                });
             }
         },
     );

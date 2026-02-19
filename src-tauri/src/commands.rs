@@ -1,4 +1,4 @@
-use tauri::State;
+use tauri::{AppHandle, State};
 
 use crate::client::{self, MatrixState};
 use crate::messages::{self, MessagesResponse};
@@ -32,7 +32,10 @@ async fn try_restore_from_disk() -> Option<matrix_sdk::Client> {
 
 /// Attempt to restore a persisted session. Called on app startup.
 #[tauri::command]
-pub async fn check_session(state: State<'_, MatrixState>) -> Result<SessionStatus, String> {
+pub async fn check_session(
+    state: State<'_, MatrixState>,
+    app_handle: AppHandle,
+) -> Result<SessionStatus, String> {
     let mut guard = state.client.lock().await;
 
     // If we already have a client, check it directly.
@@ -40,7 +43,7 @@ pub async fn check_session(state: State<'_, MatrixState>) -> Result<SessionStatu
         let logged_in = client::try_restore_session(client).await;
         let user_id = client.user_id().map(|id| id.to_string());
         if logged_in {
-            client::spawn_sync(client.clone(), state.typing_cache.clone(), state.stream_cache.clone());
+            client::spawn_sync(client.clone(), state.typing_cache.clone(), state.stream_cache.clone(), app_handle);
         }
         return Ok(SessionStatus { logged_in, user_id });
     }
@@ -48,7 +51,7 @@ pub async fn check_session(state: State<'_, MatrixState>) -> Result<SessionStatu
     // No client yet — try to restore from disk.
     if let Some(restored) = try_restore_from_disk().await {
         let user_id = restored.user_id().map(|id| id.to_string());
-        client::spawn_sync(restored.clone(), state.typing_cache.clone(), state.stream_cache.clone());
+        client::spawn_sync(restored.clone(), state.typing_cache.clone(), state.stream_cache.clone(), app_handle);
         *guard = Some(restored);
         return Ok(SessionStatus {
             logged_in: true,
@@ -66,6 +69,7 @@ pub async fn check_session(state: State<'_, MatrixState>) -> Result<SessionStatu
 #[tauri::command]
 pub async fn login(
     state: State<'_, MatrixState>,
+    app_handle: AppHandle,
     homeserver: String,
     username: String,
     password: String,
@@ -81,7 +85,7 @@ pub async fn login(
     // Persist homeserver for session restore on next launch.
     let _ = client::save_homeserver(&homeserver);
 
-    client::spawn_sync(new_client.clone(), state.typing_cache.clone(), state.stream_cache.clone());
+    client::spawn_sync(new_client.clone(), state.typing_cache.clone(), state.stream_cache.clone(), app_handle);
 
     let mut guard = state.client.lock().await;
     *guard = Some(new_client);

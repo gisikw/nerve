@@ -2,8 +2,11 @@ use anyhow::Result;
 use futures::future::join_all;
 use matrix_sdk::ruma::api::client::room::create_room::v3::Request as CreateRoomRequest;
 use matrix_sdk::ruma::api::client::room::Visibility;
+use matrix_sdk::ruma::events::room::member::SyncRoomMemberEvent;
+use matrix_sdk::ruma::events::room::name::SyncRoomNameEvent;
 use matrix_sdk::Client;
 use serde::Serialize;
+use tauri::{AppHandle, Emitter};
 
 use crate::typing::TypingCache;
 
@@ -62,6 +65,28 @@ pub async fn collect_rooms(client: &Client, typing_cache: &TypingCache) -> Vec<R
 #[derive(Serialize)]
 pub struct CreateRoomResult {
     pub room_id: String,
+}
+
+/// Register event handlers that emit `rooms-updated` when room state changes
+/// (name changes, membership changes). The frontend uses this to refresh the
+/// room list without polling.
+pub fn register_handler(client: &Client, app_handle: AppHandle) {
+    // Room name changes
+    let ah = app_handle.clone();
+    client.add_event_handler(move |_event: SyncRoomNameEvent, _room: matrix_sdk::Room| {
+        let ah = ah.clone();
+        async move {
+            let _ = ah.emit("rooms-updated", ());
+        }
+    });
+
+    // Room membership changes (joins, leaves, etc.)
+    client.add_event_handler(move |_event: SyncRoomMemberEvent, _room: matrix_sdk::Room| {
+        let app_handle = app_handle.clone();
+        async move {
+            let _ = app_handle.emit("rooms-updated", ());
+        }
+    });
 }
 
 /// Create a new room with the given name.

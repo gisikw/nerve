@@ -685,6 +685,58 @@ dispatchTag tag payload model =
         "speakText" ->
             ( model, Cmd.none )
 
+        -- Push events from Rust sync loop (via Tauri events)
+        "roomsUpdated" ->
+            ( model, Commands.listRooms )
+
+        "messagesUpdated" ->
+            case D.decodeValue (D.field "roomId" D.string) payload of
+                Ok roomId ->
+                    if model.selectedRoomId == Just roomId && not model.hasOlderHistory then
+                        ( model, Commands.getMessages roomId )
+
+                    else
+                        -- Not viewing this room, but refresh room list for unread counts
+                        ( model, Commands.listRooms )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
+        "typingUpdated" ->
+            case D.decodeValue (D.map2 Tuple.pair (D.field "roomId" D.string) (D.field "users" (D.list D.string))) payload of
+                Ok ( roomId, users ) ->
+                    if model.selectedRoomId == Just roomId then
+                        ( { model | typingUsers = users }, Cmd.none )
+
+                    else
+                        ( model, Cmd.none )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
+        "streamsUpdated" ->
+            case D.decodeValue (D.map2 Tuple.pair (D.field "roomId" D.string) (D.field "streams" Decode.streamList)) payload of
+                Ok ( roomId, streams ) ->
+                    if model.selectedRoomId == Just roomId then
+                        let
+                            hasActive =
+                                List.any (\s -> not s.closed) streams
+
+                            panelOpen =
+                                if hasActive && not model.streamsPanelOpen then
+                                    True
+
+                                else
+                                    model.streamsPanelOpen
+                        in
+                        ( { model | streams = streams, streamsPanelOpen = panelOpen }, Cmd.none )
+
+                    else
+                        ( model, Cmd.none )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
         "error" ->
             case D.decodeValue D.string payload of
                 Ok errMsg ->

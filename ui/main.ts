@@ -630,6 +630,48 @@ function blobToBase64(blob: Blob): Promise<string> {
 app.ports.startRecording.subscribe(() => startRecording());
 app.ports.stopRecording.subscribe(() => stopRecording());
 
+// ---------- Tauri push events ----------
+// The Rust sync loop emits events when state changes. We listen for these
+// and forward them to Elm via the receiveFromTauri port, replacing polling.
+
+const tauriListen = window.__TAURI__?.event?.listen as
+  | ((event: string, handler: (e: { payload: unknown }) => void) => Promise<() => void>)
+  | undefined;
+
+if (tauriListen) {
+  // Room state changed (name, membership) — tell Elm to refresh room list
+  tauriListen("rooms-updated", () => {
+    app.ports.receiveFromTauri.send({ tag: "roomsUpdated", payload: null });
+  });
+
+  // New messages in a room — tell Elm which room changed
+  tauriListen("messages-updated", (e) => {
+    const payload = e.payload as { room_id: string };
+    app.ports.receiveFromTauri.send({
+      tag: "messagesUpdated",
+      payload: { roomId: payload.room_id },
+    });
+  });
+
+  // Typing state changed — deliver directly
+  tauriListen("typing-updated", (e) => {
+    const payload = e.payload as { room_id: string; users: string[] };
+    app.ports.receiveFromTauri.send({
+      tag: "typingUpdated",
+      payload: { roomId: payload.room_id, users: payload.users },
+    });
+  });
+
+  // Streams changed — deliver directly
+  tauriListen("streams-updated", (e) => {
+    const payload = e.payload as { room_id: string; streams: unknown[] };
+    app.ports.receiveFromTauri.send({
+      tag: "streamsUpdated",
+      payload: { roomId: payload.room_id, streams: payload.streams },
+    });
+  });
+}
+
 // Check session on startup
 invoke("check_session")
   .then((result) => {

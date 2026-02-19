@@ -5,6 +5,7 @@ use matrix_sdk::ruma::events::typing::SyncTypingEvent;
 use matrix_sdk::ruma::{OwnedRoomId, OwnedUserId};
 use matrix_sdk::Client;
 use serde::Serialize;
+use tauri::{AppHandle, Emitter};
 use tokio::sync::RwLock;
 
 use crate::error::{self, NerveError, Result};
@@ -16,14 +17,22 @@ pub fn new_cache() -> TypingCache {
     Arc::new(RwLock::new(HashMap::new()))
 }
 
+/// Payload emitted as a `typing-updated` Tauri event.
+#[derive(Clone, Serialize)]
+pub struct TypingUpdatedEvent {
+    pub room_id: String,
+    pub users: Vec<String>,
+}
+
 /// Register a global event handler that updates the typing cache on each
-/// `m.typing` sync event.
-pub fn register_handler(client: &Client, cache: TypingCache) {
+/// `m.typing` sync event and emits a `typing-updated` Tauri event.
+pub fn register_handler(client: &Client, cache: TypingCache, app_handle: AppHandle) {
     let own_user_id = client.user_id().map(|id| id.to_owned());
 
     client.add_event_handler(move |event: SyncTypingEvent, room: matrix_sdk::Room| {
         let cache = cache.clone();
         let own_user_id = own_user_id.clone();
+        let app_handle = app_handle.clone();
         async move {
             let users: Vec<OwnedUserId> = event
                 .content
@@ -31,7 +40,12 @@ pub fn register_handler(client: &Client, cache: TypingCache) {
                 .into_iter()
                 .filter(|uid| own_user_id.as_ref().map_or(true, |own| uid != own))
                 .collect();
+            let user_strings: Vec<String> = users.iter().map(|id| id.to_string()).collect();
             cache.write().await.insert(room.room_id().to_owned(), users);
+            let _ = app_handle.emit("typing-updated", TypingUpdatedEvent {
+                room_id: room.room_id().to_string(),
+                users: user_strings,
+            });
         }
     });
 }
