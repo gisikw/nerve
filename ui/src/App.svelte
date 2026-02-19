@@ -19,6 +19,7 @@
   import Sidebar from "./Sidebar.svelte";
   import MessageList from "./MessageList.svelte";
   import ComposeBar from "./ComposeBar.svelte";
+  import StreamsPanel from "./StreamsPanel.svelte";
 
   onMount(() => {
     initSession();
@@ -74,6 +75,7 @@
           </div>
         {/if}
       </div>
+      <StreamsPanel />
     </div>
   </div>
 {/if}

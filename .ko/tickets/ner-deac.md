@@ -1,6 +1,6 @@
 ---
 id: ner-deac
-status: open
+status: closed
 deps: [ner-f968]
 links: []
 created: 2026-02-19T04:01:12Z

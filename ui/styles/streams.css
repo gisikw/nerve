@@ -68,14 +68,27 @@
 .stream-header {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.75rem;
-  cursor: pointer;
   font-size: 0.78rem;
   user-select: none;
 }
 
-.stream-header:hover {
+.stream-header-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 0;
+  padding: 0.4rem 0.4rem 0.4rem 0.75rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: inherit;
+  text-align: left;
+  margin-top: 0;
+}
+
+.stream-header-toggle:hover {
   background: var(--bg-hover);
 }
 

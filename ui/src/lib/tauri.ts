@@ -48,16 +48,22 @@ export interface TypingStatus {
   users: string[];
 }
 
+export interface StreamLine {
+  text: string;
+  channel: string;
+}
+
 export interface StreamState {
-  id: string;
-  label: string;
+  stream_id: string;
+  name: string;
   buttons: StreamButton[];
+  lines: StreamLine[];
+  closed: boolean;
 }
 
 export interface StreamButton {
   id: string;
   label: string;
-  style: string;
 }
 
 // --- Invoke ---
