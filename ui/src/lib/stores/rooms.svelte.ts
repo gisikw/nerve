@@ -41,6 +41,11 @@ export function selectRoom(roomId: string | null): void {
   selectedRoomId = roomId;
 }
 
+export function resetRooms(): void {
+  rooms = [];
+  selectedRoomId = null;
+}
+
 export function getArchivedRoomIds(): Set<string> {
   return archivedRoomIds;
 }

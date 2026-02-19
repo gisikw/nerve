@@ -1,6 +1,8 @@
 // Session state: login status, current user ID.
 
 import { checkSession, login as tauriLogin, logout as tauriLogout } from "../tauri";
+import { resetRooms } from "./rooms.svelte";
+import { clearMessages } from "./messages.svelte";
 
 export type SessionState =
   | { status: "checking" }
@@ -48,5 +50,7 @@ export async function logout(): Promise<void> {
   } catch {
     // Best effort
   }
+  resetRooms();
+  clearMessages();
   session = { status: "logged_out" };
 }

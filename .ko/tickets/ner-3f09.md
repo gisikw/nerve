@@ -1,6 +1,6 @@
 ---
 id: ner-3f09
-status: open
+status: closed
 deps: [ner-35da]
 links: []
 created: 2026-02-19T04:01:12Z
