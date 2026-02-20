@@ -1,6 +1,10 @@
 use std::path::PathBuf;
 
-use matrix_sdk::{config::SyncSettings, matrix_auth::MatrixSession, Client};
+use matrix_sdk::{
+    authentication::{matrix::MatrixSession, AuthSession},
+    config::SyncSettings,
+    Client,
+};
 use tauri::AppHandle;
 use tokio::sync::Mutex;
 use tracing::info;
@@ -138,7 +142,7 @@ pub async fn login(client: &Client, username: &str, password: &str) -> Result<St
 /// Returns true if the session was successfully restored.
 pub async fn try_restore_session(client: &Client) -> bool {
     if let Some(session) = load_session() {
-        client.restore_session(session).await.is_ok()
+        client.restore_session(AuthSession::from(session)).await.is_ok()
     } else {
         false
     }
