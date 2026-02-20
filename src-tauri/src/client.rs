@@ -48,9 +48,27 @@ pub fn load_homeserver() -> Option<String> {
         .filter(|s| !s.is_empty())
 }
 
-/// Clear the saved homeserver (on logout).
+/// Save the device ID so re-login reuses the same device, avoiding crypto
+/// store conflicts when the sqlite store already has keys for a prior device.
+pub fn save_device_id(device_id: &str) -> Result<()> {
+    let dir = data_dir();
+    std::fs::create_dir_all(&dir)?;
+    std::fs::write(dir.join("device-id"), device_id)?;
+    Ok(())
+}
+
+/// Load the previously-used device ID, if any.
+pub fn load_device_id() -> Option<String> {
+    std::fs::read_to_string(data_dir().join("device-id"))
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+}
+
+/// Clear the saved homeserver and device ID (on logout).
 pub fn clear_homeserver() {
     let _ = std::fs::remove_file(data_dir().join("homeserver"));
+    let _ = std::fs::remove_file(data_dir().join("device-id"));
 }
 
 /// Build a Matrix client for the given homeserver, with a persistent sqlite
@@ -68,16 +86,28 @@ pub async fn build_client(homeserver: &str) -> Result<Client> {
     Ok(client)
 }
 
-/// Log in with username and password. Returns the user ID on success.
+/// Log in with username and password. Reuses the stored device ID when
+/// available so the crypto store stays valid across app restarts. Returns
+/// the user ID on success.
 pub async fn login(client: &Client, username: &str, password: &str) -> Result<String> {
-    let response = client
+    let mut builder = client
         .matrix_auth()
         .login_username(username, password)
-        .initial_device_display_name("Nerve")
-        .send()
-        .await?;
+        .initial_device_display_name("Nerve");
 
-    info!("Logged in as {}", response.user_id);
+    // Reuse the device ID from a previous session so the sqlite crypto
+    // store (which is keyed by device) doesn't reject the new login.
+    let saved_device_id = load_device_id();
+    if let Some(ref did) = saved_device_id {
+        builder = builder.device_id(did);
+    }
+
+    let response = builder.send().await?;
+
+    // Persist the device ID for next time.
+    let _ = save_device_id(response.device_id.as_str());
+
+    info!("Logged in as {} (device {})", response.user_id, response.device_id);
     Ok(response.user_id.to_string())
 }
 
