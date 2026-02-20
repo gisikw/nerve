@@ -83,6 +83,9 @@
   {:else if imgSrc}
     <div class="image-container">
       <img src={imgSrc} alt={message.body} />
+      {#if message.body}
+        <div class="message-body image-caption">{@html renderMarkdown(message.body)}</div>
+      {/if}
     </div>
   {:else}
     <div class="message-body">{message.body}</div>
