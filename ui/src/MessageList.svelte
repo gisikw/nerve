@@ -54,6 +54,7 @@
   // --- Autoscroll on new messages ---
   let prevLastId = $state<string | null>(null);
   let prevRoomId = $state<string | null>(null);
+  let initialLoad = $state(true);
 
   $effect(() => {
     const roomId = selectedRoomId;
@@ -61,27 +62,32 @@
     const lastId = lastMsg?.event_id ?? null;
 
     if (roomId !== prevRoomId) {
-      // Room switch: always scroll to bottom after render
+      // Room switch: mark as initial load, scroll when messages arrive
       prevRoomId = roomId;
-      prevLastId = lastId;
-      if (!roomId) return;
-      tick().then(() => {
-        if (messagesEl) {
-          messagesEl.scrollTop = messagesEl.scrollHeight;
-        }
-      });
+      prevLastId = null;
+      initialLoad = true;
       return;
     }
 
-    if (lastId !== prevLastId && messagesEl) {
-      // New message arrived: scroll if near bottom
-      const el = messagesEl;
-      const nearBottom =
-        el.scrollTop + el.clientHeight >= el.scrollHeight - 100;
-      if (nearBottom) {
+    if (lastId && lastId !== prevLastId && messagesEl) {
+      if (initialLoad) {
+        // First batch of messages for this room: always scroll to bottom
+        initialLoad = false;
         tick().then(() => {
-          el.scrollTop = el.scrollHeight;
+          if (messagesEl) {
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+          }
         });
+      } else {
+        // Subsequent messages: scroll only if near bottom
+        const el = messagesEl;
+        const nearBottom =
+          el.scrollTop + el.clientHeight >= el.scrollHeight - 100;
+        if (nearBottom) {
+          tick().then(() => {
+            el.scrollTop = el.scrollHeight;
+          });
+        }
       }
     }
     prevLastId = lastId;
@@ -147,6 +153,34 @@
     if (names.length === 2) return `${names[0]} and ${names[1]} are typing...`;
     return `${names.slice(0, 2).join(", ")} and others are typing...`;
   }
+
+  // --- Keep scroll pinned to bottom when container resizes (e.g. input expands) ---
+  onMount(() => {
+    let prevHeight = 0;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const el = entry.target as HTMLDivElement;
+        const newHeight = entry.contentRect.height;
+        if (prevHeight > 0 && newHeight < prevHeight) {
+          // Container shrank (compose bar grew) — stay at bottom if near bottom
+          const nearBottom =
+            el.scrollTop + el.clientHeight >= el.scrollHeight - 100;
+          if (nearBottom) {
+            el.scrollTop = el.scrollHeight;
+          }
+        }
+        prevHeight = newHeight;
+      }
+    });
+    // Observe once messagesEl is available
+    $effect(() => {
+      if (messagesEl) {
+        ro.observe(messagesEl);
+        return () => ro.unobserve(messagesEl!);
+      }
+    });
+    return () => ro.disconnect();
+  });
 </script>
 
 <!-- Pinned bar -->

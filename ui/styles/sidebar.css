@@ -78,24 +78,37 @@
 
 /* Room action button (archive/unarchive) — hidden by default, shown on hover */
 .room-action-btn {
-  display: none;
   padding: 0;
   background: none;
   border: none;
   cursor: pointer;
   font-size: 0.65rem;
   flex-shrink: 0;
-  opacity: 0.5;
+  opacity: 0;
   transition: opacity var(--transition);
-}
-
-.room-action-btn:hover {
-  opacity: 1;
+  pointer-events: none;
 }
 
 #room-list li:hover .room-action-btn,
 .archived-rooms li:hover .room-action-btn {
-  display: block;
+  opacity: 0.5;
+  pointer-events: auto;
+}
+
+#room-list li:hover .room-action-btn:hover,
+.archived-rooms li:hover .room-action-btn:hover {
+  opacity: 1;
+}
+
+/* Section labels */
+.sidebar-section-label {
+  padding: 0.4rem 0.65rem 0.15rem;
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  user-select: none;
 }
 
 /* Archived section */

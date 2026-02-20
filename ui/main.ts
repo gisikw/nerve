@@ -10,7 +10,7 @@ mount(App, { target: document.getElementById("app")! });
 const ZOOM_STEP = 2;
 const ZOOM_MIN = 16;
 const ZOOM_MAX = 40;
-const ZOOM_DEFAULT = 27;
+const ZOOM_DEFAULT = 22;
 
 function getZoom(): number {
   const stored = localStorage.getItem("nerve-font-size");

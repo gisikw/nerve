@@ -32,6 +32,7 @@
 </script>
 
 <aside id="sidebar">
+  <div class="sidebar-section-label">Channels</div>
   <ul id="room-list" role="listbox">
     {#each activeRooms as room (room.id)}
       {@const isSelected = getSelectedRoomId() === room.id}

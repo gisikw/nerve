@@ -287,6 +287,12 @@
   transition: color var(--transition), background var(--transition);
 }
 
+.message-action-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
 .message-action-btn:hover {
   color: var(--accent);
   background: var(--accent-dim);
