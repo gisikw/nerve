@@ -1,6 +1,6 @@
 ---
 id: ner-50b1
-status: in_progress
+status: open
 deps: []
 links: []
 created: 2026-02-20T18:52:10Z

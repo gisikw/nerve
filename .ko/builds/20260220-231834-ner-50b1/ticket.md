@@ -1,6 +1,6 @@
 ---
 id: ner-50b1
-status: in_progress
+status: open
 deps: []
 links: []
 created: 2026-02-20T18:52:10Z
@@ -17,5 +17,3 @@ After sending a message (especially a long one that expanded the textarea), the 
 ## Notes
 
 **2026-02-20 23:17:40 UTC:** ko: FAIL at node 'review' — No implementation: ticket marked in_progress but no code changes made to ComposeBar.svelte submit handler
-
-**2026-02-20 23:22:29 UTC:** ko: FAIL at node 'review' — No implementation: ticket marked in_progress but no code changes made to ComposeBar.svelte. The submit handler needs to reset textarea height after sending.
