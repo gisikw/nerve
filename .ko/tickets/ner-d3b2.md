@@ -1,6 +1,6 @@
 ---
 id: ner-d3b2
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-02-20T06:20:06Z
