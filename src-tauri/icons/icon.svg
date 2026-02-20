@@ -9,15 +9,21 @@
     <clipPath id="squircle">
       <path d="M 281.3,100.0 L 742.7,100.0 C 823.9,100.0 924.0,200.1 924.0,281.3 L 924.0,742.7 C 924.0,823.9 823.9,924.0 742.7,924.0 L 281.3,924.0 C 200.1,924.0 100.0,823.9 100.0,742.7 L 100.0,281.3 C 100.0,200.1 200.1,100.0 281.3,100.0 Z"/>
     </clipPath>
+    <!-- Vertical gradient: white at top, soft shadow toward bottom -->
+    <linearGradient id="bg-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="65%" stop-color="#f5f5f7"/>
+      <stop offset="100%" stop-color="#e8e8ed"/>
+    </linearGradient>
   </defs>
 
   <!-- Squircle background with shadow -->
-  <path d="M 281.3,100.0 L 742.7,100.0 C 823.9,100.0 924.0,200.1 924.0,281.3 L 924.0,742.7 C 924.0,823.9 823.9,924.0 742.7,924.0 L 281.3,924.0 C 200.1,924.0 100.0,823.9 100.0,742.7 L 100.0,281.3 C 100.0,200.1 200.1,100.0 281.3,100.0 Z" fill="#1a2332" filter="url(#shadow)"/>
+  <path d="M 281.3,100.0 L 742.7,100.0 C 823.9,100.0 924.0,200.1 924.0,281.3 L 924.0,742.7 C 924.0,823.9 823.9,924.0 742.7,924.0 L 281.3,924.0 C 200.1,924.0 100.0,823.9 100.0,742.7 L 100.0,281.3 C 100.0,200.1 200.1,100.0 281.3,100.0 Z" fill="url(#bg-grad)" filter="url(#shadow)"/>
 
   <!-- Brain-tree logo, clipped to squircle and scaled to fit 824x824 content area -->
   <g clip-path="url(#squircle)">
-    <!-- Fill the clip area with bg color (ensures no gaps) -->
-    <rect x="100" y="100" width="824" height="824" fill="#1a2332"/>
+    <!-- Fill the clip area with gradient bg -->
+    <rect x="100" y="100" width="824" height="824" fill="url(#bg-grad)"/>
 
     <!-- Logo scaled to 80.47% and offset into the content area -->
     <g transform="translate(100, 100) scale(0.8047)">
