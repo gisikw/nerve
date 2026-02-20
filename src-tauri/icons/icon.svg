@@ -9,11 +9,11 @@
     <clipPath id="squircle">
       <path d="M 281.3,100.0 L 742.7,100.0 C 823.9,100.0 924.0,200.1 924.0,281.3 L 924.0,742.7 C 924.0,823.9 823.9,924.0 742.7,924.0 L 281.3,924.0 C 200.1,924.0 100.0,823.9 100.0,742.7 L 100.0,281.3 C 100.0,200.1 200.1,100.0 281.3,100.0 Z"/>
     </clipPath>
-    <!-- Vertical gradient: white at top, soft shadow toward bottom -->
+    <!-- Vertical gradient: warm white top, blue-tinted shadow at bottom -->
     <linearGradient id="bg-grad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="65%" stop-color="#f5f5f7"/>
-      <stop offset="100%" stop-color="#e8e8ed"/>
+      <stop offset="0%" stop-color="#f8f9fc"/>
+      <stop offset="50%" stop-color="#e8ecf2"/>
+      <stop offset="100%" stop-color="#c8d0de"/>
     </linearGradient>
   </defs>
 
