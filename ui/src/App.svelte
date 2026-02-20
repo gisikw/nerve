@@ -20,9 +20,19 @@
   import MessageList from "./MessageList.svelte";
   import ComposeBar from "./ComposeBar.svelte";
   import StreamsPanel from "./StreamsPanel.svelte";
+  import ChannelSwitcher from "./ChannelSwitcher.svelte";
 
   let streamsPanelRef: StreamsPanel | undefined = $state();
   let streamsOpen = $state(false);
+  let switcherOpen = $state(false);
+
+  function openSwitcher() {
+    switcherOpen = true;
+  }
+
+  function closeSwitcher() {
+    switcherOpen = false;
+  }
 
   function toggleStreams() {
     streamsPanelRef?.toggle();
@@ -35,6 +45,16 @@
     subscribeMessageEvents();
     subscribeTypingEvents();
     subscribeStreamEvents();
+
+    function handleGlobalKeydown(e: KeyboardEvent) {
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && e.key === "k") {
+        e.preventDefault();
+        switcherOpen = !switcherOpen;
+      }
+    }
+    document.addEventListener("keydown", handleGlobalKeydown);
+    return () => document.removeEventListener("keydown", handleGlobalKeydown);
   });
 
   // When session becomes logged_in, fetch rooms
@@ -58,7 +78,7 @@
 {:else}
   <div id="main-view">
     <div id="layout">
-      <Sidebar />
+      <Sidebar onOpenSwitcher={openSwitcher} />
       <div id="chat">
         {#if getSelectedRoomId()}
           {@const room = getSelectedRoom()}
@@ -98,6 +118,9 @@
       </div>
       <StreamsPanel bind:this={streamsPanelRef} />
     </div>
+    {#if switcherOpen}
+      <ChannelSwitcher onClose={closeSwitcher} />
+    {/if}
   </div>
 {/if}
 

@@ -64,6 +64,16 @@
   font-style: italic;
 }
 
+.switcher-create {
+  color: var(--accent);
+}
+
+.switcher-archived {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  margin-left: 0.25rem;
+}
+
 /* Keyboard shortcuts modal (Cmd+/) */
 
 #shortcuts-modal {

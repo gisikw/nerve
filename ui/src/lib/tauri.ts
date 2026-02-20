@@ -166,8 +166,8 @@ export function sendTypingNotice(
   return invoke("send_typing_notice", { roomId, isTyping }) as Promise<void>;
 }
 
-export function createRoom(name: string): Promise<{ id: string }> {
-  return invoke("create_room", { name }) as Promise<{ id: string }>;
+export function createRoom(name: string): Promise<{ room_id: string }> {
+  return invoke("create_room", { name }) as Promise<{ room_id: string }>;
 }
 
 export function getPinnedEvents(roomId: string): Promise<string[]> {
