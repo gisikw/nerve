@@ -2,12 +2,23 @@ use std::path::PathBuf;
 use tokio::process::Command;
 use tokio::time::{sleep, Duration};
 
-const DROPS_DIR: &str = "/var/lib/fort/drops";
 const POLL_INTERVAL: Duration = Duration::from_millis(200);
 const POLL_TIMEOUT: Duration = Duration::from_secs(15);
 const MAX_TEXT_LEN: usize = 500;
 
-/// Synthesize text to speech via Kokoro on lordhenry.
+fn drops_dir() -> String {
+    std::env::var("NERVE_TTS_DROPS_DIR").unwrap_or_else(|_| "/var/lib/fort/drops".into())
+}
+
+fn tts_host() -> String {
+    std::env::var("NERVE_TTS_HOST").unwrap_or_else(|_| "localhost".into())
+}
+
+fn tts_output_host() -> String {
+    std::env::var("NERVE_TTS_OUTPUT_HOST").unwrap_or_else(|_| "localhost".into())
+}
+
+/// Synthesize text to speech via fort TTS capability.
 /// Returns base64-encoded mp3 audio data.
 pub async fn synthesize(text: &str) -> Result<String, String> {
     let text = if text.len() > MAX_TEXT_LEN {
@@ -21,13 +32,14 @@ pub async fn synthesize(text: &str) -> Result<String, String> {
     let payload = serde_json::json!({
         "text": text,
         "output": {
-            "host": "ratched",
+            "host": tts_output_host(),
             "name": &filename,
         }
     });
 
+    let host = tts_host();
     let output = Command::new("fort")
-        .args(["lordhenry", "tts", &payload.to_string()])
+        .args([&host, "tts", &payload.to_string()])
         .output()
         .await
         .map_err(|e| format!("Failed to run fort: {e}"))?;
@@ -38,7 +50,7 @@ pub async fn synthesize(text: &str) -> Result<String, String> {
     }
 
     // Poll for the output file
-    let path = PathBuf::from(DROPS_DIR);
+    let path = PathBuf::from(drops_dir());
     let mut elapsed = Duration::ZERO;
     let output_path = loop {
         // fort prepends a timestamp, so we search for files ending with our filename

@@ -16,6 +16,7 @@
 .DS_Store
 Thumbs.db
 
-# Credentials
+# Credentials / secrets
 *.key
 *.pem
+.env

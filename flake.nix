@@ -29,6 +29,9 @@
 
             # Frontend (Svelte + Vite)
             nodejs
+
+            # Dev tooling
+            just
           ] ++ pkgs.lib.optionals isLinux [
             # Linux: GTK/WebKitGTK (macOS uses system WebKit)
             glib
@@ -43,7 +46,12 @@
           ];
 
           shellHook = ''
-            echo "nerve dev shell — cargo tauri dev to run"
+            echo "nerve dev shell"
+            echo "  just dev      — run Tauri (hot-reload)"
+            echo "  just dev-ui   — run frontend only (fake backend)"
+            echo "  just test     — run full test suite"
+            echo "  just build    — build release binary"
+            echo "  just          — list all recipes"
           '';
         };
       }
