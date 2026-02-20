@@ -1,9 +1,8 @@
 // Fake backend state and logic. Runs server-side in Vite's Node process.
-// Both Elm commands (via HTTP) and driver actions (via WebSocket) operate
+// Both UI commands (via HTTP) and driver actions (via WebSocket) operate
 // on this shared state.
 //
-// Shapes match the Rust serde output that Elm decoders expect
-// (snake_case fields, see src/Decode.elm).
+// Shapes match the Rust serde output (snake_case fields).
 
 // --- Types ---
 
@@ -60,7 +59,7 @@ function makeMessage(
 const BASE_TIME = 1708200000000; // 2024-02-17T16:00:00Z
 
 const initialRooms: FakeRoom[] = [
-  { id: "!nerve:example.chat", name: "nerve", is_direct: false, notification_count: 0, typing_users: [], topic: "Tauri + Elm Matrix client" },
+  { id: "!nerve:example.chat", name: "nerve", is_direct: false, notification_count: 0, typing_users: [], topic: "Tauri + Svelte Matrix client" },
   { id: "!ops:example.chat", name: "ops", is_direct: false, notification_count: 2, typing_users: [] },
   { id: "!exo-dm:example.chat", name: "Exo", is_direct: true, notification_count: 0, typing_users: [] },
   { id: "!project-nerve:example.chat", name: "project-nerve", is_direct: false, notification_count: 0, typing_users: [] },
@@ -69,7 +68,7 @@ const initialRooms: FakeRoom[] = [
 function initialMessages(): Record<string, FakeMessage[]> {
   return {
     "!nerve:example.chat": [
-      makeMessage("@kevin:example.chat", "alright, Elm ports are wired up", BASE_TIME),
+      makeMessage("@kevin:example.chat", "alright, Tauri IPC is wired up", BASE_TIME),
       makeMessage("@exo:example.chat", "Nice. The decoder tests all pass — want me to start on sidebar styling?", BASE_TIME + 30000),
       makeMessage("@kevin:example.chat", "yeah go for it. I'm going to look at the compose input next", BASE_TIME + 45000),
       makeMessage("@exo:example.chat", "On it. I'll keep the CSS in the existing stylesheet rather than splitting.", BASE_TIME + 60000),
@@ -97,7 +96,7 @@ export const state = {
   typingUsers: {} as Record<string, string[]>,
 };
 
-// --- Elm command handlers ---
+// --- Command handlers ---
 
 export function handleCommand(
   command: string,

@@ -1,6 +1,5 @@
 import { mount } from "svelte";
 import App from "./src/App.svelte";
-import { getMedia } from "./src/lib/tauri";
 
 // --- Mount Svelte app ---
 
@@ -43,58 +42,6 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// --- Resolve mxc:// image sources via authenticated media download ---
-
-const resolvedMedia = new Map<string, string>();
-const pendingMedia = new Set<string>();
-
-async function resolveMxcImage(img: HTMLImageElement) {
-  const mxcUri = img.dataset.mxcUri ?? img.getAttribute("src");
-  if (!mxcUri || !mxcUri.startsWith("mxc://")) return;
-
-  img.dataset.mxcUri = mxcUri;
-  img.removeAttribute("src");
-
-  const cached = resolvedMedia.get(mxcUri);
-  if (cached) {
-    img.src = cached;
-    return;
-  }
-
-  if (pendingMedia.has(mxcUri)) return;
-  pendingMedia.add(mxcUri);
-
-  try {
-    const dataUri = await getMedia(mxcUri);
-    resolvedMedia.set(mxcUri, dataUri);
-    document
-      .querySelectorAll<HTMLImageElement>(
-        `img[data-mxc-uri="${CSS.escape(mxcUri)}"]`,
-      )
-      .forEach((el) => {
-        el.src = dataUri;
-      });
-  } catch (err) {
-    console.error("Failed to resolve media:", mxcUri, err);
-  } finally {
-    pendingMedia.delete(mxcUri);
-  }
-}
-
-const mediaObserver = new MutationObserver((mutations) => {
-  for (const mutation of mutations) {
-    for (const node of mutation.addedNodes) {
-      if (node instanceof HTMLImageElement) {
-        resolveMxcImage(node);
-      } else if (node instanceof HTMLElement) {
-        node.querySelectorAll<HTMLImageElement>("img").forEach(resolveMxcImage);
-      }
-    }
-  }
-});
-
-mediaObserver.observe(document.body, { childList: true, subtree: true });
-
 // --- TTS audio playback queue ---
 
 let ttsCurrentAudio: HTMLAudioElement | null = null;
@@ -128,68 +75,3 @@ export function ttsStopAll() {
   }
 }
 
-// --- Audio playback for message attachments ---
-
-let currentPlayingAudio: HTMLAudioElement | null = null;
-let currentPlayingBtn: HTMLElement | null = null;
-
-document.addEventListener("click", async (e) => {
-  const btn = (e.target as HTMLElement).closest<HTMLElement>(
-    "[data-mxc-audio]",
-  );
-  if (!btn) return;
-
-  const mxcUri = btn.dataset.mxcAudio;
-  if (!mxcUri) return;
-
-  if (currentPlayingBtn === btn && currentPlayingAudio) {
-    currentPlayingAudio.pause();
-    currentPlayingAudio = null;
-    btn.classList.remove("playing");
-    currentPlayingBtn = null;
-    return;
-  }
-
-  if (currentPlayingAudio) {
-    currentPlayingAudio.pause();
-    currentPlayingBtn?.classList.remove("playing");
-    currentPlayingAudio = null;
-    currentPlayingBtn = null;
-  }
-
-  let dataUri = resolvedMedia.get(mxcUri);
-  if (!dataUri) {
-    btn.classList.add("loading");
-    try {
-      dataUri = await getMedia(mxcUri);
-      resolvedMedia.set(mxcUri, dataUri);
-    } catch (err) {
-      console.error("Failed to download audio:", mxcUri, err);
-      btn.classList.remove("loading");
-      return;
-    }
-    btn.classList.remove("loading");
-  }
-
-  const audio = new Audio(dataUri);
-  currentPlayingAudio = audio;
-  currentPlayingBtn = btn;
-  btn.classList.add("playing");
-
-  audio.addEventListener("ended", () => {
-    btn.classList.remove("playing");
-    currentPlayingAudio = null;
-    currentPlayingBtn = null;
-  });
-  audio.addEventListener("error", () => {
-    btn.classList.remove("playing");
-    currentPlayingAudio = null;
-    currentPlayingBtn = null;
-  });
-
-  audio.play().catch(() => {
-    btn.classList.remove("playing");
-    currentPlayingAudio = null;
-    currentPlayingBtn = null;
-  });
-});

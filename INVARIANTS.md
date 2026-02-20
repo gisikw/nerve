@@ -58,16 +58,9 @@ be ticketed for remediation. No grandfathering.
   `styles/base.css` (`var(--accent)`, `var(--bg-surface)`, etc.).
   Global styles stay in `styles/*.css`.
 - **`main.ts` is infrastructure.** It mounts the Svelte app and handles
-  concerns outside Svelte's component tree: zoom control, mxc:// image
-  resolution, TTS playback, audio playback. These are DOM-level concerns
-  that don't belong in components.
-
-### Legacy Elm code
-
-The Elm source (`src/*.elm`, `src/View/*.elm`) remains in tree but is no
-longer the build target. It will be removed after the Svelte migration is
-complete (ner-777d). The `elm.d.ts` type declarations and `elm.json` are
-also legacy artifacts retained for reference during porting.
+  concerns outside Svelte's component tree: zoom control and TTS playback
+  queue. Media resolution and audio playback are handled by Svelte
+  components directly.
 
 ## Specifications and Tests
 
@@ -93,9 +86,6 @@ also legacy artifacts retained for reference during porting.
 
 ### Test layers
 
-- **Elm unit tests** (`ui/tests/*.elm`) are legacy from the Elm frontend.
-  They verify decoders and update logic for the Elm codebase and will be
-  replaced as features are ported to Svelte.
 - **Fake backend** (`ui/fake-state.ts`) is a stateful in-memory simulator
   that replaces Tauri when running in a browser via `npx vite`. Supports
   all commands, maintains message and session state across round-trips,
@@ -196,7 +186,7 @@ toggle session state.
 - **`ui/fake-state.ts`** — State, command handlers, and driver actions.
   Runs server-side in Vite's Node process. This is the source of truth.
 - **`ui/fake.ts`** — Browser-side client. Calls `fetch("/fake/command")`
-  to route Elm commands to the Vite server.
+  to route commands to the Vite server.
 - **`ui/vite-plugin-fake.ts`** — Vite plugin that mounts HTTP middleware
   and a WebSocket server. Loaded in `vite.config.js`.
 - **`ui/main.ts`** — Mounts the Svelte app. The `invoke` function in

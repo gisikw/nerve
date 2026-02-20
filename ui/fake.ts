@@ -1,6 +1,6 @@
 // Fake backend client — browser side.
 //
-// When Tauri is absent, fakeInvoke routes Elm commands to the Vite dev
+// When Tauri is absent, fakeInvoke routes commands to the Vite dev
 // server's fake backend (POST /fake/command). The server holds state and
 // also exposes a WebSocket + HTTP driver for external test scripts.
 //

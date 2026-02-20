@@ -1,44 +1,36 @@
-Feature: Port Protocol
-  Communication between Elm and Tauri via the TypeScript glue layer.
-  IPC ports: sendToTauri (out) and receiveFromTauri (in).
-  DOM ports: resizeComposeInput (out, fire-and-forget).
+Feature: IPC Protocol
+  Communication between the Svelte frontend and Tauri backend via the
+  typed IPC wrapper (src/lib/tauri.ts).
 
-  Scenario: Outgoing commands use tagged envelope format
-    Given Elm sends a command via sendToTauri
-    Then the payload is a JSON object with "command" and "args" fields
+  Scenario: Commands use Tauri invoke with snake_case names
+    Given the frontend calls a typed IPC function
+    Then the wrapper invokes the corresponding Tauri command
 
-  Scenario: Incoming responses use tagged envelope format
-    Given the JS glue receives a Tauri response
-    Then it sends a JSON object with "tag" and "payload" fields to receiveFromTauri
-
-  Scenario: Command names are mapped to Tauri snake_case
-    Given Elm sends command "listRooms"
-    Then the JS glue invokes Tauri command "list_rooms"
-
-  Scenario: Tauri errors are sent as error tags
+  Scenario: Tauri errors are surfaced to the caller
     Given a Tauri invoke call throws an error
-    Then the JS glue sends a response with tag "error" and the error string as payload
-
-  Scenario: Unknown commands produce error responses
-    Given Elm sends a command not in the command map
-    Then the JS glue sends an error response
+    Then the IPC wrapper propagates the error to the caller
 
   Scenario: Session check fires on startup
     Given the app initializes with Tauri available
-    Then the JS glue automatically invokes check_session
-    And sends the result to receiveFromTauri with tag "checkSession"
+    Then the app invokes check_session on mount
 
-  Scenario: Six commands are supported
-    The command map includes exactly:
-      | Elm command   | Tauri command |
-      | checkSession  | check_session |
-      | login         | login         |
-      | logout        | logout        |
-      | listRooms     | list_rooms    |
-      | getMessages   | get_messages  |
-      | sendMessage   | send_message  |
-
-  Scenario: Compose textarea auto-resizes via port
-    Given Elm sends a unit value via resizeComposeInput
-    Then the JS glue sets the compose textarea height to its scrollHeight
-    And the resize runs on the next animation frame
+  Scenario: Core commands are supported
+    The IPC wrapper includes at minimum:
+      | Function      | Tauri command     |
+      | checkSession  | check_session     |
+      | login         | login             |
+      | logout        | logout            |
+      | listRooms     | list_rooms        |
+      | getMessages   | get_messages      |
+      | sendMessage   | send_message      |
+      | sendReaction  | send_reaction     |
+      | getMedia      | get_media         |
+      | speakText     | speak_text        |
+      | sendImage     | send_image        |
+      | markRead      | mark_read         |
+      | getPinnedEvents | get_pinned_events |
+      | pinMessage    | pin_message       |
+      | unpinMessage  | unpin_message     |
+      | getStreams    | get_streams       |
+      | sendStreamAction | send_stream_action |
+      | createRoom    | create_room       |

@@ -169,9 +169,9 @@ async function main() {
     await page.setViewport({ width, height });
     await page.goto(baseUrl, { waitUntil: "networkidle0" });
 
-    // Wait for Elm to process the checkSession response and render.
-    // The fetch completes during networkidle0 but Elm needs a frame
-    // to process the port message and re-render.
+    // Wait for the app to process the checkSession response and render.
+    // The fetch completes during networkidle0 but the app needs a frame
+    // to process the response and re-render.
     await new Promise((r) => setTimeout(r, 1000));
 
     // Select room if requested (match by visible sidebar text)

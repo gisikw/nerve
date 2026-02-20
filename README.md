@@ -1,6 +1,6 @@
 # Nerve
 
-A purpose-built Matrix client. Tauri (Rust) + Elm frontend.
+A purpose-built Matrix client. Tauri (Rust) + Svelte frontend.
 
 ## Why
 
@@ -21,16 +21,15 @@ livable.
 
 - **Backend:** Tauri (Rust). Uses matrix-rust-sdk for Matrix protocol,
   E2EE, sync. Exposes commands to the frontend via Tauri's IPC.
-- **Frontend:** Elm. Virtual DOM for flicker-free updates. Communicates
-  with the Rust backend via two ports (sendToTauri/receiveFromTauri) using
-  tagged JSON envelopes. Vite + vite-plugin-elm for the build pipeline.
+- **Frontend:** Svelte 5 with runes. Communicates with the Rust backend
+  via typed IPC wrapper (`src/lib/tauri.ts`). Vite for the build pipeline.
 - **Build:** Single binary per platform. System webview (WebKitGTK on
   Linux, WebKit on macOS).
 
 ## Building
 
 Requires [Nix](https://nixos.org/download/) with flakes enabled. The flake
-provides Rust, Tauri CLI, Node.js, Elm, and all system dependencies.
+provides Rust, Tauri CLI, Node.js, and all system dependencies.
 
 ```bash
 # Enter dev shell
@@ -45,8 +44,8 @@ cargo tauri dev
 # Build release binary — outputs to src-tauri/target/release/bundle/
 cargo tauri build
 
-# Run Elm tests
-cd ui && npx elm-test
+# Run Rust tests
+cd src-tauri && cargo test
 ```
 
 First build takes ~20 minutes (matrix-sdk dependency tree). Incremental
@@ -58,7 +57,6 @@ You'll need:
 - Rust toolchain (stable)
 - `cargo-tauri` CLI (`cargo install tauri-cli`)
 - Node.js 20+ and npm
-- Elm 0.19.1
 - GTK3, WebKitGTK 4.1, libsoup 3, and related dev packages (Linux only)
 
 ## Project Structure
@@ -71,22 +69,26 @@ src-tauri/              # Rust backend (Tauri app)
   src/messages.rs       # Message fetching and sending
   Cargo.toml            # Rust dependencies
   tauri.conf.json       # Tauri configuration
-ui/                     # Elm frontend
-  src/Main.elm          # App entry point
-  src/Model.elm         # Model, Msg, Page types
-  src/Update.elm        # Update function (all state transitions)
-  src/View/Login.elm    # Login form view
-  src/View/Sidebar.elm  # Room list sidebar
-  src/View/Messages.elm # Message display and compose bar
-  src/Types.elm         # Domain types (Room, Message, etc.)
-  src/Decode.elm        # JSON decoders for Rust types
-  src/Ports.elm         # Port declarations
-  src/Commands.elm      # Typed command helpers
-  main.js               # JS glue (ports <-> Tauri invoke)
+ui/                     # Svelte frontend
+  src/App.svelte        # Root component (routing, layout)
+  src/Login.svelte      # Login form
+  src/Sidebar.svelte    # Room list sidebar
+  src/MessageList.svelte    # Message list with autoscroll and pagination
+  src/MessageItem.svelte    # Individual message (sender, timestamp, actions)
+  src/MessageBody.svelte    # Message content (markdown, images, audio)
+  src/ComposeBar.svelte     # Message input (text, emoji, attachments, voice)
+  src/ReactionRow.svelte    # Emoji reaction pills
+  src/StreamsPanel.svelte   # Streaming output panel
+  src/lib/tauri.ts          # Typed IPC wrapper
+  src/lib/emoji.ts          # Emoji shortcode replacement
+  src/lib/markdown.ts       # Markdown rendering
+  src/lib/stores/           # Svelte 5 rune-based stores
+  main.ts               # App mount, zoom, TTS queue
   index.html            # HTML shell
-  styles.css            # Styles
-  elm.json              # Elm dependencies
-  package.json          # Vite + vite-plugin-elm
-  tests/                # Elm tests
+  styles/               # CSS
+  package.json          # Vite + Svelte deps
+  fake-state.ts         # Fake backend (dev mode)
+  fake.ts               # Fake backend client
+  screenshot.ts         # Screenshot pipeline
 flake.nix               # Nix dev shell
 ```

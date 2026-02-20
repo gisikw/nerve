@@ -1,7 +1,7 @@
 // Vite plugin: fake backend server.
 //
 // In dev mode, this plugin:
-// 1. Adds HTTP middleware for Elm commands (POST /fake/command)
+// 1. Adds HTTP middleware for UI commands (POST /fake/command)
 // 2. Opens a WebSocket on port 3001 for external drivers (tests, Exo,
 //    screenshot pipeline) to puppet the fake state.
 //
@@ -22,7 +22,7 @@ export default function fakeBackendPlugin(): Plugin {
     apply: "serve",
 
     configureServer(server) {
-      // --- HTTP middleware for Elm commands ---
+      // --- HTTP middleware for UI commands ---
       server.middlewares.use("/fake/command", (req, res) => {
         if (req.method !== "POST") {
           res.statusCode = 405;
