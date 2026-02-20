@@ -43,35 +43,62 @@ document.addEventListener("keydown", (e) => {
 });
 
 // --- TTS audio playback queue ---
+//
+// Uses AudioContext (Web Audio API) instead of HTMLAudioElement to avoid
+// autoplay restrictions. The AudioContext is created/resumed during a user
+// gesture (the speak button click) via ttsUnlockContext(), so subsequent
+// playback from async TTS synthesis doesn't need a fresh gesture.
 
-let ttsCurrentAudio: HTMLAudioElement | null = null;
+let ttsCtx: AudioContext | null = null;
+let ttsPlaying: AudioBufferSourceNode | null = null;
 const ttsQueue: string[] = [];
+
+function ttsGetContext(): AudioContext {
+  if (!ttsCtx) ttsCtx = new AudioContext();
+  return ttsCtx;
+}
+
+/** Call during a user gesture to unlock the AudioContext for future playback. */
+export function ttsUnlockContext() {
+  const ctx = ttsGetContext();
+  if (ctx.state === "suspended") ctx.resume();
+}
 
 function ttsPlayNext() {
   if (ttsQueue.length === 0) {
-    ttsCurrentAudio = null;
+    ttsPlaying = null;
     return;
   }
   const base64 = ttsQueue.shift()!;
-  const audio = new Audio(`data:audio/mpeg;base64,${base64}`);
-  ttsCurrentAudio = audio;
-  audio.addEventListener("ended", ttsPlayNext);
-  audio.addEventListener("error", ttsPlayNext);
-  audio.play().catch(() => ttsPlayNext());
+  const ctx = ttsGetContext();
+
+  // Decode base64 → ArrayBuffer → AudioBuffer
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+  ctx.decodeAudioData(bytes.buffer).then((buffer) => {
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctx.destination);
+    source.addEventListener("ended", ttsPlayNext);
+    ttsPlaying = source;
+    source.start();
+  }).catch(() => ttsPlayNext());
 }
 
 export function ttsEnqueue(base64: string) {
   ttsQueue.push(base64);
-  if (!ttsCurrentAudio) {
+  if (!ttsPlaying) {
     ttsPlayNext();
   }
 }
 
 export function ttsStopAll() {
   ttsQueue.length = 0;
-  if (ttsCurrentAudio) {
-    ttsCurrentAudio.pause();
-    ttsCurrentAudio = null;
+  if (ttsPlaying) {
+    ttsPlaying.stop();
+    ttsPlaying = null;
   }
 }
 

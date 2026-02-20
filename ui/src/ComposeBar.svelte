@@ -268,7 +268,8 @@
 
       mediaRecorder.start();
       recording = true;
-    } catch {
+    } catch (err) {
+      console.error("Microphone access failed:", err);
       recording = false;
     }
   }

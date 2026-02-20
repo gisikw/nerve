@@ -1,6 +1,6 @@
 ---
 id: ner-e64b
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-02-20T05:50:44Z
