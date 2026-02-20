@@ -10,10 +10,12 @@
     message,
     isGroupStart,
     isPinned,
+    onPinToggle,
   }: {
     message: Message;
     isGroupStart: boolean;
     isPinned: boolean;
+    onPinToggle?: () => void;
   } = $props();
 
   function formatSender(userId: string): string {
@@ -33,11 +35,10 @@
   function handlePin() {
     const roomId = getSelectedRoomId();
     if (!roomId) return;
-    if (isPinned) {
-      unpinMessage(roomId, message.event_id);
-    } else {
-      pinMessage(roomId, message.event_id);
-    }
+    const action = isPinned
+      ? unpinMessage(roomId, message.event_id)
+      : pinMessage(roomId, message.event_id);
+    action.then(() => onPinToggle?.());
   }
 
   function handleSpeak() {

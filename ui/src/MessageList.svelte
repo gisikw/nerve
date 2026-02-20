@@ -72,11 +72,16 @@
     if (lastId && lastId !== prevLastId && messagesEl) {
       if (initialLoad) {
         // First batch of messages for this room: always scroll to bottom
+        // Double-RAF after tick ensures layout is fully resolved
         initialLoad = false;
         tick().then(() => {
-          if (messagesEl) {
-            messagesEl.scrollTop = messagesEl.scrollHeight;
-          }
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              if (messagesEl) {
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+              }
+            });
+          });
         });
       } else {
         // Subsequent messages: scroll only if near bottom
@@ -85,7 +90,9 @@
           el.scrollTop + el.clientHeight >= el.scrollHeight - 100;
         if (nearBottom) {
           tick().then(() => {
-            el.scrollTop = el.scrollHeight;
+            if (messagesEl) {
+              messagesEl.scrollTop = messagesEl.scrollHeight;
+            }
           });
         }
       }
@@ -120,14 +127,18 @@
     showPinned = !showPinned;
   }
 
+  function refreshPins() {
+    const roomId = selectedRoomId;
+    if (!roomId) return;
+    getPinnedEvents(roomId)
+      .then((ids) => { pinnedIds = new Set(ids); })
+      .catch(() => {});
+  }
+
   function handleUnpin(eventId: string) {
     const roomId = selectedRoomId;
     if (!roomId) return;
-    unpinMessage(roomId, eventId).then(() => {
-      getPinnedEvents(roomId)
-        .then((ids) => { pinnedIds = new Set(ids); })
-        .catch(() => {});
-    });
+    unpinMessage(roomId, eventId).then(() => refreshPins());
   }
 
   // --- Grouping logic: 5 minute gap or sender change ---
@@ -228,6 +239,7 @@
         message={msg}
         isGroupStart={isGroupStart(messages, i)}
         isPinned={pinnedIds.has(msg.event_id)}
+        onPinToggle={refreshPins}
       />
     {/each}
   {/if}

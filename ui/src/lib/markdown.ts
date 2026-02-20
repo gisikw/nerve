@@ -48,7 +48,22 @@ function renderLines(lines: string[]): string {
     }
   }
 
-  return blocks.join("<br>");
+  // Join inline content with <br>, but don't add <br> adjacent to
+  // block-level elements (pre, blockquote) — they handle their own spacing.
+  let html = "";
+  for (let j = 0; j < blocks.length; j++) {
+    if (j > 0) {
+      const prev = blocks[j - 1];
+      const curr = blocks[j];
+      const prevIsBlock = prev.startsWith("<pre") || prev.startsWith("<blockquote");
+      const currIsBlock = curr.startsWith("<pre") || curr.startsWith("<blockquote");
+      if (!prevIsBlock && !currIsBlock) {
+        html += "<br>";
+      }
+    }
+    html += blocks[j];
+  }
+  return html;
 }
 
 interface Match {
