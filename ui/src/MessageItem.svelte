@@ -2,6 +2,7 @@
   import type { Message } from "./lib/tauri";
   import { pinMessage, unpinMessage, speakText } from "./lib/tauri";
   import { getSelectedRoomId } from "./lib/stores/rooms.svelte";
+  import { ttsEnqueue } from "../main";
   import MessageBody from "./MessageBody.svelte";
   import ReactionRow from "./ReactionRow.svelte";
 
@@ -40,7 +41,9 @@
   }
 
   function handleSpeak() {
-    speakText(message.body);
+    speakText(message.body).then((audio) => {
+      if (audio) ttsEnqueue(audio);
+    }).catch(() => {});
   }
 </script>
 

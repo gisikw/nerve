@@ -43,6 +43,7 @@
     pinnedIds = new Set();
     showPinned = false;
     loadingOlder = false;
+    clearMessages();
 
     loadMessages(roomId);
     getPinnedEvents(roomId)
@@ -51,11 +52,29 @@
   });
 
   // --- Autoscroll on new messages ---
-  let prevMessageCount = $state(0);
+  let prevLastId = $state<string | null>(null);
+  let prevRoomId = $state<string | null>(null);
 
   $effect(() => {
-    const count = messages.length;
-    if (count > prevMessageCount && messagesEl) {
+    const roomId = selectedRoomId;
+    const lastMsg = messages.length > 0 ? messages[messages.length - 1] : null;
+    const lastId = lastMsg?.event_id ?? null;
+
+    if (roomId !== prevRoomId) {
+      // Room switch: always scroll to bottom after render
+      prevRoomId = roomId;
+      prevLastId = lastId;
+      if (!roomId) return;
+      tick().then(() => {
+        if (messagesEl) {
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+      });
+      return;
+    }
+
+    if (lastId !== prevLastId && messagesEl) {
+      // New message arrived: scroll if near bottom
       const el = messagesEl;
       const nearBottom =
         el.scrollTop + el.clientHeight >= el.scrollHeight - 100;
@@ -65,20 +84,7 @@
         });
       }
     }
-    prevMessageCount = count;
-  });
-
-  // Force scroll to bottom on room switch
-  $effect(() => {
-    // Track room changes
-    const _roomId = selectedRoomId;
-    if (!_roomId) return;
-    // Wait for messages to render, then scroll
-    tick().then(() => {
-      if (messagesEl) {
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-      }
-    });
+    prevLastId = lastId;
   });
 
   // --- Scroll handler for pagination ---

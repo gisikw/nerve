@@ -94,12 +94,18 @@
         class="audio-play-btn"
         class:playing={audioState === "playing"}
         class:loading={audioState === "loading"}
-        title="Play voice message"
+        title={audioState === "playing" ? "Stop" : "Play voice message"}
         onclick={toggleAudio}
       >
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none">
-          <polygon points="6 3 20 12 6 21 6 3" />
-        </svg>
+        {#if audioState === "playing"}
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none">
+            <rect x="6" y="4" width="12" height="16" rx="2" />
+          </svg>
+        {:else}
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none">
+            <polygon points="6 3 20 12 6 21 6 3" />
+          </svg>
+        {/if}
         <span>Voice message</span>
       </button>
     </div>

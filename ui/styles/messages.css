@@ -339,6 +339,8 @@
 
 .pinned-bar-messages {
   padding: 0 1rem 0.35rem;
+  max-height: 30vh;
+  overflow-y: auto;
 }
 
 .pinned-message-preview {

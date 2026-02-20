@@ -93,10 +93,9 @@
 }
 
 .stream-chevron {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
   color: var(--text-muted);
-  width: 0.8rem;
+  width: 12px;
+  height: 12px;
   flex-shrink: 0;
 }
 

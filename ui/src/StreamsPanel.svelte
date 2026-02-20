@@ -93,7 +93,13 @@
               class="stream-header-toggle"
               onclick={() => toggleCollapsed(stream.stream_id)}
             >
-              <span class="stream-chevron">{isCollapsed ? ">" : "v"}</span>
+              <svg class="stream-chevron" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                {#if isCollapsed}
+                  <polyline points="9 18 15 12 9 6" />
+                {:else}
+                  <polyline points="6 9 12 15 18 9" />
+                {/if}
+              </svg>
               <span class="stream-name">{stream.name}</span>
               {#if stream.closed}
                 <span class="stream-status">done</span>
