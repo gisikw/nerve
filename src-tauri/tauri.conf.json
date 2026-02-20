@@ -32,9 +32,7 @@
       "icons/icon.png"
     ],
     "macOS": {
-      "infoPlist": {
-        "NSMicrophoneUsageDescription": "Nerve needs microphone access to record voice messages."
-      }
+      "infoPlist": "Info.plist"
     }
   }
 }
