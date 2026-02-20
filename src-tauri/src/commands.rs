@@ -105,7 +105,7 @@ pub async fn logout(state: State<'_, MatrixState>) -> Result<(), String> {
             .map_err(|e| format!("Logout failed: {e}"))?;
     }
     *guard = None;
-    client::clear_homeserver();
+    client::clear_credentials();
     Ok(())
 }
 

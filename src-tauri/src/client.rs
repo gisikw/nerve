@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use matrix_sdk::{config::SyncSettings, Client};
+use matrix_sdk::{config::SyncSettings, matrix_auth::MatrixSession, Client};
 use tauri::AppHandle;
 use tokio::sync::Mutex;
 use tracing::info;
@@ -65,10 +65,27 @@ pub fn load_device_id() -> Option<String> {
         .filter(|s| !s.is_empty())
 }
 
-/// Clear the saved homeserver and device ID (on logout).
-pub fn clear_homeserver() {
-    let _ = std::fs::remove_file(data_dir().join("homeserver"));
-    let _ = std::fs::remove_file(data_dir().join("device-id"));
+/// Save the Matrix session (access token, user/device IDs) for restore.
+pub fn save_session(session: &MatrixSession) -> Result<()> {
+    let dir = data_dir();
+    std::fs::create_dir_all(&dir)?;
+    let json = serde_json::to_string(session)?;
+    std::fs::write(dir.join("session.json"), json)?;
+    Ok(())
+}
+
+/// Load a previously-saved Matrix session.
+pub fn load_session() -> Option<MatrixSession> {
+    let data = std::fs::read_to_string(data_dir().join("session.json")).ok()?;
+    serde_json::from_str(&data).ok()
+}
+
+/// Clear all saved credentials (on logout).
+pub fn clear_credentials() {
+    let dir = data_dir();
+    let _ = std::fs::remove_file(dir.join("homeserver"));
+    let _ = std::fs::remove_file(dir.join("device-id"));
+    let _ = std::fs::remove_file(dir.join("session.json"));
 }
 
 /// Build a Matrix client for the given homeserver, with a persistent sqlite
@@ -107,15 +124,24 @@ pub async fn login(client: &Client, username: &str, password: &str) -> Result<St
     // Persist the device ID for next time.
     let _ = save_device_id(response.device_id.as_str());
 
+    // Persist the session (access token etc.) so we can restore without
+    // re-entering credentials on next launch.
+    if let Some(session) = client.matrix_auth().session() {
+        let _ = save_session(&session);
+    }
+
     info!("Logged in as {} (device {})", response.user_id, response.device_id);
     Ok(response.user_id.to_string())
 }
 
-/// Check if we have a persisted session that can be restored.
+/// Try to restore the session from a previously-saved access token.
+/// Returns true if the session was successfully restored.
 pub async fn try_restore_session(client: &Client) -> bool {
-    // The sqlite store persists the session automatically.
-    // If the client has a logged-in user, the session was restored.
-    client.user_id().is_some()
+    if let Some(session) = load_session() {
+        client.restore_session(session).await.is_ok()
+    } else {
+        false
+    }
 }
 
 /// Start the sync loop in the background. Call after login or session restore.
@@ -187,11 +213,11 @@ mod tests {
 
     #[test]
     #[serial_test::serial]
-    fn clear_homeserver_removes_file() {
+    fn clear_credentials_removes_files() {
         with_temp_data_dir(|| {
             save_homeserver("matrix.example.com").unwrap();
             assert!(load_homeserver().is_some());
-            clear_homeserver();
+            clear_credentials();
             assert_eq!(load_homeserver(), None);
         });
     }
