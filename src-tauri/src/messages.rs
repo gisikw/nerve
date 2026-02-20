@@ -118,7 +118,7 @@ fn extract_content(msgtype: &MessageType) -> (String, String, Option<String>) {
         MessageType::Emote(e) => (format!("* {}", e.body), "emote".to_string(), None),
         MessageType::Image(img) => {
             let url = mxc_uri_string(&img.source);
-            let caption = img.caption().unwrap_or(&img.body);
+            let caption = img.caption().unwrap_or_default();
             (caption.to_string(), "image".to_string(), url)
         }
         MessageType::File(_) => ("[file]".to_string(), "other".to_string(), None),
