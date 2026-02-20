@@ -161,3 +161,12 @@
 .stream-line.stderr {
   color: var(--error);
 }
+
+/* ── Empty state ── */
+
+.streams-empty {
+  padding: 1.5rem 0.75rem;
+  color: var(--text-faint);
+  font-size: 0.78rem;
+  text-align: center;
+}

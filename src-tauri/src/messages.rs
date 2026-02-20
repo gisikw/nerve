@@ -12,6 +12,8 @@ use matrix_sdk::Client;
 use serde::Serialize;
 use tauri::{AppHandle, Emitter};
 
+use tracing::warn;
+
 use crate::error::{self, NerveError, Result};
 
 #[derive(Serialize, Clone)]
@@ -206,6 +208,10 @@ pub async fn fetch_messages(
     for timeline_event in response.chunk {
         let raw = timeline_event.raw();
         let Ok(event) = raw.deserialize() else {
+            warn!(
+                room_id = %room_id,
+                "Skipping timeline event that failed to deserialize"
+            );
             continue;
         };
 

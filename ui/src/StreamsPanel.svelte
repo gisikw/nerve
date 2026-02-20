@@ -60,9 +60,13 @@
   export function toggle() {
     panelOpen = !panelOpen;
   }
+
+  export function isOpen() {
+    return panelOpen;
+  }
 </script>
 
-{#if panelOpen && streams.length > 0}
+{#if panelOpen}
   <div id="streams-panel">
     <div class="streams-panel-header">
       <span class="streams-panel-title">
@@ -80,52 +84,56 @@
       </button>
     </div>
 
-    <div class="streams-list">
-      {#each streams as stream (stream.stream_id)}
-        {@const isCollapsed = collapsed.has(stream.stream_id)}
-        <div
-          class="stream-accordion"
-          class:stream-closed={stream.closed}
-          class:stream-active={!stream.closed}
-        >
-          <div class="stream-header">
-            <button
-              class="stream-header-toggle"
-              onclick={() => toggleCollapsed(stream.stream_id)}
-            >
-              <svg class="stream-chevron" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                {#if isCollapsed}
-                  <polyline points="9 18 15 12 9 6" />
-                {:else}
-                  <polyline points="6 9 12 15 18 9" />
+    {#if streams.length > 0}
+      <div class="streams-list">
+        {#each streams as stream (stream.stream_id)}
+          {@const isCollapsed = collapsed.has(stream.stream_id)}
+          <div
+            class="stream-accordion"
+            class:stream-closed={stream.closed}
+            class:stream-active={!stream.closed}
+          >
+            <div class="stream-header">
+              <button
+                class="stream-header-toggle"
+                onclick={() => toggleCollapsed(stream.stream_id)}
+              >
+                <svg class="stream-chevron" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  {#if isCollapsed}
+                    <polyline points="9 18 15 12 9 6" />
+                  {:else}
+                    <polyline points="6 9 12 15 18 9" />
+                  {/if}
+                </svg>
+                <span class="stream-name">{stream.name}</span>
+                {#if stream.closed}
+                  <span class="stream-status">done</span>
                 {/if}
-              </svg>
-              <span class="stream-name">{stream.name}</span>
-              {#if stream.closed}
-                <span class="stream-status">done</span>
+              </button>
+              {#if stream.buttons.length > 0}
+                <span class="stream-buttons">
+                  {#each stream.buttons as btn}
+                    <button
+                      class="stream-action-btn"
+                      onclick={() => handleAction(stream.stream_id, btn.id)}
+                    >{btn.label}</button>
+                  {/each}
+                </span>
               {/if}
-            </button>
-            {#if stream.buttons.length > 0}
-              <span class="stream-buttons">
-                {#each stream.buttons as btn}
-                  <button
-                    class="stream-action-btn"
-                    onclick={() => handleAction(stream.stream_id, btn.id)}
-                  >{btn.label}</button>
-                {/each}
-              </span>
+            </div>
+
+            {#if !isCollapsed}
+              <pre class="stream-output">{#each stream.lines as line}<span
+                  class="stream-line"
+                  class:stderr={line.channel === "stderr"}
+                >{line.text}
+</span>{/each}</pre>
             {/if}
           </div>
-
-          {#if !isCollapsed}
-            <pre class="stream-output">{#each stream.lines as line}<span
-                class="stream-line"
-                class:stderr={line.channel === "stderr"}
-              >{line.text}
-</span>{/each}</pre>
-          {/if}
-        </div>
-      {/each}
-    </div>
+        {/each}
+      </div>
+    {:else}
+      <p class="streams-empty">No active streams.</p>
+    {/if}
   </div>
 {/if}

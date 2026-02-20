@@ -121,13 +121,21 @@
   color: var(--text);
 }
 
+#streams-toggle.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
 #room-header #logout-btn {
-  padding: 0.25rem 0.55rem;
+  height: 1.75rem;
+  padding: 0 0.55rem;
   font-size: 0.7rem;
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-muted);
   margin-top: 0;
+  border-radius: var(--radius);
 }
 
 #room-header #logout-btn:hover {
