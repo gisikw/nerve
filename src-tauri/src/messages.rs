@@ -362,12 +362,19 @@ pub async fn send_image(
     let mut image_info = ImageInfo::new();
     image_info.mimetype = Some(mime_type.to_string());
 
-    let content = RoomMessageEventContent::new(MessageType::Image(
+    let mut image_content =
         matrix_sdk::ruma::events::room::message::ImageMessageEventContent::new(
             body, MediaSource::Plain(mxc_uri),
         )
-        .info(Box::new(image_info)),
-    ));
+        .info(Box::new(image_info));
+
+    // When a caption is provided, `body` holds the caption text.
+    // Set `filename` explicitly so receivers can recover the original filename.
+    if caption.is_some() {
+        image_content.filename = Some(filename.to_string());
+    }
+
+    let content = RoomMessageEventContent::new(MessageType::Image(image_content));
 
     room.send(content).await?;
     Ok(())
