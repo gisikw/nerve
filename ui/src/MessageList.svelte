@@ -14,6 +14,7 @@
   import MessageItem from "./MessageItem.svelte";
   import { shouldShowScrollButton, isNearBottom } from "./lib/scroll";
   import { isGroupStart, formatSender } from "./lib/message-grouping";
+  import { typingLabel } from "./lib/typing-ui";
 
   // --- Pinned state ---
   let pinnedIds = $state<Set<string>>(new Set());
@@ -175,13 +176,7 @@
   }
 
   // --- Typing indicator ---
-
-  function typingLabel(users: string[]): string {
-    const names = users.map(formatSender);
-    if (names.length === 1) return `${names[0]} is typing...`;
-    if (names.length === 2) return `${names[0]} and ${names[1]} are typing...`;
-    return `${names.slice(0, 2).join(", ")} and others are typing...`;
-  }
+  // (typingLabel function is imported from ./lib/typing-ui)
 
   // --- Scroll to bottom handler ---
   function scrollToBottom() {
