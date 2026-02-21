@@ -95,7 +95,7 @@
     }
 
     sendTypingNotice(roomId, false).catch(() => {});
-    resizeTextarea();
+    tick().then(resizeTextarea);
   }
 
   async function sendImageAttachment(roomId: string) {
@@ -113,7 +113,6 @@
 
     composeText = "";
     clearAttachment();
-    resizeTextarea();
 
     await sendImage(roomId, file.name, base64, mimeType, caption).catch(
       () => {},
