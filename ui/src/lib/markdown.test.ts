@@ -86,4 +86,28 @@ describe("renderMarkdown", () => {
       expect(result).toContain("&lt;img&gt;");
     });
   });
+
+  describe("long message handling", () => {
+    it("handles extremely long plain text without failing", () => {
+      const longText = "a".repeat(100000);
+      const result = renderMarkdown(longText);
+      expect(result).toBeDefined();
+      expect(result.length).toBeGreaterThan(0);
+    });
+
+    it("handles extremely long text with markdown formatting", () => {
+      const longText = "**bold** ".repeat(10000);
+      const result = renderMarkdown(longText);
+      expect(result).toBeDefined();
+      expect(result).toContain("<strong>bold</strong>");
+    });
+
+    it("handles extremely long code blocks", () => {
+      const codeLines = Array(5000).fill("const x = 1;").join("\n");
+      const input = `\`\`\`\n${codeLines}\n\`\`\``;
+      const result = renderMarkdown(input);
+      expect(result).toBeDefined();
+      expect(result).toContain('<pre class="code-block">');
+    });
+  });
 });

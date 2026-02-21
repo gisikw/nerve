@@ -1,3 +1,5 @@
 loop: building ner-86b4 — Sidebar: move activity indicator to rightmost position, ahead of archive button
 loop: ner-86b4 FAIL
 loop: building ner-fdcf — Sidebar channels section should be collapsible with activity-aware twirldown
+loop: ner-fdcf SUCCEED
+loop: building ner-7637 — Extremely long messages fail to render, showing empty state instead

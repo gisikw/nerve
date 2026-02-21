@@ -3,8 +3,12 @@
   import type { Message } from "./lib/tauri";
   import { getMedia } from "./lib/tauri";
   import { renderMarkdown } from "./lib/markdown";
+  import { truncateMessage } from "./lib/truncate";
 
   let { message }: { message: Message } = $props();
+
+  // --- Message truncation for extremely long messages ---
+  let isExpanded = $state(false);
 
   // --- Image resolution ---
   let imgSrc = $state<string | null>(null);
@@ -73,6 +77,20 @@
       audioEl = null;
     }
   }
+
+  function renderMessageBody(body: string): string {
+    const truncation = truncateMessage(body);
+    const textToRender = isExpanded ? truncation.fullText : truncation.displayText;
+    return renderMarkdown(textToRender);
+  }
+
+  function shouldShowExpandButton(body: string): boolean {
+    return truncateMessage(body).isTruncated;
+  }
+
+  function toggleExpand() {
+    isExpanded = !isExpanded;
+  }
 </script>
 
 {#if message.msg_type === "image"}
@@ -84,7 +102,14 @@
     <div class="image-container">
       <img src={imgSrc} alt={message.body} />
       {#if message.body}
-        <div class="message-body image-caption">{@html renderMarkdown(message.body)}</div>
+        <div class="message-body image-caption">
+          {@html renderMessageBody(message.body)}
+          {#if shouldShowExpandButton(message.body)}
+            <button class="expand-btn" onclick={toggleExpand}>
+              {isExpanded ? "Show less" : "Show more"}
+            </button>
+          {/if}
+        </div>
       {/if}
     </div>
   {:else}
@@ -116,5 +141,30 @@
     <div class="message-body">[audio]</div>
   {/if}
 {:else}
-  <div class="message-body">{@html renderMarkdown(message.body)}</div>
+  <div class="message-body">
+    {@html renderMessageBody(message.body)}
+    {#if shouldShowExpandButton(message.body)}
+      <button class="expand-btn" onclick={toggleExpand}>
+        {isExpanded ? "Show less" : "Show more"}
+      </button>
+    {/if}
+  </div>
 {/if}
+
+<style>
+  .expand-btn {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    color: var(--accent);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .expand-btn:hover {
+    background: var(--bg-hover);
+  }
+</style>

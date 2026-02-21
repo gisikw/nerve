@@ -53,3 +53,20 @@ Feature: Message Display
   Scenario: Messages do not poll when no room is selected
     Given no room is selected
     Then no message polling occurs
+
+  Scenario: Extremely long messages are truncated by default
+    Given a message with body longer than 5000 characters
+    Then the message displays the first 5000 characters
+    And a "Show more" button is visible
+
+  Scenario: Truncated messages can be expanded
+    Given a truncated message is displayed
+    When the user clicks "Show more"
+    Then the full message body is displayed
+    And a "Show less" button is visible
+
+  Scenario: Expanded messages can be collapsed
+    Given an expanded message is displayed
+    When the user clicks "Show less"
+    Then the message is truncated again
+    And a "Show more" button is visible
