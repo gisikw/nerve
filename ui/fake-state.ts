@@ -33,6 +33,24 @@ interface FakeMessage {
   reactions: FakeReaction[];
 }
 
+interface FakeStreamButton {
+  id: string;
+  label: string;
+}
+
+interface FakeStreamLine {
+  text: string;
+  channel: string;
+}
+
+interface FakeStream {
+  stream_id: string;
+  name: string;
+  buttons: FakeStreamButton[];
+  lines: FakeStreamLine[];
+  closed: boolean;
+}
+
 // --- State ---
 
 let nextEventId = 100;
@@ -97,6 +115,7 @@ export const state = {
   rooms: [...initialRooms],
   messages: initialMessages(),
   typingUsers: {} as Record<string, string[]>,
+  streams: {} as Record<string, FakeStream[]>,
 };
 
 // --- Command handlers ---
@@ -253,11 +272,21 @@ export function handleCommand(
     case "create_room":
       return null;
 
-    case "get_streams":
-      return [];
+    case "get_streams": {
+      const roomId = args.roomId as string;
+      return state.streams[roomId] ?? [];
+    }
 
-    case "send_stream_action":
+    case "send_stream_action": {
+      const roomId = args.roomId as string;
+      const streamId = args.streamId as string;
+      const buttonId = args.buttonId as string;
+
+      // In the fake backend, we just log the action
+      // In real implementation, this would trigger backend stream logic
+      console.log(`Stream action: room=${roomId}, stream=${streamId}, button=${buttonId}`);
       return null;
+    }
 
     default:
       throw new Error(`Unknown command: ${command}`);
@@ -353,6 +382,29 @@ export function handleDriverAction(
       return { ok: true };
     }
 
+    case "inject_stream": {
+      const roomId = action.roomId as string;
+      if (!state.streams[roomId]) {
+        state.streams[roomId] = [];
+      }
+      state.streams[roomId].push({
+        stream_id: action.stream_id as string,
+        name: action.name as string,
+        buttons: (action.buttons as FakeStreamButton[]) ?? [],
+        lines: (action.lines as FakeStreamLine[]) ?? [],
+        closed: (action.closed as boolean) ?? false,
+      });
+      return { ok: true };
+    }
+
+    case "clear_streams": {
+      const roomId = action.roomId as string;
+      if (state.streams[roomId]) {
+        state.streams[roomId] = [];
+      }
+      return { ok: true };
+    }
+
     case "reset":
       state.loggedIn = true;
       state.userId = "@kevin:example.chat";
@@ -362,6 +414,7 @@ export function handleDriverAction(
       }
       Object.assign(state.messages, initialMessages());
       state.typingUsers = {};
+      state.streams = {};
       return { ok: true };
 
     default:

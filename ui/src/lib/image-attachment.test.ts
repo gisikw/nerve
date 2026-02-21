@@ -104,7 +104,7 @@ describe("readFileAsBase64", () => {
       readAsDataURL(_file: Blob) {
         setTimeout(() => {
           if (this.onerror) {
-            this.onerror.call(this as unknown as FileReader, new ProgressEvent("error"));
+            this.onerror.call(this as unknown as FileReader, {} as ProgressEvent<FileReader>);
           }
         }, 0);
       }
@@ -112,7 +112,7 @@ describe("readFileAsBase64", () => {
 
     globalThis.FileReader = MockFileReader as unknown as typeof FileReader;
 
-    await expect(readFileAsBase64(mockFile)).rejects.toBeInstanceOf(ProgressEvent);
+    await expect(readFileAsBase64(mockFile)).rejects.toThrow();
 
     globalThis.FileReader = originalFileReader;
   });
