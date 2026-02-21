@@ -10,6 +10,12 @@
   import { replaceShortcodes } from "./lib/emoji";
   import { computeTextareaHeight } from "./lib/compose";
   import { guessMime, readFileAsBase64 } from "./lib/image-attachment";
+  import {
+    selectVoiceMimeType,
+    getVoiceFileExtension,
+    getBaseMimeType,
+    blobToBase64,
+  } from "./lib/voice-recording";
 
   // --- Compose state ---
   let composeText = $state("");
@@ -216,11 +222,10 @@
   }
 
   async function startRecording() {
+    if (!selectedRoomId) return;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-        ? "audio/webm;codecs=opus"
-        : "audio/webm";
+      const mimeType = selectVoiceMimeType();
       mediaRecorder = new MediaRecorder(stream, { mimeType });
       recordingChunks = [];
       recordingStartTime = Date.now();
@@ -239,13 +244,13 @@
         if (!roomId) return;
 
         const base64 = await blobToBase64(blob);
-        const ext = mimeType.includes("webm") ? "webm" : "ogg";
+        const ext = getVoiceFileExtension(mimeType);
 
         await sendVoiceMessage(
           roomId,
           `voice-message.${ext}`,
           base64,
-          mimeType.split(";")[0],
+          getBaseMimeType(mimeType),
           Math.round(durationMs),
         ).catch(() => {});
       });
@@ -264,18 +269,6 @@
       mediaRecorder = null;
     }
     recording = false;
-  }
-
-  function blobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        resolve(result.split(",")[1] ?? "");
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
   }
 
   // --- Document-level drag/drop listeners ---

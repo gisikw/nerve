@@ -94,3 +94,63 @@ Feature: Message Compose
     Given an image file with an unknown extension
     When the file is processed for sending
     Then the attachment is cleared without sending
+
+  Scenario: Start voice recording
+    Given the user has a room selected
+    When the user clicks the microphone button
+    Then the browser requests microphone permission
+    And the recording state becomes active
+    And the microphone button icon changes to a stop icon
+
+  Scenario: Stop voice recording and send
+    Given a voice recording is in progress
+    When the user clicks the stop button
+    Then the recording stops
+    And the audio is converted to base64
+    And a voice message is sent to the selected room
+    And the recording state becomes inactive
+    And the microphone button icon reverts to the microphone icon
+
+  Scenario: Voice recording without room selected
+    Given no room is selected
+    When the user clicks the microphone button
+    Then no recording starts
+
+  Scenario: Voice recording prefers opus codec
+    Given the browser supports audio/webm with opus codec
+    When a voice recording starts
+    Then the MediaRecorder uses audio/webm;codecs=opus
+
+  Scenario: Voice recording fallback codec
+    Given the browser does not support opus codec
+    When a voice recording starts
+    Then the MediaRecorder uses audio/webm as fallback
+
+  Scenario: Voice recording duration is tracked
+    Given a voice recording is started
+    When the recording runs for 5 seconds
+    And the user stops the recording
+    Then the voice message includes a duration of approximately 5000ms
+
+  Scenario: Microphone permission denied
+    Given the user clicks the microphone button
+    When the browser denies microphone permission
+    Then the recording state remains inactive
+    And an error is logged to the console
+
+  Scenario: Empty recording is not sent
+    Given a voice recording is started
+    When the recording is stopped immediately with no audio data
+    Then no voice message is sent
+
+  Scenario: Voice recording cleans up media stream
+    Given a voice recording is in progress
+    When the user stops the recording
+    Then all media stream tracks are stopped
+    And system resources are released
+
+  Scenario: Component unmount during recording
+    Given a voice recording is in progress
+    When the component is unmounted
+    Then the recording is stopped
+    And all media stream tracks are stopped
