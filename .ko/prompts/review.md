@@ -47,16 +47,19 @@ CI time, and burn tokens in future reviews. Reject them on sight.
 - **Every test must call the code it claims to cover** and assert on the
   result. A regression test must reproduce the bug's conditions. A unit test
   must call the function with real inputs and check real outputs.
-- **If a behavior can't be meaningfully tested** in the current infrastructure
-  (e.g., DOM-dependent UI behavior without a DOM test environment), write the
-  spec but do NOT write a fake test. A missing test is honest. A fake test
-  is a lie that will cost future reviewers time to audit and future agents
-  tokens to process.
+- **"Can't be tested without a browser" is not an excuse.** Test the logic,
+  not the DOM. Extract decision functions, test them with mock inputs. If the
+  implementation couples logic to the DOM too tightly to test, that's a design
+  problem — refactor first, then test.
 
-If tests are missing or vacuous: fix them yourself if you can write a
-meaningful test. Delete vacuous tests. Only `fail` if the implementation
-itself is fundamentally wrong or you cannot determine what a real test
-should assert.
+If tests are missing or vacuous: **write them yourself**, then end with
+`continue`. You have file write access. This is your primary responsibility
+as the quality gate — don't just fail and punt back to implement when you
+can see exactly what the test should be. Delete vacuous tests and replace
+them with real ones.
+
+Only `fail` if the implementation itself is fundamentally wrong or you
+genuinely cannot determine what a meaningful test should assert.
 
 If the changes look good (including spec/test quality), end with a `continue`
 disposition.

@@ -43,9 +43,17 @@ These are not optional. INVARIANTS.md treats missing specs and tests as defects.
   not the implementation (`ComposeBar_test.feature`). Check `specs/` for an
   existing file in the right domain before creating a new one.
 - **Pure logic** (formatting, parsing, decision functions) gets unit tests.
-  **UI behavior** (textarea resizing, scroll position, focus management) gets
-  a spec describing the expected behavior, even if there's no automated test
-  runner for it yet — the spec is still the source of truth.
+- **UI behavior** that involves DOM manipulation (resize, scroll, focus) still
+  needs a test. Extract the logic into a testable form: test the decision
+  function with mock inputs, not the DOM integration. For example, if a
+  function decides what height to set based on scrollHeight, test that
+  function with mock element objects. If the logic is too tightly coupled
+  to the component to extract, refactor it so it isn't — that's a design
+  improvement, not scope creep.
+- **"Spec only, no test" is not acceptable.** Vitest is available. Every spec
+  gets a test. If you find yourself thinking "this can't be tested without
+  a browser" — you're testing at the wrong level of abstraction. Test the
+  logic, not the DOM.
 
 ### Test quality
 
