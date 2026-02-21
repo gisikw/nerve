@@ -9,6 +9,7 @@
   import { getSelectedRoomId } from "./lib/stores/rooms.svelte";
   import { replaceShortcodes } from "./lib/emoji";
   import { computeTextareaHeight } from "./lib/compose";
+  import { guessMime, readFileAsBase64 } from "./lib/image-attachment";
 
   // --- Compose state ---
   let composeText = $state("");
@@ -126,30 +127,6 @@
     );
   }
 
-  function guessMime(name: string): string {
-    const ext = name.split(".").pop()?.toLowerCase();
-    const map: Record<string, string> = {
-      png: "image/png",
-      jpg: "image/jpeg",
-      jpeg: "image/jpeg",
-      gif: "image/gif",
-      webp: "image/webp",
-    };
-    return ext ? (map[ext] ?? "") : "";
-  }
-
-  function readFileAsBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        // Strip "data:...;base64," prefix
-        resolve(result.split(",")[1] ?? "");
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
 
   // --- Keyboard: Enter sends, Shift+Enter inserts newline ---
   function handleKeydown(e: KeyboardEvent) {

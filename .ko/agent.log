@@ -28,3 +28,5 @@ loop: ner-b06d SUCCEED
 loop: building ner-ab8a — Add tests for typing indicator UI display (typing_indicators spec has partial coverage)
 loop: ner-ab8a SUCCEED
 loop: building ner-b623 — Add spec and tests for text-to-speech playback
+loop: ner-b623 SUCCEED
+loop: building ner-9829 — Add spec and tests for image sending and file attachment

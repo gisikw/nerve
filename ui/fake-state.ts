@@ -170,9 +170,16 @@ export function handleCommand(
     case "send_typing_notice":
       return null;
 
-    case "get_media":
-      // In dev mode, return a 1x1 transparent PNG as placeholder
+    case "get_media": {
+      const mxcUri = args.mxcUri as string;
+      // In dev mode, if the "mxc URI" is actually a data URI (from send_image),
+      // return it directly. Otherwise return a placeholder.
+      if (mxcUri.startsWith("data:")) {
+        return mxcUri;
+      }
+      // Return a 1x1 transparent PNG as placeholder for unknown URIs
       return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+    }
 
     case "speak_text": {
       // In dev mode, return a tiny silent mp3 (no actual TTS)
@@ -186,7 +193,57 @@ export function handleCommand(
       return silentMp3Base64;
     }
 
-    case "send_image":
+    case "send_image": {
+      const roomId = args.roomId as string;
+      const filename = args.filename as string;
+      const data = args.data as string;
+      const mimeType = args.mimeType as string;
+      const caption = args.caption as string | null;
+
+      if (!state.messages[roomId]) {
+        state.messages[roomId] = [];
+      }
+
+      // Create a data URI for the image (used by get_media)
+      const mediaUrl = `data:${mimeType};base64,${data}`;
+
+      state.messages[roomId].push(
+        makeMessage(
+          state.userId ?? "@unknown:local",
+          caption ?? filename,
+          Date.now(),
+          "image",
+          mediaUrl,
+        ),
+      );
+      return null;
+    }
+
+    case "send_voice_message": {
+      const roomId = args.roomId as string;
+      const filename = args.filename as string;
+      const data = args.data as string;
+      const mimeType = args.mimeType as string;
+
+      if (!state.messages[roomId]) {
+        state.messages[roomId] = [];
+      }
+
+      // Create a data URI for the audio
+      const mediaUrl = `data:${mimeType};base64,${data}`;
+
+      state.messages[roomId].push(
+        makeMessage(
+          state.userId ?? "@unknown:local",
+          filename,
+          Date.now(),
+          "audio",
+          mediaUrl,
+        ),
+      );
+      return null;
+    }
+
     case "mark_read":
     case "get_pinned_events":
       return [];
