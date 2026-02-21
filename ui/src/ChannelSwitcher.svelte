@@ -120,6 +120,7 @@
       id="switcher-input"
       type="text"
       placeholder="Switch to channel..."
+      spellcheck="false"
       bind:value={query}
       bind:this={inputEl}
     />
@@ -154,7 +155,7 @@
           {#if creating}
             Creating...
           {:else}
-            + Create <strong>#{query.trim()}</strong>
+            + Create #{query.trim()}
           {/if}
         </li>
       {/if}

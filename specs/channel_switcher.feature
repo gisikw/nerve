@@ -80,3 +80,16 @@ Feature: Channel Switcher
     And "archived-busy" has last_activity of 500
     And "active-read" has last_activity of 100
     Then "active-read" appears before "archived-busy"
+
+  Scenario: Create new option is not visually bold
+    Given the switcher is open
+    And the user types a room name that does not exist
+    When the "Create new" option is displayed
+    Then the room name text is rendered with normal font weight
+    And no part of the option appears bold or highlighted beyond the selection indicator
+
+  Scenario: Input field has spellcheck disabled
+    Given the switcher is open
+    When the user types in the filter input
+    Then the browser does not display spellcheck indicators (red squiggles)
+    And the input element has spellcheck attribute set to false

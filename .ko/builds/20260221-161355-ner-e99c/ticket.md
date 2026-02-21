@@ -1,6 +1,6 @@
 ---
 id: ner-e99c
-status: closed
+status: open
 deps: []
 links: []
 created: 2026-02-20T18:53:55Z
@@ -16,7 +16,3 @@ Two issues in the channel switcher (Cmd+K):
 
 **Screenshot:** `notes/attachments/2026-02-20_18-53-45_Screenshot 2026-02-20 at 12.53.02 PM.png`
 **Location:** `ChannelSwitcher.svelte`
-
-## Notes
-
-**2026-02-21 16:20:47 UTC:** ko: SUCCEED
