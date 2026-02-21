@@ -11,7 +11,7 @@
     toggleShowChannels,
   } from "./lib/stores/rooms.svelte";
   import { getTypingUsers } from "./lib/stores/typing.svelte";
-  import { filterVisibleRooms } from "./lib/sidebar";
+  import { filterVisibleRooms, formatNotificationBadge } from "./lib/sidebar";
 
   interface Props {
     onOpenSwitcher?: () => void;
@@ -65,6 +65,9 @@
         <span class="room-name-text">
           {room.is_direct ? room.name : `# ${room.name}`}
         </span>
+        {#if room.notification_count > 0}
+          <span class="unread-badge">{formatNotificationBadge(room.notification_count)}</span>
+        {/if}
         <button
           class="room-action-btn"
           title="Archive"
@@ -107,6 +110,9 @@
             <span class="room-name-text">
               {room.is_direct ? room.name : `# ${room.name}`}
             </span>
+            {#if room.notification_count > 0}
+              <span class="unread-badge">{formatNotificationBadge(room.notification_count)}</span>
+            {/if}
             <button
               class="room-action-btn"
               title="Unarchive"

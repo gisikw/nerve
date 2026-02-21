@@ -24,3 +24,17 @@ export function filterVisibleRooms(
   // When collapsed, show only rooms with activity
   return rooms.filter(hasActivity);
 }
+
+/**
+ * Format notification count for display in a badge.
+ * Caps the count at 99, displaying "99+" for higher values.
+ *
+ * @param count - The notification count to format
+ * @returns The formatted badge text
+ */
+export function formatNotificationBadge(count: number): string {
+  if (count > 99) {
+    return "99+";
+  }
+  return count.toString();
+}

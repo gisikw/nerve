@@ -18,3 +18,7 @@ loop: ner-5125 SUCCEED
 loop: building ner-5cf2 — Auto-scroll to bottom when near bottom of chat
 loop: ner-5cf2 SUCCEED
 loop: building ner-a2be — Fix room header button alignment and missing streams icon
+loop: ner-a2be SUCCEED
+loop complete: 5 processed (5 succeeded, 0 failed, 0 blocked, 0 decomposed)
+stopped: empty
+loop: building ner-5f1c — Add tests for collapsible sidebar sections and notification badge capping (room_navigation spec has partial coverage)

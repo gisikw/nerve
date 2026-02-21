@@ -1,7 +1,7 @@
 ---
 id: ner-86b4
-status: blocked
-deps: []
+status: open
+deps: [ner-c2b8]
 links: []
 created: 2026-02-20T19:46:25Z
 type: task

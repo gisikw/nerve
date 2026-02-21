@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { filterVisibleRooms, hasActivity } from "./sidebar";
+import { filterVisibleRooms, hasActivity, formatNotificationBadge } from "./sidebar";
 import type { RoomInfo } from "./tauri";
 
 /**
@@ -111,6 +111,31 @@ describe("sidebar channel filtering", () => {
         notification_count: 999,
       };
       expect(hasActivity(room)).toBe(true);
+    });
+  });
+
+  describe("formatNotificationBadge", () => {
+    it("displays count as-is for values under 100", () => {
+      expect(formatNotificationBadge(0)).toBe("0");
+      expect(formatNotificationBadge(1)).toBe("1");
+      expect(formatNotificationBadge(42)).toBe("42");
+      expect(formatNotificationBadge(99)).toBe("99");
+    });
+
+    it("displays '99+' for count of 100", () => {
+      expect(formatNotificationBadge(100)).toBe("99+");
+    });
+
+    it("displays '99+' for counts greater than 100", () => {
+      expect(formatNotificationBadge(101)).toBe("99+");
+      expect(formatNotificationBadge(250)).toBe("99+");
+      expect(formatNotificationBadge(999)).toBe("99+");
+      expect(formatNotificationBadge(9999)).toBe("99+");
+    });
+
+    it("handles boundary value of 99 correctly", () => {
+      expect(formatNotificationBadge(99)).toBe("99");
+      expect(formatNotificationBadge(100)).toBe("99+");
     });
   });
 });
