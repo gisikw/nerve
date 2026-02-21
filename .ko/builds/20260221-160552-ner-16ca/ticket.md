@@ -1,6 +1,6 @@
 ---
 id: ner-16ca
-status: closed
+status: open
 deps: []
 links: []
 created: 2026-02-20T18:55:50Z
@@ -19,5 +19,3 @@ Likely needs the source icon to be regenerated at higher resolution or with a pr
 ## Notes
 
 **2026-02-21 14:53:21 UTC:** ko: reset to open (agent stopped)
-
-**2026-02-21 16:13:55 UTC:** ko: SUCCEED

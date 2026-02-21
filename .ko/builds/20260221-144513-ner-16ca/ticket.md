@@ -1,6 +1,6 @@
 ---
 id: ner-16ca
-status: closed
+status: open
 deps: []
 links: []
 created: 2026-02-20T18:55:50Z
@@ -15,9 +15,3 @@ Likely needs the source icon to be regenerated at higher resolution or with a pr
 
 **Screenshot:** `notes/attachments/2026-02-20_18-55-39_Screenshot 2026-02-20 at 12.54.42 PM.png`
 **Location:** App icon assets (Tauri icon config / `src-tauri/icons/`)
-
-## Notes
-
-**2026-02-21 14:53:21 UTC:** ko: reset to open (agent stopped)
-
-**2026-02-21 16:13:55 UTC:** ko: SUCCEED

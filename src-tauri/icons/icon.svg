@@ -6,8 +6,34 @@
       <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000" flood-opacity="0.3"/>
     </filter>
     <!-- Squircle clip path: 824x824 content area, 100px padding, continuous corners -->
+    <!-- iOS-style continuous curve using cubic bezier approximation of superellipse -->
+    <!-- Content area bounds: 100,100 to 924,924 (824x824) with ~181px corner radius -->
     <clipPath id="squircle">
-      <path d="M 281.3,100.0 L 742.7,100.0 C 823.9,100.0 924.0,200.1 924.0,281.3 L 924.0,742.7 C 924.0,823.9 823.9,924.0 742.7,924.0 L 281.3,924.0 C 200.1,924.0 100.0,823.9 100.0,742.7 L 100.0,281.3 C 100.0,200.1 200.1,100.0 281.3,100.0 Z"/>
+      <path d="M 281,60
+               C 345,60 402,60 452,60
+               L 572,60
+               C 622,60 679,60 743,60
+                 807,60 858,65 899,82
+                 940,99 964,127 964,169
+               L 964,281
+               C 964,345 964,402 964,452
+               L 964,572
+               C 964,622 964,679 964,743
+                 964,807 959,858 942,899
+                 925,940 897,964 855,964
+               L 743,964
+               C 679,964 622,964 572,964
+               L 452,964
+               C 402,964 345,964 281,964
+                 217,964 166,959 125,942
+                 84,925 60,897 60,855
+               L 60,743
+               C 60,679 60,622 60,572
+               L 60,452
+               C 60,402 60,345 60,281
+                 60,217 65,166 82,125
+                 99,84 127,60 169,60
+               L 281,60 Z"/>
     </clipPath>
     <!-- Vertical gradient: warm white top, blue-tinted shadow at bottom -->
     <linearGradient id="bg-grad" x1="0" y1="0" x2="0" y2="1">
@@ -18,7 +44,33 @@
   </defs>
 
   <!-- Squircle background with shadow -->
-  <path d="M 281.3,100.0 L 742.7,100.0 C 823.9,100.0 924.0,200.1 924.0,281.3 L 924.0,742.7 C 924.0,823.9 823.9,924.0 742.7,924.0 L 281.3,924.0 C 200.1,924.0 100.0,823.9 100.0,742.7 L 100.0,281.3 C 100.0,200.1 200.1,100.0 281.3,100.0 Z" fill="url(#bg-grad)" filter="url(#shadow)"/>
+  <!-- iOS-style continuous curve using cubic bezier approximation of superellipse -->
+  <!-- Content area bounds: 100,100 to 924,924 (824x824) with ~181px corner radius -->
+  <path d="M 281,60
+           C 345,60 402,60 452,60
+           L 572,60
+           C 622,60 679,60 743,60
+             807,60 858,65 899,82
+             940,99 964,127 964,169
+           L 964,281
+           C 964,345 964,402 964,452
+           L 964,572
+           C 964,622 964,679 964,743
+             964,807 959,858 942,899
+             925,940 897,964 855,964
+           L 743,964
+           C 679,964 622,964 572,964
+           L 452,964
+           C 402,964 345,964 281,964
+             217,964 166,959 125,942
+             84,925 60,897 60,855
+           L 60,743
+           C 60,679 60,622 60,572
+           L 60,452
+           C 60,402 60,345 60,281
+             60,217 65,166 82,125
+             99,84 127,60 169,60
+           L 281,60 Z" fill="url(#bg-grad)" filter="url(#shadow)"/>
 
   <!-- Brain-tree logo, clipped to squircle and scaled to fit 824x824 content area -->
   <g clip-path="url(#squircle)">
