@@ -116,6 +116,7 @@ export const state = {
   messages: initialMessages(),
   typingUsers: {} as Record<string, string[]>,
   streams: {} as Record<string, FakeStream[]>,
+  pinnedEvents: {} as Record<string, string[]>,
 };
 
 // --- Command handlers ---
@@ -264,11 +265,37 @@ export function handleCommand(
     }
 
     case "mark_read":
-    case "get_pinned_events":
-      return [];
+      return null;
 
-    case "pin_message":
-    case "unpin_message":
+    case "get_pinned_events": {
+      const roomId = args.roomId as string;
+      return state.pinnedEvents[roomId] ?? [];
+    }
+
+    case "pin_message": {
+      const roomId = args.roomId as string;
+      const eventId = args.eventId as string;
+      if (!state.pinnedEvents[roomId]) {
+        state.pinnedEvents[roomId] = [];
+      }
+      // Only add if not already pinned (idempotent)
+      if (!state.pinnedEvents[roomId].includes(eventId)) {
+        state.pinnedEvents[roomId].push(eventId);
+      }
+      return null;
+    }
+
+    case "unpin_message": {
+      const roomId = args.roomId as string;
+      const eventId = args.eventId as string;
+      if (state.pinnedEvents[roomId]) {
+        state.pinnedEvents[roomId] = state.pinnedEvents[roomId].filter(
+          (id) => id !== eventId
+        );
+      }
+      return null;
+    }
+
     case "create_room":
       return null;
 
@@ -405,6 +432,37 @@ export function handleDriverAction(
       return { ok: true };
     }
 
+    case "pin_event": {
+      const roomId = action.roomId as string;
+      const eventId = action.eventId as string;
+      if (!state.pinnedEvents[roomId]) {
+        state.pinnedEvents[roomId] = [];
+      }
+      if (!state.pinnedEvents[roomId].includes(eventId)) {
+        state.pinnedEvents[roomId].push(eventId);
+      }
+      return { ok: true };
+    }
+
+    case "unpin_event": {
+      const roomId = action.roomId as string;
+      const eventId = action.eventId as string;
+      if (state.pinnedEvents[roomId]) {
+        state.pinnedEvents[roomId] = state.pinnedEvents[roomId].filter(
+          (id) => id !== eventId
+        );
+      }
+      return { ok: true };
+    }
+
+    case "clear_pinned_events": {
+      const roomId = action.roomId as string;
+      if (state.pinnedEvents[roomId]) {
+        state.pinnedEvents[roomId] = [];
+      }
+      return { ok: true };
+    }
+
     case "reset":
       state.loggedIn = true;
       state.userId = "@kevin:example.chat";
@@ -415,6 +473,7 @@ export function handleDriverAction(
       Object.assign(state.messages, initialMessages());
       state.typingUsers = {};
       state.streams = {};
+      state.pinnedEvents = {};
       return { ok: true };
 
     default:
