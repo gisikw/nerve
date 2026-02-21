@@ -24,6 +24,24 @@ Feature: Message Display
     Given a message from "@alice:matrix.org"
     Then the displayed sender is "alice"
 
+  Scenario: First message always starts a new group
+    Given a room has one or more messages
+    Then the first message (index 0) always shows sender name and timestamp
+
+  Scenario: Group boundary at exactly 5 minutes
+    Given two messages from the same sender
+    And the second is exactly 5 minutes (300 seconds) after the first
+    Then both messages show sender name and timestamp
+
+  Scenario: Multiple senders with interleaved messages
+    Given messages alternate between different senders
+    Then each message starts a new group and shows sender name and timestamp
+
+  Scenario: Sender name formatting handles various server domains
+    Given messages from users on different servers
+    Then sender names are displayed without @ prefix and server suffix
+    And usernames with dots, underscores, and hyphens are preserved
+
   Scenario: Image messages render inline
     Given a message with msg_type "image" and a media_url
     Then an img element is rendered with the media URL as src

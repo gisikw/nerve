@@ -13,6 +13,7 @@
   import { getTypingUsers } from "./lib/stores/typing.svelte";
   import MessageItem from "./MessageItem.svelte";
   import { shouldShowScrollButton, isNearBottom } from "./lib/scroll";
+  import { isGroupStart, formatSender } from "./lib/message-grouping";
 
   // --- Pinned state ---
   let pinnedIds = $state<Set<string>>(new Set());
@@ -173,22 +174,7 @@
     unpinMessage(roomId, eventId).then(() => refreshPins());
   }
 
-  // --- Grouping logic: 5 minute gap or sender change ---
-  function isGroupStart(messages: Message[], index: number): boolean {
-    if (index === 0) return true;
-    const prev = messages[index - 1];
-    const curr = messages[index];
-    return (
-      prev.sender !== curr.sender ||
-      curr.timestamp - prev.timestamp >= 300_000
-    );
-  }
-
   // --- Typing indicator ---
-  function formatSender(userId: string): string {
-    const parts = userId.split(":");
-    return parts[0]?.slice(1) ?? userId;
-  }
 
   function typingLabel(users: string[]): string {
     const names = users.map(formatSender);

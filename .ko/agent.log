@@ -22,3 +22,5 @@ loop: ner-a2be SUCCEED
 loop complete: 5 processed (5 succeeded, 0 failed, 0 blocked, 0 decomposed)
 stopped: empty
 loop: building ner-5f1c — Add tests for collapsible sidebar sections and notification badge capping (room_navigation spec has partial coverage)
+loop: ner-5f1c SUCCEED
+loop: building ner-b06d — Add tests for message grouping logic and sender display (message_display spec has partial coverage)

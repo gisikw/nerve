@@ -5,6 +5,7 @@
   import { ttsEnqueue, ttsUnlockContext } from "../main";
   import MessageBody from "./MessageBody.svelte";
   import ReactionRow from "./ReactionRow.svelte";
+  import { formatSender } from "./lib/message-grouping";
 
   let {
     message,
@@ -17,11 +18,6 @@
     isPinned: boolean;
     onPinToggle?: () => void;
   } = $props();
-
-  function formatSender(userId: string): string {
-    const parts = userId.split(":");
-    return parts[0]?.slice(1) ?? userId;
-  }
 
   function formatTime(tsMillis: number): string {
     const d = new Date(tsMillis);
