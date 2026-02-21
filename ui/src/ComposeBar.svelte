@@ -8,6 +8,7 @@
   } from "./lib/tauri";
   import { getSelectedRoomId } from "./lib/stores/rooms.svelte";
   import { replaceShortcodes } from "./lib/emoji";
+  import { computeTextareaHeight } from "./lib/compose";
 
   // --- Compose state ---
   let composeText = $state("");
@@ -59,10 +60,16 @@
   // --- Textarea auto-resize ---
   function resizeTextarea() {
     if (!textareaEl) return;
+    // Reset to auto first to get accurate scrollHeight
     textareaEl.style.height = "auto";
-    textareaEl.style.height = textareaEl.scrollHeight + "px";
-    textareaEl.style.overflowY =
-      textareaEl.scrollHeight > textareaEl.offsetHeight ? "auto" : "hidden";
+    // Compute new height and overflow based on content
+    const { height, overflowY } = computeTextareaHeight(
+      textareaEl.scrollHeight,
+      textareaEl.offsetHeight,
+      composeText,
+    );
+    textareaEl.style.height = height;
+    textareaEl.style.overflowY = overflowY;
   }
 
   function handleInput(e: Event) {

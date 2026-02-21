@@ -31,3 +31,8 @@ Feature: Message Compose
   Scenario: After sending, messages refresh
     Given a message is successfully sent
     Then the message list refreshes for the current room
+
+  Scenario: Textarea height resets after sending
+    Given the user has typed a multi-line message
+    When the user submits the message
+    Then the compose textarea collapses to single-line height
