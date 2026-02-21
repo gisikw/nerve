@@ -7,6 +7,7 @@
     refreshRooms,
   } from "./lib/stores/rooms.svelte";
   import { createRoom } from "./lib/tauri";
+  import { computeDefaultSelection } from "./lib/channel-switcher";
 
   interface Props {
     onClose: () => void;
@@ -39,11 +40,14 @@
   // Total selectable items: filtered rooms + optional create action
   let totalItems = $derived(filtered.length + (showCreate ? 1 : 0));
 
-  // Clamp selected index when list changes
+  // Reset selection to first item when filtered results change
+  // Prefer matching rooms over "create new" option
   $effect(() => {
-    if (selectedIndex >= totalItems) {
-      selectedIndex = Math.max(0, totalItems - 1);
-    }
+    selectedIndex = computeDefaultSelection(
+      filtered.length,
+      selectedIndex,
+      totalItems,
+    );
   });
 
   function handleKeydown(e: KeyboardEvent) {

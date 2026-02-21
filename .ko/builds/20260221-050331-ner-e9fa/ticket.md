@@ -1,6 +1,6 @@
 ---
 id: ner-e9fa
-status: in_progress
+status: open
 deps: []
 links: []
 created: 2026-02-20T19:01:01Z

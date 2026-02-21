@@ -32,3 +32,11 @@ Feature: Channel Switcher
     Given the switcher is open
     When the user clicks a room in the list
     Then that room is selected and the switcher closes
+
+  Scenario: Default selection prefers matching rooms over create-new
+    Given the switcher is open
+    And there is a room named "nerve"
+    When the user types "ner"
+    Then the first matching room is selected by default
+    And the "Create new #ner" option appears below the matches
+    And pressing Enter selects the existing room, not the create option

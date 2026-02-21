@@ -3,3 +3,8 @@ loop: ner-86b4 FAIL
 loop: building ner-fdcf — Sidebar channels section should be collapsible with activity-aware twirldown
 loop: ner-fdcf SUCCEED
 loop: building ner-7637 — Extremely long messages fail to render, showing empty state instead
+loop: ner-7637 SUCCEED
+loop: building ner-e9fa — Channel switcher: default selection should prefer matching rooms over create-new
+loop: building ner-e9fa — Channel switcher: default selection should prefer matching rooms over create-new
+loop: building ner-e9fa — Channel switcher: default selection should prefer matching rooms over create-new
+loop: building ner-e9fa — Channel switcher: default selection should prefer matching rooms over create-new
