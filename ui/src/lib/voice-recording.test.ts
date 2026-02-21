@@ -211,3 +211,4 @@ describe("blob to base64 conversion", () => {
     globalThis.FileReader = originalFileReader;
   });
 });
+

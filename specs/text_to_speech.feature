@@ -49,3 +49,27 @@ Feature: Text-to-Speech Playback
     When the decode error occurs
     Then the current item is discarded
     And the next queued item begins playback
+
+  Scenario: TTS synthesis failure is logged
+    Given the TTS backend command fails
+    When the speak button is clicked
+    Then the error is logged to the console
+    And no audio is enqueued for playback
+
+  Scenario: Empty TTS response is logged
+    Given the TTS backend returns an empty response
+    When the speak button is clicked
+    Then a warning is logged to the console
+    And no audio is enqueued for playback
+
+  Scenario: Fort command not found is logged
+    Given the fort command is not available
+    When TTS synthesis is requested
+    Then the backend logs the command failure
+    And returns an error to the frontend
+
+  Scenario: Fort TTS timeout is logged
+    Given the TTS output file is not created within the timeout
+    When TTS synthesis is requested
+    Then the backend logs the timeout
+    And returns an error to the frontend

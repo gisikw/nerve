@@ -108,3 +108,4 @@ describe("truncateForTTS", () => {
     expect(truncateForTTS("")).toBe("");
   });
 });
+

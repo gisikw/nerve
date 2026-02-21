@@ -208,6 +208,7 @@ export function handleCommand(
       // Truncate text to MAX_TEXT_LEN (500 chars) to match backend behavior
       const text = args.text as string;
       const truncated = text.length > 500 ? text.slice(0, 500) : text;
+      console.log(`Fake backend: speak_text called with ${text.length} chars (truncated to ${truncated.length})`);
       // In a real implementation, we'd synthesize speech for `truncated`
       // For the fake backend, we just return the silent mp3
       return silentMp3Base64;
@@ -244,6 +245,9 @@ export function handleCommand(
       const filename = args.filename as string;
       const data = args.data as string;
       const mimeType = args.mimeType as string;
+      const durationMs = args.durationMs as number | undefined;
+
+      console.log(`Fake backend: send_voice_message to room ${roomId}, ${data.length} bytes base64, duration ${durationMs}ms`);
 
       if (!state.messages[roomId]) {
         state.messages[roomId] = [];

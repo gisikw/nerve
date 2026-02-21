@@ -222,49 +222,68 @@
   }
 
   async function startRecording() {
-    if (!selectedRoomId) return;
+    if (!selectedRoomId) {
+      console.warn("Cannot start recording: no room selected");
+      return;
+    }
     try {
+      console.log("Requesting microphone access...");
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mimeType = selectVoiceMimeType();
+      console.log(`Starting voice recording with MIME type: ${mimeType}`);
       mediaRecorder = new MediaRecorder(stream, { mimeType });
       recordingChunks = [];
       recordingStartTime = Date.now();
 
       mediaRecorder.addEventListener("dataavailable", (e) => {
-        if (e.data.size > 0) recordingChunks.push(e.data);
+        if (e.data.size > 0) {
+          recordingChunks.push(e.data);
+          console.log(`Received audio chunk: ${e.data.size} bytes`);
+        }
       });
 
       mediaRecorder.addEventListener("stop", async () => {
         const durationMs = Date.now() - recordingStartTime;
         stream.getTracks().forEach((t) => t.stop());
-        if (recordingChunks.length === 0) return;
+        if (recordingChunks.length === 0) {
+          console.warn("Voice recording stopped with no audio data");
+          return;
+        }
 
         const blob = new Blob(recordingChunks, { type: mimeType });
         const roomId = selectedRoomId;
-        if (!roomId) return;
+        if (!roomId) {
+          console.error("Voice recording completed but no room selected");
+          return;
+        }
 
         const base64 = await blobToBase64(blob);
         const ext = getVoiceFileExtension(mimeType);
 
+        console.log(`Sending voice message: ${blob.size} bytes, ${durationMs}ms, ${mimeType}`);
         await sendVoiceMessage(
           roomId,
           `voice-message.${ext}`,
           base64,
           getBaseMimeType(mimeType),
           Math.round(durationMs),
-        ).catch(() => {});
+        ).catch((err) => {
+          console.error("Failed to send voice message:", err);
+        });
       });
 
       mediaRecorder.start();
       recording = true;
+      console.log("Voice recording started");
     } catch (err) {
-      console.error("Microphone access failed:", err);
+      console.error("Failed to start voice recording:", err);
       recording = false;
     }
   }
 
   function stopRecording() {
     if (mediaRecorder && mediaRecorder.state !== "inactive") {
+      console.log("Stopping voice recording...");
       mediaRecorder.stop();
       mediaRecorder = null;
     }

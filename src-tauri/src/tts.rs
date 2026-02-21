@@ -34,27 +34,38 @@ pub async fn synthesize(text: &str) -> Result<String, String> {
     });
 
     let host = tts_host();
+    eprintln!("TTS: calling fort {} tts with {} chars", host, text.len());
     let output = Command::new("fort")
         .args([&host, "tts", &payload.to_string()])
         .output()
         .await
-        .map_err(|e| format!("Failed to run fort: {e}"))?;
+        .map_err(|e| {
+            eprintln!("TTS: fort command failed: {}", e);
+            format!("Failed to run fort: {e}")
+        })?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        eprintln!("TTS: fort tts failed with status {:?}", output.status.code());
+        eprintln!("TTS: stdout: {}", stdout);
+        eprintln!("TTS: stderr: {}", stderr);
         return Err(format!("fort tts failed: {stderr}"));
     }
 
     // Poll for the output file
     let path = PathBuf::from(drops_dir());
+    eprintln!("TTS: polling for output file in {:?} ending with {}", path, filename);
     let mut elapsed = Duration::ZERO;
     let output_path = loop {
         // fort prepends a timestamp, so we search for files ending with our filename
         let matching = find_output_file(&path, &filename).await;
         if let Some(p) = matching {
+            eprintln!("TTS: found output file at {:?}", p);
             break p;
         }
         if elapsed >= POLL_TIMEOUT {
+            eprintln!("TTS: timeout after {:?} waiting for {}", elapsed, filename);
             return Err(format!("TTS timed out waiting for {filename}"));
         }
         sleep(POLL_INTERVAL).await;
@@ -63,13 +74,20 @@ pub async fn synthesize(text: &str) -> Result<String, String> {
 
     let bytes = tokio::fs::read(&output_path)
         .await
-        .map_err(|e| format!("Failed to read TTS output: {e}"))?;
+        .map_err(|e| {
+            eprintln!("TTS: failed to read output file: {}", e);
+            format!("Failed to read TTS output: {e}")
+        })?;
+
+    eprintln!("TTS: read {} bytes from output file", bytes.len());
 
     // Clean up temp file
     let _ = tokio::fs::remove_file(&output_path).await;
 
     use base64::Engine;
-    Ok(base64::engine::general_purpose::STANDARD.encode(&bytes))
+    let encoded = base64::engine::general_purpose::STANDARD.encode(&bytes);
+    eprintln!("TTS: returning {} bytes of base64-encoded audio", encoded.len());
+    Ok(encoded)
 }
 
 /// Find a file in the drops directory whose name ends with the given filename.

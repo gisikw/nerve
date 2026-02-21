@@ -40,8 +40,14 @@
   function handleSpeak() {
     ttsUnlockContext(); // Must happen synchronously during user gesture
     speakText(message.body).then((audio) => {
-      if (audio) ttsEnqueue(audio);
-    }).catch(() => {});
+      if (audio) {
+        ttsEnqueue(audio);
+      } else {
+        console.error("TTS synthesis returned empty audio for message:", message.event_id);
+      }
+    }).catch((err) => {
+      console.error("TTS synthesis failed:", err);
+    });
   }
 </script>
 

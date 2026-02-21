@@ -154,3 +154,40 @@ Feature: Message Compose
     When the component is unmounted
     Then the recording is stopped
     And all media stream tracks are stopped
+
+  Scenario: Voice recording start without room is logged
+    Given no room is selected
+    When the user clicks the microphone button
+    Then a warning is logged to the console
+    And no recording starts
+
+  Scenario: Voice recording stop with no data is logged
+    Given a voice recording is started
+    When the recording is stopped with no audio chunks
+    Then a warning is logged to the console
+    And no voice message is sent
+
+  Scenario: Voice recording send failure is logged
+    Given a voice recording completes successfully
+    When the backend send_voice_message command fails
+    Then the error is logged to the console
+
+  Scenario: Voice recording logs microphone access request
+    Given the user clicks the microphone button
+    When microphone access is requested
+    Then the request is logged to the console
+
+  Scenario: Voice recording logs MIME type selection
+    Given the user starts a voice recording
+    When the MIME type is selected
+    Then the selected MIME type is logged to the console
+
+  Scenario: Voice recording logs audio chunks received
+    Given a voice recording is in progress
+    When audio data chunks are received
+    Then each chunk size is logged to the console
+
+  Scenario: Voice recording logs send details
+    Given a voice recording completes
+    When the voice message is sent
+    Then the blob size, duration, and MIME type are logged to the console
