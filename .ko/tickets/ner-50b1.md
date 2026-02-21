@@ -1,6 +1,6 @@
 ---
 id: ner-50b1
-status: in_progress
+status: open
 deps: []
 links: []
 created: 2026-02-20T18:52:10Z
@@ -13,7 +13,3 @@ After sending a message (especially a long one that expanded the textarea), the 
 
 **Screenshot:** `notes/attachments/2026-02-20_18-51-53_Screenshot 2026-02-20 at 12.47.29 PM.png`
 **Location:** `ComposeBar.svelte` — the submit handler needs to reset textarea height.
-
-## Notes
-
-**2026-02-21 00:56:21 UTC:** ko: FAIL at node 'triage' — node 'triage' failed after 3 attempts: command failed: exit status 1

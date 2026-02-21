@@ -91,11 +91,11 @@
       const text = composeText.trim();
       if (!text) return;
       composeText = "";
-      resizeTextarea();
       sendMessage(roomId, text).catch(() => {});
     }
 
     sendTypingNotice(roomId, false).catch(() => {});
+    tick().then(resizeTextarea);
   }
 
   async function sendImageAttachment(roomId: string) {
@@ -112,7 +112,6 @@
     const caption = composeText.trim() || null;
 
     composeText = "";
-    resizeTextarea();
     clearAttachment();
 
     await sendImage(roomId, file.name, base64, mimeType, caption).catch(
