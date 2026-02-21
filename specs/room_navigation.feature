@@ -60,3 +60,9 @@ Feature: Room Navigation
     Then the twirldown shows "▼"
     And when the section is collapsed
     Then the twirldown shows "▶"
+
+  Scenario: Archive icons are monochrome SVGs
+    Given a channel entry in the sidebar
+    Then the archive button contains a monochrome SVG icon
+    And the icon uses currentColor for stroke
+    And the icon does not use colored emoji characters

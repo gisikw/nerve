@@ -139,3 +139,66 @@ describe("sidebar channel filtering", () => {
     });
   });
 });
+
+describe("sidebar archive icons", () => {
+  it("archive button renders SVG icon not emoji", () => {
+    // Regression test: archive/unarchive buttons previously used colored emoji
+    // (📥 U+1F4E5, 📤 U+1F4E4) which was visually inconsistent with the rest
+    // of the app's monochrome icon design language. Now uses SVG icons.
+    const { readFileSync } = require("fs");
+    const { join } = require("path");
+    const sidebarPath = join(__dirname, "../Sidebar.svelte");
+    const sidebarContent = readFileSync(sidebarPath, "utf-8");
+
+    // Should NOT contain the old emoji characters
+    expect(sidebarContent).not.toContain("📥");
+    expect(sidebarContent).not.toContain("📤");
+
+    // Should contain SVG elements with monochrome styling
+    expect(sidebarContent).toContain("<svg");
+    expect(sidebarContent).toContain('stroke="currentColor"');
+    expect(sidebarContent).toContain('fill="none"');
+  });
+
+  it("archive button SVG uses design system attributes", () => {
+    // Verify the archive icon follows the monochrome SVG pattern:
+    // currentColor for stroke (inherits text color), no fill, consistent sizing
+    const { readFileSync } = require("fs");
+    const { join } = require("path");
+    const sidebarPath = join(__dirname, "../Sidebar.svelte");
+    const sidebarContent = readFileSync(sidebarPath, "utf-8");
+
+    const archiveMatch = sidebarContent.match(
+      /title="Archive"[\s\S]*?<svg[\s\S]*?<\/svg>/
+    );
+    expect(archiveMatch).not.toBeNull();
+
+    const archiveSvg = archiveMatch![0];
+
+    // Standard attributes for monochrome icons
+    expect(archiveSvg).toContain('viewBox="0 0 24 24"');
+    expect(archiveSvg).toContain('stroke="currentColor"'); // Inherits CSS color
+    expect(archiveSvg).toContain('fill="none"'); // No fill = monochrome outline
+    expect(archiveSvg).toContain('stroke-width="2"');
+  });
+
+  it("unarchive button SVG uses design system attributes", () => {
+    // Same verification for the unarchive icon
+    const { readFileSync } = require("fs");
+    const { join } = require("path");
+    const sidebarPath = join(__dirname, "../Sidebar.svelte");
+    const sidebarContent = readFileSync(sidebarPath, "utf-8");
+
+    const unarchiveMatch = sidebarContent.match(
+      /title="Unarchive"[\s\S]*?<svg[\s\S]*?<\/svg>/
+    );
+    expect(unarchiveMatch).not.toBeNull();
+
+    const unarchiveSvg = unarchiveMatch![0];
+
+    expect(unarchiveSvg).toContain('viewBox="0 0 24 24"');
+    expect(unarchiveSvg).toContain('stroke="currentColor"');
+    expect(unarchiveSvg).toContain('fill="none"');
+    expect(unarchiveSvg).toContain('stroke-width="2"');
+  });
+});

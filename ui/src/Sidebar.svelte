@@ -72,7 +72,13 @@
           class="room-action-btn"
           title="Archive"
           onclick={(e: MouseEvent) => { e.stopPropagation(); toggleArchive(room.id); }}
-        >📥</button>
+        >
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="21 8 21 21 3 21 3 8" />
+            <rect x="1" y="3" width="22" height="5" />
+            <line x1="10" y1="12" x2="14" y2="12" />
+          </svg>
+        </button>
         {#if hasTyping}
           <span class="typing-badge">...</span>
         {/if}
@@ -117,7 +123,13 @@
               class="room-action-btn"
               title="Unarchive"
               onclick={(e: MouseEvent) => { e.stopPropagation(); toggleArchive(room.id); }}
-            >📤</button>
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="17" x2="12" y2="7" />
+                <polyline points="8 11 12 7 16 11" />
+                <path d="M3 21h18M3 10h18" />
+              </svg>
+            </button>
             {#if hasTyping}
               <span class="typing-badge">...</span>
             {/if}

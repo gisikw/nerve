@@ -1,6 +1,6 @@
 ---
 id: ner-820a
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-02-20T19:01:01Z
@@ -16,3 +16,5 @@ The archive/unarchive action icons in the channel list appear to be emoji charac
 ## Notes
 
 **2026-02-21 19:31:01 UTC:** Unblocked — was incorrectly blocked during manual agent cleanup, not by a pipeline failure. The task is straightforward: replace emoji characters (📥/📤) with monochrome SVG icons in Sidebar.svelte.
+
+**2026-02-21 21:09:10 UTC:** ko: SUCCEED
