@@ -13,8 +13,6 @@ Read `INVARIANTS.md` before writing any code. These are architectural contracts
   `window.__TAURI__` directly.
 - **500 lines max per file.** If a file is approaching the limit, split along
   behavioral seams.
-- **Specs before code.** New behavior gets a `specs/*.feature` file (gherkin).
-  One file per behavioral domain, named for the domain not the implementation.
 - **No new dependencies** unless the ticket explicitly calls for them.
 
 Implement the changes described in the ticket. Follow these rules:
@@ -25,10 +23,32 @@ Implement the changes described in the ticket. Follow these rules:
    aren't broken.
 3. **Follow existing patterns.** Match the style, naming conventions, and
    architecture of the existing codebase.
-4. **Write tests** if the codebase has tests and the change is testable.
-5. **Update the fake backend** (`ui/fake-state.ts`) if the change affects
+4. **Update the fake backend** (`ui/fake-state.ts`) if the change affects
    commands or state that the fake backend simulates.
-6. **Do NOT commit, push, or close the ticket.** Leave changes uncommitted.
+5. **Do NOT commit, push, or close the ticket.** Leave changes uncommitted.
    The pipeline handles git operations and ticket lifecycle separately.
 
-When you're done, provide a brief summary of what you changed and why.
+## Specs and tests — mandatory
+
+These are not optional. INVARIANTS.md treats missing specs and tests as defects.
+
+- **New behavior → new spec + new test.** Add or update a `specs/*.feature`
+  file (gherkin, one per behavioral domain, named for the domain). Then add
+  a corresponding test in `ui/src/**/*.test.ts` (vitest) or
+  `src-tauri/src/*.rs` (Rust `#[test]`).
+- **Bug fix → regression test.** If you're fixing a bug, add a test that
+  reproduces the broken behavior and verifies the fix. The test must fail
+  without your fix and pass with it.
+- **Spec files are named for the behavioral domain** (`message_compose.feature`),
+  not the implementation (`ComposeBar_test.feature`). Check `specs/` for an
+  existing file in the right domain before creating a new one.
+- **Pure logic** (formatting, parsing, decision functions) gets unit tests.
+  **UI behavior** (textarea resizing, scroll position, focus management) gets
+  a spec describing the expected behavior, even if there's no automated test
+  runner for it yet — the spec is still the source of truth.
+
+If you are unsure whether a spec or test applies, err on the side of writing
+one. A superfluous test is trivially deleted; a missing test is a latent defect.
+
+When you're done, provide a brief summary of what you changed and why, including
+which specs and tests you added or updated.

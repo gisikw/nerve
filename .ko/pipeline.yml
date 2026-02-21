@@ -11,7 +11,7 @@
 # Verify runs inside `nix develop` to get cargo, node, GTK libs, etc.
 # First run may be slow (nix eval); subsequent runs hit the store cache.
 # `just test` runs frontend build first (fast fail) then cargo test.
-model: claude-sonnet-4-5-20250929
+model: claude-sonnet-4-6-20250929
 max_retries: 2
 max_depth: 2
 discretion: medium
@@ -24,12 +24,14 @@ workflows:
     - name: implement
       type: action
       prompt: implement.md
+      allow_all_tool_calls: true
     - name: verify
       type: action
       run: nix develop --command just test
     - name: review
       type: decision
       prompt: review.md
+      allow_all_tool_calls: true
 
 # Auto-commit on success. Ticket ID goes in the message so `ko close`
 # can record the SHA range.
