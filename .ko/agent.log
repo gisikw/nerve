@@ -8,3 +8,4 @@ loop: building ner-e9fa — Channel switcher: default selection should prefer ma
 loop: building ner-e9fa — Channel switcher: default selection should prefer matching rooms over create-new
 loop: building ner-e9fa — Channel switcher: default selection should prefer matching rooms over create-new
 loop: building ner-e9fa — Channel switcher: default selection should prefer matching rooms over create-new
+loop: building ner-50ae — Prevent elastic/bouncy scroll on the browser window
