@@ -21,11 +21,7 @@ fn tts_output_host() -> String {
 /// Synthesize text to speech via fort TTS capability.
 /// Returns base64-encoded mp3 audio data.
 pub async fn synthesize(text: &str) -> Result<String, String> {
-    let text = if text.len() > MAX_TEXT_LEN {
-        &text[..MAX_TEXT_LEN]
-    } else {
-        text
-    };
+    let text = truncate_text(text);
 
     let filename = format!("nerve-tts-{}.mp3", std::process::id() as u64 ^ timestamp_nanos());
 
@@ -95,4 +91,95 @@ fn timestamp_nanos() -> u64 {
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()
         .as_nanos() as u64
+}
+
+/// Truncate text to the maximum TTS synthesis length.
+/// Exposed for testing.
+pub fn truncate_text(text: &str) -> &str {
+    if text.len() > MAX_TEXT_LEN {
+        &text[..MAX_TEXT_LEN]
+    } else {
+        text
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn truncate_text_returns_unchanged_when_under_limit() {
+        let text = "Hello, world!";
+        assert_eq!(truncate_text(text), "Hello, world!");
+    }
+
+    #[test]
+    fn truncate_text_returns_unchanged_when_at_limit() {
+        let text = "a".repeat(MAX_TEXT_LEN);
+        assert_eq!(truncate_text(&text), text);
+    }
+
+    #[test]
+    fn truncate_text_truncates_when_over_limit() {
+        let text = "a".repeat(MAX_TEXT_LEN + 100);
+        let result = truncate_text(&text);
+        assert_eq!(result.len(), MAX_TEXT_LEN);
+        assert_eq!(result, "a".repeat(MAX_TEXT_LEN));
+    }
+
+    #[test]
+    fn truncate_text_handles_empty_string() {
+        assert_eq!(truncate_text(""), "");
+    }
+
+    #[test]
+    fn truncate_text_at_boundary() {
+        let text = "a".repeat(MAX_TEXT_LEN - 1);
+        assert_eq!(truncate_text(&text), text);
+    }
+
+    #[tokio::test]
+    async fn find_output_file_returns_none_for_nonexistent_dir() {
+        let dir = PathBuf::from("/nonexistent/path");
+        let result = find_output_file(&dir, "test.mp3").await;
+        assert!(result.is_none());
+    }
+
+    #[tokio::test]
+    async fn find_output_file_matches_suffix() {
+        // Create a temporary directory with a test file
+        let temp_dir = std::env::temp_dir().join(format!("nerve-tts-test-{}", timestamp_nanos()));
+        tokio::fs::create_dir_all(&temp_dir).await.unwrap();
+
+        let filename = "test-output.mp3";
+        let timestamped = format!("2026-02-21T10-30-45_{}", filename);
+        let file_path = temp_dir.join(&timestamped);
+        tokio::fs::write(&file_path, b"test audio data").await.unwrap();
+
+        let result = find_output_file(&temp_dir, filename).await;
+        assert!(result.is_some());
+        let found_path = result.unwrap();
+        assert_eq!(found_path, file_path);
+
+        // Cleanup
+        tokio::fs::remove_dir_all(&temp_dir).await.ok();
+    }
+
+    #[tokio::test]
+    async fn find_output_file_ignores_non_matching_files() {
+        // Create a temporary directory with files that don't match
+        let temp_dir = std::env::temp_dir().join(format!("nerve-tts-test-{}", timestamp_nanos()));
+        tokio::fs::create_dir_all(&temp_dir).await.unwrap();
+
+        let file1 = temp_dir.join("other-file.mp3");
+        let file2 = temp_dir.join("2026-02-21T10-30-45_different.mp3");
+        tokio::fs::write(&file1, b"audio1").await.unwrap();
+        tokio::fs::write(&file2, b"audio2").await.unwrap();
+
+        let result = find_output_file(&temp_dir, "target.mp3").await;
+        assert!(result.is_none());
+
+        // Cleanup
+        tokio::fs::remove_dir_all(&temp_dir).await.ok();
+    }
 }

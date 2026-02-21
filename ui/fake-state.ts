@@ -174,9 +174,17 @@ export function handleCommand(
       // In dev mode, return a 1x1 transparent PNG as placeholder
       return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
 
-    case "speak_text":
+    case "speak_text": {
       // In dev mode, return a tiny silent mp3 (no actual TTS)
-      return "";
+      // This is a minimal valid MP3 file header + frame (silent, ~0.1s)
+      const silentMp3Base64 = "//uQxAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAACAAABhgCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA//////////////////////////////////////////////////////////////////8AAAA5TEFNRTMuOTlyAc0AAAAAAAAAABSAJAIgQgAAgAAAhgBGRBLqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQxAADwAABpAAAACAAADSAAAAETEFNRTMuOTkuNVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
+      // Truncate text to MAX_TEXT_LEN (500 chars) to match backend behavior
+      const text = args.text as string;
+      const truncated = text.length > 500 ? text.slice(0, 500) : text;
+      // In a real implementation, we'd synthesize speech for `truncated`
+      // For the fake backend, we just return the silent mp3
+      return silentMp3Base64;
+    }
 
     case "send_image":
     case "mark_read":

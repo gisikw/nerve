@@ -26,3 +26,5 @@ loop: ner-5f1c SUCCEED
 loop: building ner-b06d — Add tests for message grouping logic and sender display (message_display spec has partial coverage)
 loop: ner-b06d SUCCEED
 loop: building ner-ab8a — Add tests for typing indicator UI display (typing_indicators spec has partial coverage)
+loop: ner-ab8a SUCCEED
+loop: building ner-b623 — Add spec and tests for text-to-speech playback
