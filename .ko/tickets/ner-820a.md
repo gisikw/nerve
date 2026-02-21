@@ -1,6 +1,6 @@
 ---
 id: ner-820a
-status: open
+status: blocked
 deps: []
 links: []
 created: 2026-02-20T19:01:01Z

@@ -37,7 +37,7 @@ workflows:
 # can record the SHA range.
 # Clean up working tree on failure so the next build starts fresh.
 on_fail:
-  - git checkout .
+  - git checkout -- ':!.ko/tickets'
 
 # Auto-commit on success. Ticket ID goes in the message so `ko close`
 # can record the SHA range.
