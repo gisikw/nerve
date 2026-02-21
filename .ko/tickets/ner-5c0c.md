@@ -1,6 +1,6 @@
 ---
 id: ner-5c0c
-status: blocked
+status: open
 deps: []
 links: []
 created: 2026-02-21T19:31:47Z
@@ -101,3 +101,5 @@ The latest test that might've caused the error is "handles empty base64 data gra
 
 error: Recipe `test` failed on line 11 with exit code 1
 
+
+**2026-02-21 21:25:02 UTC:** Test failure was due to missing jsdom environment before vitest.config.ts was updated. Tests pass now. Ready for retry.
