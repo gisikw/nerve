@@ -12,6 +12,7 @@
   import { getSelectedRoomId } from "./lib/stores/rooms.svelte";
   import { getTypingUsers } from "./lib/stores/typing.svelte";
   import MessageItem from "./MessageItem.svelte";
+  import { shouldShowScrollButton } from "./lib/scroll";
 
   // --- Pinned state ---
   let pinnedIds = $state<Set<string>>(new Set());
@@ -22,6 +23,9 @@
 
   // --- Scroll container ref ---
   let messagesEl: HTMLDivElement | undefined = $state();
+
+  // --- Scroll-to-bottom button ---
+  let showScrollButton = $state(false);
 
   // --- Derived ---
   let messages = $derived(getMessageList());
@@ -43,6 +47,7 @@
     pinnedIds = new Set();
     showPinned = false;
     loadingOlder = false;
+    showScrollButton = false;
     clearMessages();
 
     loadMessages(roomId);
@@ -100,9 +105,18 @@
     prevLastId = lastId;
   });
 
-  // --- Scroll handler for pagination ---
+  // --- Scroll handler for pagination and scroll button visibility ---
   function handleScroll() {
     if (!messagesEl || !selectedRoomId) return;
+
+    // Update scroll-to-bottom button visibility
+    showScrollButton = shouldShowScrollButton(
+      messagesEl.scrollTop,
+      messagesEl.clientHeight,
+      messagesEl.scrollHeight
+    );
+
+    // Load older messages when scrolled near top
     if (messagesEl.scrollTop < 50 && !loadingOlder && !loading) {
       loadOlder();
     }
@@ -163,6 +177,12 @@
     if (names.length === 1) return `${names[0]} is typing...`;
     if (names.length === 2) return `${names[0]} and ${names[1]} are typing...`;
     return `${names.slice(0, 2).join(", ")} and others are typing...`;
+  }
+
+  // --- Scroll to bottom handler ---
+  function scrollToBottom() {
+    if (!messagesEl) return;
+    messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
   // --- Keep scroll pinned to bottom when container resizes (e.g. input expands) ---
@@ -242,6 +262,19 @@
         onPinToggle={refreshPins}
       />
     {/each}
+  {/if}
+
+  {#if showScrollButton}
+    <button
+      class="scroll-to-bottom"
+      onclick={scrollToBottom}
+      title="Scroll to bottom"
+      aria-label="Scroll to latest messages"
+    >
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
   {/if}
 </div>
 

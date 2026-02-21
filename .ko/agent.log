@@ -12,3 +12,5 @@ loop: building ner-50ae — Prevent elastic/bouncy scroll on the browser window
 loop: building ner-16ca — App icon border-radius creates octagonal shape instead of smooth rounded corners
 loop: ner-16ca SUCCEED
 loop: building ner-e99c — Channel switcher: 'Create new' appears bold/selected and input has spellcheck enabled
+loop: ner-e99c SUCCEED
+loop: building ner-5125 — Add floating scroll-to-bottom button in chat pane

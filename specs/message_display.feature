@@ -70,3 +70,18 @@ Feature: Message Display
     When the user clicks "Show less"
     Then the message is truncated again
     And a "Show more" button is visible
+
+  Scenario: Scroll-to-bottom button appears when scrolled up
+    Given the user has scrolled up in the messages area
+    When the scroll position is more than 200 pixels from the bottom
+    Then a scroll-to-bottom button is visible
+
+  Scenario: Scroll-to-bottom button is hidden when at bottom
+    Given the user is scrolled to the bottom of the messages area
+    Then the scroll-to-bottom button is not visible
+
+  Scenario: Clicking scroll-to-bottom button scrolls to latest messages
+    Given the user has scrolled up in the messages area
+    And the scroll-to-bottom button is visible
+    When the user clicks the scroll-to-bottom button
+    Then the messages area scrolls to the bottom
