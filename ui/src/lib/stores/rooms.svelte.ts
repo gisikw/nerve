@@ -24,6 +24,7 @@ function saveArchivedIds(ids: Set<string>): void {
 
 let archivedRoomIds = $state<Set<string>>(loadArchivedIds());
 let showArchived = $state(false);
+let showChannels = $state(true);
 
 export function getRooms(): RoomInfo[] {
   return rooms;
@@ -67,6 +68,14 @@ export function getShowArchived(): boolean {
 
 export function toggleShowArchived(): void {
   showArchived = !showArchived;
+}
+
+export function getShowChannels(): boolean {
+  return showChannels;
+}
+
+export function toggleShowChannels(): void {
+  showChannels = !showChannels;
 }
 
 export async function refreshRooms(): Promise<void> {
