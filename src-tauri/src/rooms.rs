@@ -16,9 +16,11 @@ pub struct RoomInfo {
     pub name: String,
     pub is_direct: bool,
     pub notification_count: u64,
+    pub highlight_count: u64,
     pub typing_users: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub topic: Option<String>,
+    pub last_activity: u64,
 }
 
 /// Collect room info from the client's current state.
@@ -41,25 +43,33 @@ pub async fn collect_rooms(client: &Client, typing_cache: &TypingCache) -> Vec<R
                     .map(|n| n.to_string())
                     .unwrap_or_else(|| room.room_id().to_string());
                 let is_direct = room.is_direct().await.unwrap_or(false);
-                let notification_count = room.unread_notification_counts().notification_count;
+                let unread_counts = room.unread_notification_counts();
+                let notification_count = unread_counts.notification_count;
+                let highlight_count = unread_counts.highlight_count;
 
                 let topic = room.topic();
+
+                // TODO: Get last activity timestamp from the latest timeline event
+                // The matrix-rust-sdk's LatestEvent API doesn't expose timestamp directly
+                // For now, use 0 as a placeholder. Frontend sorting will still work
+                // correctly once this is populated with real timestamps.
+                let last_activity = 0u64;
 
                 RoomInfo {
                     id: room.room_id().to_string(),
                     name,
                     is_direct,
                     notification_count,
+                    highlight_count,
                     typing_users,
                     topic,
+                    last_activity,
                 }
             }
         })
         .collect();
 
-    let mut rooms = join_all(futures).await;
-    rooms.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
-    rooms
+    join_all(futures).await
 }
 
 #[derive(Serialize)]

@@ -7,7 +7,7 @@
     refreshRooms,
   } from "./lib/stores/rooms.svelte";
   import { createRoom } from "./lib/tauri";
-  import { computeDefaultSelection } from "./lib/channel-switcher";
+  import { computeDefaultSelection, sortRooms } from "./lib/channel-switcher";
 
   interface Props {
     onClose: () => void;
@@ -20,12 +20,13 @@
   let inputEl: HTMLInputElement | undefined = $state();
   let creating = $state(false);
 
-  // All rooms (including archived), filtered by query
+  // All rooms (including archived), sorted by group and activity, filtered by query
   let filtered = $derived.by(() => {
     const q = query.trim().toLowerCase();
     const all = getRooms();
-    if (!q) return all;
-    return all.filter((r) => r.name.toLowerCase().includes(q));
+    const sorted = sortRooms(all, getArchivedRoomIds());
+    if (!q) return sorted;
+    return sorted.filter((r) => r.name.toLowerCase().includes(q));
   });
 
   // Show "Create #name" option when query doesn't exactly match any room

@@ -19,8 +19,10 @@ export interface RoomInfo {
   name: string;
   is_direct: boolean;
   notification_count: number;
+  highlight_count: number;
   typing_users: string[];
   topic?: string;
+  last_activity: number;
 }
 
 export interface Reaction {

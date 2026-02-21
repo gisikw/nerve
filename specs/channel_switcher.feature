@@ -40,3 +40,43 @@ Feature: Channel Switcher
     Then the first matching room is selected by default
     And the "Create new #ner" option appears below the matches
     And pressing Enter selects the existing room, not the create option
+
+  Scenario: Rooms are sorted by group then by last activity
+    Given the switcher is open
+    And there is a room "ops" with mentions (highlight_count > 0)
+    And there is a room "general" with unreads (notification_count > 0)
+    And there is a room "nerve" that is read
+    And there is a room "archive" that is archived
+    And "ops" has last_activity of 100
+    And "general" has last_activity of 200
+    And "nerve" has last_activity of 300
+    Then the rooms are displayed in this order:
+      | ops (mentioned)
+      | general (unread)
+      | nerve (read)
+      | archive (archived)
+
+  Scenario: Within each group, rooms are sorted by last activity descending
+    Given the switcher is open
+    And there is a room "alpha" with last_activity of 100
+    And there is a room "beta" with last_activity of 300
+    And there is a room "gamma" with last_activity of 200
+    And all three rooms have no unreads
+    Then the rooms are displayed in this order:
+      | beta (last_activity: 300)
+      | gamma (last_activity: 200)
+      | alpha (last_activity: 100)
+
+  Scenario: Mentioned rooms appear first regardless of last activity
+    Given the switcher is open
+    And there is a room "old-mention" with highlight_count of 1 and last_activity of 100
+    And there is a room "new-unread" with notification_count of 5 and last_activity of 500
+    Then "old-mention" appears before "new-unread"
+
+  Scenario: Archived rooms appear last regardless of unreads or activity
+    Given the switcher is open
+    And there is a room "archived-busy" that is archived with notification_count of 10
+    And there is a room "active-read" that is not archived with no unreads
+    And "archived-busy" has last_activity of 500
+    And "active-read" has last_activity of 100
+    Then "active-read" appears before "archived-busy"

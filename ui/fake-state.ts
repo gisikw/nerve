@@ -11,8 +11,10 @@ interface FakeRoom {
   name: string;
   is_direct: boolean;
   notification_count: number;
+  highlight_count: number;
   typing_users: string[];
   topic?: string;
+  last_activity: number;
 }
 
 interface FakeReaction {
@@ -59,10 +61,11 @@ function makeMessage(
 const BASE_TIME = 1708200000000; // 2024-02-17T16:00:00Z
 
 const initialRooms: FakeRoom[] = [
-  { id: "!nerve:example.chat", name: "nerve", is_direct: false, notification_count: 0, typing_users: [], topic: "Tauri + Svelte Matrix client" },
-  { id: "!ops:example.chat", name: "ops", is_direct: false, notification_count: 2, typing_users: [] },
-  { id: "!exo-dm:example.chat", name: "Exo", is_direct: true, notification_count: 0, typing_users: [] },
-  { id: "!project-nerve:example.chat", name: "project-nerve", is_direct: false, notification_count: 0, typing_users: [] },
+  { id: "!nerve:example.chat", name: "nerve", is_direct: false, notification_count: 0, highlight_count: 0, typing_users: [], topic: "Tauri + Svelte Matrix client", last_activity: BASE_TIME + 75000 },
+  { id: "!ops:example.chat", name: "ops", is_direct: false, notification_count: 2, highlight_count: 1, typing_users: [], last_activity: BASE_TIME + 12000 },
+  { id: "!exo-dm:example.chat", name: "Exo", is_direct: true, notification_count: 0, highlight_count: 0, typing_users: [], last_activity: BASE_TIME + 102000 },
+  { id: "!project-nerve:example.chat", name: "project-nerve", is_direct: false, notification_count: 0, highlight_count: 0, typing_users: [], last_activity: BASE_TIME },
+  { id: "!announcements:example.chat", name: "announcements", is_direct: false, notification_count: 5, highlight_count: 0, typing_users: [], last_activity: BASE_TIME + 50000 },
 ];
 
 function initialMessages(): Record<string, FakeMessage[]> {
@@ -225,7 +228,9 @@ export function handleDriverAction(
         name: action.name as string,
         is_direct: (action.is_direct as boolean) ?? false,
         notification_count: (action.notification_count as number) ?? 0,
+        highlight_count: (action.highlight_count as number) ?? 0,
         typing_users: [],
+        last_activity: (action.last_activity as number) ?? Date.now(),
       });
       if (!state.messages[action.id as string]) {
         state.messages[action.id as string] = [];

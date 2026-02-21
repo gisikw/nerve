@@ -1,9 +1,11 @@
 /**
- * Channel switcher selection logic.
+ * Channel switcher selection and sorting logic.
  *
  * Determines which item should be selected by default when the filtered
- * room list changes.
+ * room list changes, and how rooms should be sorted and grouped.
  */
+
+import type { RoomInfo } from "./tauri";
 
 /**
  * Compute the default selected index for the channel switcher.
@@ -30,4 +32,57 @@ export function computeDefaultSelection(
   }
   // Keep current selection if it's valid
   return currentIndex;
+}
+
+/**
+ * Group identifier for room categorization.
+ */
+export enum RoomGroup {
+  Mentioned = 0,
+  Unread = 1,
+  Read = 2,
+  Archived = 3,
+}
+
+/**
+ * Determine which group a room belongs to.
+ *
+ * @param room - The room to categorize
+ * @param archivedIds - Set of room IDs that are archived
+ * @returns The group identifier
+ */
+export function getRoomGroup(room: RoomInfo, archivedIds: Set<string>): RoomGroup {
+  if (archivedIds.has(room.id)) {
+    return RoomGroup.Archived;
+  }
+  if (room.highlight_count > 0) {
+    return RoomGroup.Mentioned;
+  }
+  if (room.notification_count > 0) {
+    return RoomGroup.Unread;
+  }
+  return RoomGroup.Read;
+}
+
+/**
+ * Sort rooms by group (mentioned, unread, read, archived) and then by last
+ * activity within each group.
+ *
+ * @param rooms - The list of rooms to sort
+ * @param archivedIds - Set of room IDs that are archived
+ * @returns A new sorted array of rooms
+ */
+export function sortRooms(rooms: RoomInfo[], archivedIds: Set<string>): RoomInfo[] {
+  return [...rooms].sort((a, b) => {
+    const groupA = getRoomGroup(a, archivedIds);
+    const groupB = getRoomGroup(b, archivedIds);
+
+    // First sort by group priority
+    if (groupA !== groupB) {
+      return groupA - groupB;
+    }
+
+    // Within the same group, sort by last activity (most recent first)
+    return b.last_activity - a.last_activity;
+  });
 }

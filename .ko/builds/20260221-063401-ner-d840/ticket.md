@@ -1,6 +1,6 @@
 ---
 id: ner-d840
-status: closed
+status: open
 deps: []
 links: []
 created: 2026-02-20T19:01:01Z
@@ -19,7 +19,3 @@ The channel switcher (Cmd+K) currently lists rooms in an unstructured order. Sho
 This mirrors the mental model of "what needs attention" and makes the switcher actually useful for triage.
 
 **Location:** `ChannelSwitcher.svelte` — needs room state (unread counts, mentions, last activity timestamp) piped through from the backend.
-
-## Notes
-
-**2026-02-21 06:44:04 UTC:** ko: SUCCEED
