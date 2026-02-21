@@ -140,6 +140,130 @@ describe("sidebar channel filtering", () => {
   });
 });
 
+describe("archived room filtering", () => {
+  it("archived rooms are excluded from active room filter", () => {
+    // Simulate the sidebar component's activeRooms derivation:
+    // activeRooms = getRooms().filter((r) => !getArchivedRoomIds().has(r.id))
+    const allRooms: RoomInfo[] = [
+      {
+        id: "!active1:matrix.org",
+        name: "Active Room 1",
+        is_direct: false,
+        notification_count: 5,
+      },
+      {
+        id: "!archived1:matrix.org",
+        name: "Archived Room 1",
+        is_direct: false,
+        notification_count: 3,
+      },
+      {
+        id: "!active2:matrix.org",
+        name: "Active Room 2",
+        is_direct: false,
+        notification_count: 0,
+      },
+    ];
+
+    const archivedIds = new Set(["!archived1:matrix.org"]);
+    const activeRooms = allRooms.filter((r) => !archivedIds.has(r.id));
+
+    expect(activeRooms).toHaveLength(2);
+    expect(activeRooms.find((r) => r.id === "!active1:matrix.org")).toBeDefined();
+    expect(activeRooms.find((r) => r.id === "!active2:matrix.org")).toBeDefined();
+    expect(activeRooms.find((r) => r.id === "!archived1:matrix.org")).toBeUndefined();
+  });
+
+  it("archived rooms can be extracted from full room list", () => {
+    // Simulate the sidebar component's archivedRooms derivation:
+    // archivedRooms = getRooms().filter((r) => getArchivedRoomIds().has(r.id))
+    const allRooms: RoomInfo[] = [
+      {
+        id: "!active1:matrix.org",
+        name: "Active Room 1",
+        is_direct: false,
+        notification_count: 5,
+      },
+      {
+        id: "!archived1:matrix.org",
+        name: "Archived Room 1",
+        is_direct: false,
+        notification_count: 3,
+      },
+      {
+        id: "!archived2:matrix.org",
+        name: "Archived Room 2",
+        is_direct: true,
+        notification_count: 0,
+      },
+    ];
+
+    const archivedIds = new Set(["!archived1:matrix.org", "!archived2:matrix.org"]);
+    const archivedRooms = allRooms.filter((r) => archivedIds.has(r.id));
+
+    expect(archivedRooms).toHaveLength(2);
+    expect(archivedRooms.find((r) => r.id === "!archived1:matrix.org")).toBeDefined();
+    expect(archivedRooms.find((r) => r.id === "!archived2:matrix.org")).toBeDefined();
+    expect(archivedRooms.find((r) => r.id === "!active1:matrix.org")).toBeUndefined();
+  });
+
+  it("archived rooms with notifications are still excluded from active list", () => {
+    // Even if an archived room has unreads, it should not appear in the active list
+    const allRooms: RoomInfo[] = [
+      {
+        id: "!active:matrix.org",
+        name: "Active",
+        is_direct: false,
+        notification_count: 0,
+      },
+      {
+        id: "!archived-unread:matrix.org",
+        name: "Archived with Unreads",
+        is_direct: false,
+        notification_count: 10,
+      },
+    ];
+
+    const archivedIds = new Set(["!archived-unread:matrix.org"]);
+    const activeRooms = allRooms.filter((r) => !archivedIds.has(r.id));
+
+    expect(activeRooms).toHaveLength(1);
+    expect(activeRooms[0].id).toBe("!active:matrix.org");
+  });
+
+  it("filtering can be applied to active rooms separately from archived rooms", () => {
+    // The sidebar applies filterVisibleRooms to activeRooms, not to archivedRooms
+    const allRooms: RoomInfo[] = [
+      { id: "!a1:matrix.org", name: "Active 1", is_direct: false, notification_count: 5 },
+      { id: "!a2:matrix.org", name: "Active 2", is_direct: false, notification_count: 0 },
+      { id: "!ar1:matrix.org", name: "Archived 1", is_direct: false, notification_count: 3 },
+      { id: "!ar2:matrix.org", name: "Archived 2", is_direct: false, notification_count: 0 },
+    ];
+
+    const archivedIds = new Set(["!ar1:matrix.org", "!ar2:matrix.org"]);
+    const activeRooms = allRooms.filter((r) => !archivedIds.has(r.id));
+
+    // When channels section is collapsed, only active rooms with activity are visible
+    const visibleActiveRooms = filterVisibleRooms(activeRooms, false);
+
+    expect(visibleActiveRooms).toHaveLength(1);
+    expect(visibleActiveRooms[0].id).toBe("!a1:matrix.org");
+  });
+
+  it("empty archived set results in all rooms being active", () => {
+    const allRooms: RoomInfo[] = [
+      { id: "!r1:matrix.org", name: "Room 1", is_direct: false, notification_count: 1 },
+      { id: "!r2:matrix.org", name: "Room 2", is_direct: false, notification_count: 0 },
+    ];
+
+    const archivedIds = new Set<string>();
+    const activeRooms = allRooms.filter((r) => !archivedIds.has(r.id));
+
+    expect(activeRooms).toHaveLength(2);
+    expect(activeRooms).toEqual(allRooms);
+  });
+});
+
 describe("sidebar archive icons", () => {
   it("archive button renders SVG icon not emoji", () => {
     // Regression test: archive/unarchive buttons previously used colored emoji

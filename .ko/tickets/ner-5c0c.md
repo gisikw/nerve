@@ -1,6 +1,6 @@
 ---
 id: ner-5c0c
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-02-21T19:31:47Z
@@ -103,3 +103,5 @@ error: Recipe `test` failed on line 11 with exit code 1
 
 
 **2026-02-21 21:25:02 UTC:** Test failure was due to missing jsdom environment before vitest.config.ts was updated. Tests pass now. Ready for retry.
+
+**2026-02-21 21:51:26 UTC:** ko: SUCCEED

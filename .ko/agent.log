@@ -30,3 +30,4 @@ loop: ner-ab8a SUCCEED
 loop: building ner-b623 — Add spec and tests for text-to-speech playback
 loop: ner-b623 SUCCEED
 loop: building ner-9829 — Add spec and tests for image sending and file attachment
+loop: building ner-5c0c — Add spec and tests for room archiving (visibility, recovery, sidebar behavior)

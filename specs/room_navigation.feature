@@ -66,3 +66,65 @@ Feature: Room Navigation
     Then the archive button contains a monochrome SVG icon
     And the icon uses currentColor for stroke
     And the icon does not use colored emoji characters
+
+  Scenario: Archiving a room removes it from active channels
+    Given a room is visible in the Channels section
+    When the user clicks the archive button for that room
+    Then the room disappears from the Channels section
+    And the room appears in the Archived section
+    And the Archived section header shows the count of archived rooms
+
+  Scenario: Archived section is collapsible
+    Given there are archived rooms
+    When the Archived section is collapsed
+    Then the archived rooms are hidden
+    And the Archived section header still shows the count
+
+  Scenario: Archived section is initially collapsed
+    Given the Archived section header is visible
+    And the user has not previously expanded it
+    Then the archived rooms list is not visible
+    And the twirldown shows "▶"
+
+  Scenario: Expanding archived section shows archived rooms
+    Given the Archived section is collapsed
+    When the user clicks the Archived section header
+    Then the archived rooms list becomes visible
+    And the twirldown shows "▼"
+
+  Scenario: Unarchiving a room restores it to active channels
+    Given a room is in the Archived section
+    When the user clicks the unarchive button for that room
+    Then the room disappears from the Archived section
+    And the room appears in the Channels section
+    And if no archived rooms remain, the Archived section header is hidden
+
+  Scenario: Archived rooms persist across sessions
+    Given a room has been archived
+    When the user refreshes the page
+    Then the room still appears in the Archived section
+    And the room does not appear in the Channels section
+
+  Scenario: Archived rooms can be selected
+    Given a room is in the Archived section
+    When the user clicks that archived room
+    Then the room becomes selected
+    And messages load for that room
+    And the room remains in the Archived section
+
+  Scenario: Archived rooms show notification badges
+    Given an archived room has notification_count greater than 0
+    Then the room shows an unread badge in the Archived section
+    And the badge follows the same display rules as active rooms
+
+  Scenario: Archive state persists in localStorage
+    Given the user has archived a room with id "!test:matrix.org"
+    Then localStorage contains the archived room id
+    And the persisted state includes all archived room ids as a JSON array
+
+  Scenario: Archive toggle is idempotent
+    Given a room is archived
+    When the user clicks the unarchive button
+    And then clicks the archive button again
+    Then the room ends up archived
+    And the archive state is correctly persisted
