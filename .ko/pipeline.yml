@@ -35,6 +35,12 @@ workflows:
 
 # Auto-commit on success. Ticket ID goes in the message so `ko close`
 # can record the SHA range.
+# Clean up working tree on failure so the next build starts fresh.
+on_fail:
+  - git checkout .
+
+# Auto-commit on success. Ticket ID goes in the message so `ko close`
+# can record the SHA range.
 on_succeed:
   - git add -A
   - git commit -m "ko: implement ${TICKET_ID}"
