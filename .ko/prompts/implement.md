@@ -47,6 +47,24 @@ These are not optional. INVARIANTS.md treats missing specs and tests as defects.
   a spec describing the expected behavior, even if there's no automated test
   runner for it yet — the spec is still the source of truth.
 
+### Test quality
+
+Every test must assert something meaningful. A test that passes without
+exercising real logic is worse than no test — it builds false confidence,
+wastes CI time, and burns tokens in future reviews.
+
+- **No vacuous assertions.** `expect(true).toBe(true)`, `expect(1).toBe(1)`,
+  or any assertion that is tautologically true is forbidden. If a test doesn't
+  call the function under test or inspect its output, it is not a test.
+- **No "documentation-only" tests.** Comments explaining behavior belong in
+  specs or code comments, not in test bodies with dummy assertions. If you
+  can't figure out how to assert something meaningful, write the spec and
+  skip the test — a missing test is honest; a fake test is a lie.
+- **Tests must exercise the code path they claim to cover.** A regression test
+  for a bug fix must reproduce the conditions that triggered the bug and
+  verify the correct outcome. A test for a pure function must call the
+  function with representative inputs and assert on outputs.
+
 If you are unsure whether a spec or test applies, err on the side of writing
 one. A superfluous test is trivially deleted; a missing test is a latent defect.
 

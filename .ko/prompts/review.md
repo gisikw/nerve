@@ -33,11 +33,32 @@ blocker, not a nice-to-have. Check these:
 - **Test files** should mirror the source: `markdown.ts` → `markdown.test.ts`,
   Rust modules use inline `#[cfg(test)]` or `*_test.rs`.
 
-If specs or tests are missing: this is fixable. Add the missing spec/test
-yourself, then end with `continue`. Only `fail` if the implementation itself
-is fundamentally wrong or you cannot determine what the test should assert.
+## Test quality — enforce strictly
 
-If the changes look good (including spec/test coverage), end with a `continue`
+Vacuous tests are worse than missing tests. They build false confidence, waste
+CI time, and burn tokens in future reviews. Reject them on sight.
+
+- **`expect(true).toBe(true)`** or any tautological assertion is an automatic
+  `fail`. Delete it. A test that passes without exercising real logic is not
+  a test.
+- **"Documentation-only" tests** — test bodies that are entirely comments with
+  a dummy assertion — are an automatic `fail`. Documentation belongs in specs
+  or code comments, not in test harnesses.
+- **Every test must call the code it claims to cover** and assert on the
+  result. A regression test must reproduce the bug's conditions. A unit test
+  must call the function with real inputs and check real outputs.
+- **If a behavior can't be meaningfully tested** in the current infrastructure
+  (e.g., DOM-dependent UI behavior without a DOM test environment), write the
+  spec but do NOT write a fake test. A missing test is honest. A fake test
+  is a lie that will cost future reviewers time to audit and future agents
+  tokens to process.
+
+If tests are missing or vacuous: fix them yourself if you can write a
+meaningful test. Delete vacuous tests. Only `fail` if the implementation
+itself is fundamentally wrong or you cannot determine what a real test
+should assert.
+
+If the changes look good (including spec/test quality), end with a `continue`
 disposition.
 
 If the problems indicate a fundamental misunderstanding of the ticket or an
