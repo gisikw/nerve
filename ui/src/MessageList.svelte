@@ -12,7 +12,7 @@
   import { getSelectedRoomId } from "./lib/stores/rooms.svelte";
   import { getTypingUsers } from "./lib/stores/typing.svelte";
   import MessageItem from "./MessageItem.svelte";
-  import { shouldShowScrollButton } from "./lib/scroll";
+  import { shouldShowScrollButton, isNearBottom } from "./lib/scroll";
 
   // --- Pinned state ---
   let pinnedIds = $state<Set<string>>(new Set());
@@ -91,9 +91,7 @@
       } else {
         // Subsequent messages: scroll only if near bottom
         const el = messagesEl;
-        const nearBottom =
-          el.scrollTop + el.clientHeight >= el.scrollHeight - 100;
-        if (nearBottom) {
+        if (isNearBottom(el.scrollTop, el.clientHeight, el.scrollHeight)) {
           tick().then(() => {
             if (messagesEl) {
               messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -103,6 +101,26 @@
       }
     }
     prevLastId = lastId;
+  });
+
+  // --- Autoscroll on typing indicator changes ---
+  let prevTypingCount = $state(0);
+
+  $effect(() => {
+    const currentTypingCount = typingUsers.length;
+
+    // Only auto-scroll if typing state changed and user is near bottom
+    if (currentTypingCount !== prevTypingCount && messagesEl && !initialLoad) {
+      if (isNearBottom(messagesEl.scrollTop, messagesEl.clientHeight, messagesEl.scrollHeight)) {
+        tick().then(() => {
+          if (messagesEl) {
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+          }
+        });
+      }
+    }
+
+    prevTypingCount = currentTypingCount;
   });
 
   // --- Scroll handler for pagination and scroll button visibility ---
@@ -194,9 +212,7 @@
         const newHeight = entry.contentRect.height;
         if (prevHeight > 0 && newHeight < prevHeight) {
           // Container shrank (compose bar grew) — stay at bottom if near bottom
-          const nearBottom =
-            el.scrollTop + el.clientHeight >= el.scrollHeight - 100;
-          if (nearBottom) {
+          if (isNearBottom(el.scrollTop, el.clientHeight, el.scrollHeight)) {
             el.scrollTop = el.scrollHeight;
           }
         }

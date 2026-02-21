@@ -1,6 +1,6 @@
 ---
 id: ner-5cf2
-status: closed
+status: open
 deps: []
 links: []
 created: 2026-02-20T18:52:10Z
@@ -13,7 +13,3 @@ Currently the message list respects scroll position to avoid yanking you out of 
 
 **Screenshot:** `notes/attachments/2026-02-20_18-51-53_Screenshot 2026-02-20 at 12.47.29 PM.png` — shows "exo is typing..." visible but chat not scrolled fully to bottom.
 **Location:** `MessageList.svelte` — scroll logic on new messages / typing indicator updates.
-
-## Notes
-
-**2026-02-21 16:33:03 UTC:** ko: SUCCEED

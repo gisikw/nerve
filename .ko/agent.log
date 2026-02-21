@@ -14,3 +14,5 @@ loop: ner-16ca SUCCEED
 loop: building ner-e99c — Channel switcher: 'Create new' appears bold/selected and input has spellcheck enabled
 loop: ner-e99c SUCCEED
 loop: building ner-5125 — Add floating scroll-to-bottom button in chat pane
+loop: ner-5125 SUCCEED
+loop: building ner-5cf2 — Auto-scroll to bottom when near bottom of chat

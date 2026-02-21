@@ -37,13 +37,23 @@ Feature: Message Display
     Then the chat area shows "No messages yet."
 
   Scenario: Messages auto-scroll to bottom on new messages
-    Given the user is scrolled to the bottom of the messages area
+    Given the user is within 200 pixels of the bottom of the messages area
     When new messages arrive
     Then the messages area scrolls to the bottom
 
   Scenario: Scroll-back position is preserved
-    Given the user has scrolled up in the messages area
+    Given the user has scrolled up more than 200 pixels from the bottom
     When new messages arrive
+    Then the scroll position is not changed
+
+  Scenario: Typing indicators auto-scroll when near bottom
+    Given the user is within 200 pixels of the bottom of the messages area
+    When a typing indicator appears
+    Then the messages area scrolls to the bottom
+
+  Scenario: Typing indicators preserve scroll position when scrolled up
+    Given the user has scrolled up more than 200 pixels from the bottom
+    When a typing indicator appears
     Then the scroll position is not changed
 
   Scenario: Messages poll periodically when room is selected
