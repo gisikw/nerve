@@ -1,6 +1,6 @@
 ---
 id: ner-86b4
-status: open
+status: closed
 deps: [ner-c2b8]
 links: []
 created: 2026-02-20T19:46:25Z
@@ -16,3 +16,5 @@ The "..." typing/activity indicator on channel entries in the sidebar is great, 
 ## Notes
 
 **2026-02-21 04:34:31 UTC:** ko: FAIL at node 'review' — Missing meaningful test coverage. Implementation is correct, spec exists (specs/room_navigation.feature), but cannot write a unit test that validates the actual DOM ordering without component testing infrastructure (@testing-library/svelte or similar). Current project only tests pure functions (markdown.test.ts, compose.test.ts). This DOM structure change has no extractable logic to test. Attempted test would either be vacuous (helper function not used by component) or require adding testing dependencies outside ticket scope. Needs architectural decision on component testing approach.
+
+**2026-02-21 22:00:46 UTC:** ko: SUCCEED

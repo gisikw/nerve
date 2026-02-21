@@ -326,3 +326,38 @@ describe("sidebar archive icons", () => {
     expect(unarchiveSvg).toContain('stroke-width="2"');
   });
 });
+
+describe("activity indicator positioning", () => {
+  it("typing indicator appears after archive button in DOM order", () => {
+    // Regression test: The typing indicator should be the rightmost visual element
+    // in the flex row (spec: room_navigation.feature). In the default flex-direction:row
+    // layout, DOM order determines visual left-to-right ordering. This test verifies
+    // the typing-badge appears after room-action-btn in the source, ensuring it renders
+    // to the right of the archive/unarchive button.
+    const { readFileSync } = require("fs");
+    const { join } = require("path");
+    const sidebarPath = join(__dirname, "../Sidebar.svelte");
+    const content = readFileSync(sidebarPath, "utf-8");
+
+    // Extract room list item templates (both active and archived)
+    const roomRowRegex = /<li[\s\S]*?role="option"[\s\S]*?<\/li>/g;
+    const roomRows = Array.from(content.matchAll(roomRowRegex));
+
+    expect(roomRows.length).toBeGreaterThan(0);
+
+    // Check each room row for correct element ordering
+    for (const [rowContent] of roomRows) {
+      // Find element positions
+      const actionBtnPos = rowContent.indexOf('class="room-action-btn"');
+      const typingBadgePos = rowContent.indexOf('class="typing-badge"');
+
+      // All room rows should have an action button
+      expect(actionBtnPos).toBeGreaterThan(-1);
+
+      // If this row has a typing badge, it must come after the action button
+      if (typingBadgePos > -1) {
+        expect(typingBadgePos).toBeGreaterThan(actionBtnPos);
+      }
+    }
+  });
+});
