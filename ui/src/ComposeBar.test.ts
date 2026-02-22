@@ -35,11 +35,18 @@ describe("ComposeBar component", () => {
 
       const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
 
+      // jsdom doesn't compute layout, so scrollHeight is always 0.
+      // Mock it to simulate real browser behavior where multi-line content
+      // increases scrollHeight.
+      Object.defineProperty(textarea, "scrollHeight", {
+        get: () => (textarea.value.includes("\n") ? 72 : 36),
+        configurable: true,
+      });
+
       // Type a multi-line message
       await user.type(textarea, "Line 1\nLine 2\nLine 3");
 
-      // After typing, the scrollHeight should increase (multi-line content)
-      // and the resizeTextarea function sets height based on scrollHeight.
+      // After typing, resizeTextarea sets height to scrollHeight pixels.
       // Wait for the height to be set to a pixel value
       await waitFor(() => {
         const height = textarea.style.height;
