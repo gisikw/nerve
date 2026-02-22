@@ -15,6 +15,7 @@
   import { shouldShowScrollButton, isNearBottom } from "./lib/scroll";
   import { isGroupStart, formatSender } from "./lib/message-grouping";
   import { typingLabel } from "./lib/typing-ui";
+  import { logBackgroundError, formatPinnedEventsFetchError, formatPinnedEventsRefreshError } from "./lib/error-logging";
 
   // --- Pinned state ---
   let pinnedIds = $state<Set<string>>(new Set());
@@ -55,7 +56,9 @@
     loadMessages(roomId);
     getPinnedEvents(roomId)
       .then((ids) => { pinnedIds = new Set(ids); })
-      .catch(() => {});
+      .catch((err) => {
+        logBackgroundError(formatPinnedEventsFetchError(roomId), err);
+      });
   });
 
   // --- Autoscroll on new messages ---
@@ -166,7 +169,9 @@
     if (!roomId) return;
     getPinnedEvents(roomId)
       .then((ids) => { pinnedIds = new Set(ids); })
-      .catch(() => {});
+      .catch((err) => {
+        logBackgroundError(formatPinnedEventsRefreshError(roomId), err);
+      });
   }
 
   function handleUnpin(eventId: string) {

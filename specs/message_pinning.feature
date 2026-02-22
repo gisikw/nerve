@@ -124,3 +124,10 @@ Feature: Message Pinning
     Given an empty room with no messages and no pins
     When the message list is rendered
     Then the pinned bar is not visible
+
+  Scenario: Pinned events fetch failure is logged but not shown to user
+    Given a room is selected
+    When fetching pinned events fails
+    Then the error is logged to the console
+    And no toast is displayed to avoid interrupting the user
+    And the pinned bar remains hidden
