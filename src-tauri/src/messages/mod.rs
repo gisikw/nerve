@@ -1,22 +1,27 @@
-//! Message handling functionality split into behavioral domains:
-//! - fetch: Retrieving messages from rooms
-//! - reactions: Sending and aggregating reactions
-//! - send: Sending messages (text, images, voice)
-//! - pinning: Managing pinned messages
-//! - common: Shared types and utilities
+//! Message handling functionality split into behavioral modules:
+//! - types: Shared data structures and utilities
+//! - fetch: Message fetching and reaction aggregation
+//! - send: Sending text, image, and voice messages
+//! - reactions: Reaction handling
+//! - pinning: Pin/unpin functionality
 
-mod common;
+mod types;
 mod fetch;
-mod pinning;
-mod reactions;
 mod send;
+mod reactions;
+mod pinning;
 
-// Re-export public API
-#[allow(unused_imports)]
-pub use common::{download_media, mark_read, MessageInfo};
-#[allow(unused_imports)]
-pub use fetch::{fetch_messages, register_handler, MessagesResponse, MessagesUpdatedEvent};
+// Re-export public types
+pub use types::{MessagesResponse, download_media};
+
+// Re-export fetch functions
+pub use fetch::{fetch_messages, mark_read, register_handler};
+
+// Re-export send functions
+pub use send::{send_message, send_image, send_voice_message};
+
+// Re-export reaction functions
+pub use reactions::send_reaction;
+
+// Re-export pinning functions
 pub use pinning::{get_pinned_events, pin_message, unpin_message};
-#[allow(unused_imports)]
-pub use reactions::{send_reaction, ReactionInfo};
-pub use send::{send_image, send_message, send_voice_message};

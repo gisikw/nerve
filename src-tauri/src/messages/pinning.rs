@@ -1,3 +1,4 @@
+use matrix_sdk::ruma::events::room::pinned_events::RoomPinnedEventsEventContent;
 use matrix_sdk::Client;
 
 use crate::error::{self, NerveError, Result};
@@ -25,8 +26,6 @@ pub async fn pin_message(
     room_id: &str,
     event_id: &str,
 ) -> Result<()> {
-    use matrix_sdk::ruma::events::room::pinned_events::RoomPinnedEventsEventContent;
-
     let room_id = error::parse_room_id(room_id)?;
     let event_id = error::parse_event_id(event_id)?;
     let room = client
@@ -54,8 +53,6 @@ pub async fn unpin_message(
     room_id: &str,
     event_id: &str,
 ) -> Result<()> {
-    use matrix_sdk::ruma::events::room::pinned_events::RoomPinnedEventsEventContent;
-
     let room_id = error::parse_room_id(room_id)?;
     let event_id = error::parse_event_id(event_id)?;
     let room = client

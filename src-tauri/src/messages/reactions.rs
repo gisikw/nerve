@@ -1,15 +1,7 @@
 use matrix_sdk::ruma::events::reaction::ReactionEventContent;
 use matrix_sdk::Client;
-use serde::Serialize;
 
 use crate::error::{self, NerveError, Result};
-
-#[derive(Serialize, Clone)]
-pub struct ReactionInfo {
-    pub emoji: String,
-    pub count: u32,
-    pub include_self: bool,
-}
 
 /// Send a reaction (emoji annotation) to an event in a room.
 pub async fn send_reaction(

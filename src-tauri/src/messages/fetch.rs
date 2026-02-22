@@ -7,31 +7,12 @@ use matrix_sdk::ruma::events::room::message::{
 use matrix_sdk::ruma::events::{AnySyncMessageLikeEvent, AnySyncTimelineEvent};
 use matrix_sdk::ruma::OwnedEventId;
 use matrix_sdk::Client;
-use serde::Serialize;
 use tauri::{AppHandle, Emitter};
-
 use tracing::warn;
 
 use crate::error::{self, NerveError, Result};
 
-use super::common::{mxc_uri_string, MessageInfo};
-use super::reactions::ReactionInfo;
-
-/// Response from fetching messages, includes a pagination token for loading
-/// older history.
-#[derive(Serialize)]
-pub struct MessagesResponse {
-    pub messages: Vec<MessageInfo>,
-    /// Pagination token for fetching older messages. `None` when the beginning
-    /// of the room timeline has been reached.
-    pub end_token: Option<String>,
-}
-
-/// Payload emitted as a `messages-updated` Tauri event.
-#[derive(Clone, Serialize)]
-pub struct MessagesUpdatedEvent {
-    pub room_id: String,
-}
+use super::types::{MessageInfo, MessagesResponse, MessagesUpdatedEvent, ReactionInfo, mxc_uri_string};
 
 /// Register an event handler that emits `messages-updated` when new messages
 /// arrive in any room. The frontend uses this to fetch fresh messages instead
@@ -236,6 +217,24 @@ pub async fn fetch_messages(
         messages,
         end_token: response.end,
     })
+}
+
+/// Send a read receipt for the given event, clearing the server-side unread
+/// notification count for the room.
+pub async fn mark_read(client: &Client, room_id: &str, event_id: &str) -> Result<()> {
+    use matrix_sdk::ruma::api::client::receipt::create_receipt::v3::ReceiptType;
+    use matrix_sdk::ruma::events::receipt::ReceiptThread;
+
+    let room_id = error::parse_room_id(room_id)?;
+    let event_id = error::parse_event_id(event_id)?;
+    let room = client
+        .get_room(&room_id)
+        .ok_or_else(|| NerveError::RoomNotFound(room_id.to_string()))?;
+
+    room.send_single_receipt(ReceiptType::Read, ReceiptThread::Unthreaded, event_id)
+        .await?;
+
+    Ok(())
 }
 
 #[cfg(test)]

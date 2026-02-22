@@ -1,7 +1,5 @@
-use matrix_sdk::ruma::events::room::message::{
-    MessageType, RoomMessageEventContent,
-};
-use matrix_sdk::ruma::events::room::MediaSource;
+use matrix_sdk::ruma::events::room::message::{MessageType, RoomMessageEventContent};
+use matrix_sdk::ruma::events::room::{ImageInfo, MediaSource};
 use matrix_sdk::Client;
 
 use crate::error::{self, NerveError, Result};
@@ -32,8 +30,6 @@ pub async fn send_image(
     mime_type: &str,
     caption: Option<&str>,
 ) -> Result<()> {
-    use matrix_sdk::ruma::events::room::ImageInfo;
-
     let room_id = error::parse_room_id(room_id)?;
     let room = client
         .get_room(&room_id)
