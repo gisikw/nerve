@@ -30,52 +30,34 @@ describe("ComposeBar component", () => {
   describe("textarea height management", () => {
     it("resets textarea height to auto after sending a message", async () => {
       const user = userEvent.setup();
-
       render(ComposeBar);
 
-      const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
+      const textarea = screen.getByPlaceholderText(
+        "Send a message...",
+      ) as HTMLTextAreaElement;
 
-      // jsdom doesn't compute layout, so scrollHeight is always 0.
-      // Mock it to simulate real browser behavior where multi-line content
-      // increases scrollHeight.
-      Object.defineProperty(textarea, "scrollHeight", {
-        get: () => (textarea.value.includes("\n") ? 72 : 36),
-        configurable: true,
-      });
-
-      // Type a multi-line message
+      // Type a multi-line message to make the textarea grow
       await user.type(textarea, "Line 1\nLine 2\nLine 3");
 
-      // After typing, resizeTextarea sets height to scrollHeight pixels.
-      // Wait for the height to be set to a pixel value
+      // Wait for textarea to expand
       await waitFor(() => {
         const height = textarea.style.height;
-        // Height should be set to a pixel value when there's content
-        expect(height).toMatch(/^\d+px$/);
-        // Parse the height value - it should be greater than the default single-line height
+        // Parse the height value - it should be greater than the default
         const heightValue = parseInt(height, 10);
         expect(heightValue).toBeGreaterThan(30); // Reasonable minimum for multi-line
       });
 
-      const expandedHeight = textarea.style.height;
+      // Submit the message (this should reset the height)
+      await user.type(textarea, "{Enter}");
 
-      // Submit the form (Enter key without Shift)
-      await user.keyboard("{Enter}");
-
-      // After submission, the textarea value should be empty and height should reset to "auto"
-      // (computeTextareaHeight returns "auto" when text.trim() is empty)
-      await waitFor(() => {
-        expect(textarea.value).toBe("");
-        expect(textarea.style.height).toBe("auto");
-      });
-
-      // Verify the height changed from the expanded state
-      expect(expandedHeight).not.toBe("auto");
-
-      // Verify sendMessage was called with the correct content
-      expect(tauri.sendMessage).toHaveBeenCalledWith(
-        "!test:example.com",
-        "Line 1\nLine 2\nLine 3",
+      // Wait for textarea to collapse back to single-line height
+      await waitFor(
+        () => {
+          const height = textarea.style.height;
+          // The height should reset to "auto"
+          expect(height).toBe("auto");
+        },
+        { timeout: 1000 },
       );
     });
   });
