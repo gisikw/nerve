@@ -1,7 +1,7 @@
 ---
 id: ner-d4f0
 status: open
-deps: []
+deps: [ner-cf90]
 links: []
 created: 2026-02-22T00:27:50Z
 type: task
