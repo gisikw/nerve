@@ -90,10 +90,15 @@ Feature: Message Compose
     When the file is attached
     Then the MIME type is inferred from the file extension
 
-  Scenario: Unknown image formats are rejected
-    Given an image file with an unknown extension
+  Scenario: Unknown image formats without MIME type are rejected
+    Given an image file with an unknown extension and no MIME type
     When the file is processed for sending
     Then the attachment is cleared without sending
+
+  Scenario: Unknown image formats with MIME type are sent
+    Given an image file with an unknown extension but valid MIME type
+    When the user submits
+    Then the image is sent with the file's MIME type
 
   Scenario: Start voice recording
     Given the user has a room selected
