@@ -1,5 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import type { StreamState } from "./tauri";
+import {
+  formatStreamsFetchError,
+  formatStreamActionError,
+  logBackgroundError,
+} from "./error-logging";
 
 /**
  * Tests for stream panel state logic.
@@ -377,5 +382,67 @@ describe("chevron icon state", () => {
     const isCollapsed = true;
     const chevronDirection = isCollapsed ? "right" : "down";
     expect(chevronDirection).toBe("right");
+  });
+});
+
+describe("error logging for background stream operations", () => {
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+  });
+
+  it("logs stream fetch errors with room context", () => {
+    const roomId = "!abc123:matrix.org";
+    const error = new Error("Network failure");
+
+    const message = formatStreamsFetchError(roomId);
+    logBackgroundError(message, error);
+
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      "Failed to fetch streams for room !abc123:matrix.org:",
+      error
+    );
+  });
+
+  it("logs stream action errors with stream and button context", () => {
+    const roomId = "!room:matrix.org";
+    const streamId = "build-1";
+    const buttonId = "stop";
+    const error = new Error("Action failed");
+
+    const message = formatStreamActionError(roomId, streamId, buttonId);
+    logBackgroundError(message, error);
+
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      "Failed to send stream action (button: stop) for stream build-1 in room !room:matrix.org:",
+      error
+    );
+  });
+
+  it("does not log when error is null", () => {
+    const roomId = "!room:matrix.org";
+    const message = formatStreamsFetchError(roomId);
+
+    logBackgroundError(message, null);
+
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
+  });
+
+  it("does not log when error is undefined", () => {
+    const roomId = "!room:matrix.org";
+    const streamId = "build-1";
+    const buttonId = "stop";
+    const message = formatStreamActionError(roomId, streamId, buttonId);
+
+    logBackgroundError(message, undefined);
+
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
   });
 });

@@ -128,3 +128,16 @@ Feature: Streams Panel
     When the stream is rendered
     Then the stream has the "stream-closed" CSS class
     And the stream does not have the "stream-active" CSS class
+
+  Scenario: Stream fetch failure is logged but not shown to user
+    Given the user selects a room
+    When the getStreams command fails
+    Then the error is logged to the console with room context
+    And no toast is displayed
+
+  Scenario: Stream action failure is logged but not shown to user
+    Given a stream has a button
+    When the user clicks the button
+    And the sendStreamAction command fails
+    Then the error is logged to the console with stream and button context
+    And no toast is displayed

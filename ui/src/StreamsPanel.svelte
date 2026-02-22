@@ -3,6 +3,11 @@
   import { getStreams as fetchStreams, sendStreamAction } from "./lib/tauri";
   import { getStreams } from "./lib/stores/streams.svelte";
   import { getSelectedRoomId } from "./lib/stores/rooms.svelte";
+  import {
+    logBackgroundError,
+    formatStreamsFetchError,
+    formatStreamActionError,
+  } from "./lib/error-logging";
 
   // --- Panel state ---
   let panelOpen = $state(false);
@@ -39,7 +44,9 @@
   $effect(() => {
     const roomId = selectedRoomId;
     if (!roomId) return;
-    fetchStreams(roomId).catch(() => {});
+    fetchStreams(roomId).catch((err) => {
+      logBackgroundError(formatStreamsFetchError(roomId), err);
+    });
   });
 
   function toggleCollapsed(streamId: string) {
@@ -54,7 +61,14 @@
 
   function handleAction(streamId: string, buttonId: string) {
     const roomId = selectedRoomId;
-    if (roomId) sendStreamAction(roomId, streamId, buttonId).catch(() => {});
+    if (roomId) {
+      sendStreamAction(roomId, streamId, buttonId).catch((err) => {
+        logBackgroundError(
+          formatStreamActionError(roomId, streamId, buttonId),
+          err,
+        );
+      });
+    }
   }
 
   export function toggle() {

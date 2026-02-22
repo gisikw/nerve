@@ -27,6 +27,24 @@ export function formatPinnedEventsRefreshError(roomId: string): string {
 }
 
 /**
+ * Decision function: format error message for stream fetch failure
+ */
+export function formatStreamsFetchError(roomId: string): string {
+  return `Failed to fetch streams for room ${roomId}:`;
+}
+
+/**
+ * Decision function: format error message for stream action failure
+ */
+export function formatStreamActionError(
+  roomId: string,
+  streamId: string,
+  buttonId: string,
+): string {
+  return `Failed to send stream action (button: ${buttonId}) for stream ${streamId} in room ${roomId}:`;
+}
+
+/**
  * Helper: Log an error for a background operation
  * This logs to console.error but does not show a toast
  */

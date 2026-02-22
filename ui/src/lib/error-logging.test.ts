@@ -3,6 +3,8 @@ import {
   shouldLogBackgroundError,
   formatPinnedEventsFetchError,
   formatPinnedEventsRefreshError,
+  formatStreamsFetchError,
+  formatStreamActionError,
   logBackgroundError,
 } from "./error-logging";
 
@@ -69,6 +71,44 @@ describe("Error Logging", () => {
       expect(result).toContain(roomId);
       expect(result).toContain("refresh");
       expect(result).toContain("pinned events");
+    });
+  });
+
+  describe("formatStreamsFetchError", () => {
+    it("formats error message with room ID", () => {
+      const roomId = "!abc123:matrix.org";
+      const result = formatStreamsFetchError(roomId);
+      expect(result).toBe("Failed to fetch streams for room !abc123:matrix.org:");
+    });
+
+    it("includes room ID in message for easy debugging", () => {
+      const roomId = "!room:server.com";
+      const result = formatStreamsFetchError(roomId);
+      expect(result).toContain(roomId);
+      expect(result).toContain("streams");
+    });
+  });
+
+  describe("formatStreamActionError", () => {
+    it("formats error message with room ID, stream ID, and button ID", () => {
+      const roomId = "!abc123:matrix.org";
+      const streamId = "stream-1";
+      const buttonId = "stop";
+      const result = formatStreamActionError(roomId, streamId, buttonId);
+      expect(result).toBe(
+        "Failed to send stream action (button: stop) for stream stream-1 in room !abc123:matrix.org:"
+      );
+    });
+
+    it("includes all context in message for easy debugging", () => {
+      const roomId = "!room:server.com";
+      const streamId = "build-stream";
+      const buttonId = "restart";
+      const result = formatStreamActionError(roomId, streamId, buttonId);
+      expect(result).toContain(roomId);
+      expect(result).toContain(streamId);
+      expect(result).toContain(buttonId);
+      expect(result).toContain("stream action");
     });
   });
 
