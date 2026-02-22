@@ -7,6 +7,7 @@
     sendTypingNotice,
   } from "./lib/tauri";
   import { getSelectedRoomId } from "./lib/stores/rooms.svelte";
+  import { showError } from "./lib/stores/toasts.svelte";
   import { replaceShortcodes } from "./lib/emoji";
   import { computeTextareaHeight } from "./lib/compose";
   import { guessMime, readFileAsBase64 } from "./lib/image-attachment";
@@ -105,7 +106,10 @@
       const text = composeText.trim();
       if (!text) return;
       composeText = "";
-      sendMessage(roomId, text).catch(() => {});
+      sendMessage(roomId, text).catch((err) => {
+        console.error("Failed to send message:", err);
+        showError("Failed to send message");
+      });
     }
 
     sendTypingNotice(roomId, false).catch(() => {});
@@ -129,7 +133,10 @@
     clearAttachment();
 
     await sendImage(roomId, file.name, base64, mimeType, caption).catch(
-      () => {},
+      (err) => {
+        console.error("Failed to send image:", err);
+        showError("Failed to send image");
+      },
     );
   }
 
@@ -269,6 +276,7 @@
           Math.round(durationMs),
         ).catch((err) => {
           console.error("Failed to send voice message:", err);
+          showError("Failed to send voice message");
         });
       });
 

@@ -1,6 +1,6 @@
 ---
 id: ner-cf90
-status: blocked
+status: closed
 deps: []
 links: []
 created: 2026-02-22T01:10:29Z
@@ -419,3 +419,5 @@ error: Recipe `test` failed on line 13 with exit code 101
 
 
 **2026-02-22 06:06:34 UTC:** ko: FAIL at node 'triage' — Ticket is blocked by Rust module conflict (messages.rs vs messages/mod.rs). Toast infrastructure is implemented but not wired into App.svelte. Need to: (1) delete src-tauri/src/messages.rs to resolve module ambiguity, (2) import and render Toast component in App.svelte. This appears to be mid-implementation state rather than a planning/triage issue.
+
+**2026-02-22 06:38:21 UTC:** ko: SUCCEED

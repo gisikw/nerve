@@ -21,6 +21,7 @@
   import ComposeBar from "./ComposeBar.svelte";
   import StreamsPanel from "./StreamsPanel.svelte";
   import ChannelSwitcher from "./ChannelSwitcher.svelte";
+  import Toast from "./Toast.svelte";
 
   let streamsPanelRef: StreamsPanel | undefined = $state();
   let streamsOpen = $state(false);
@@ -121,6 +122,7 @@
     {#if switcherOpen}
       <ChannelSwitcher onClose={closeSwitcher} />
     {/if}
+    <Toast />
   </div>
 {/if}
 

@@ -1,6 +1,6 @@
 ---
 id: ner-d360
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-02-22T00:27:50Z

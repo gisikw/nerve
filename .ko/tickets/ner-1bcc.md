@@ -1,6 +1,6 @@
 ---
 id: ner-1bcc
-status: blocked
+status: closed
 deps: []
 links: []
 created: 2026-02-22T00:27:50Z
