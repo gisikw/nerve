@@ -83,8 +83,19 @@ be ticketed for remediation. No grandfathering.
   describes what the system does, not which module does it.
 - **One spec file per behavioral domain.** Don't split a domain across files.
   Don't combine unrelated domains.
+- **Spec-to-test naming convention.** A spec file `specs/foo_bar.feature`
+  maps to one or more test files named for the same domain:
+  `foo-bar.test.ts`, `foo_bar.test.ts`, or `FooBar.test.ts`. The name
+  should be recognizably the same domain. A test file with no corresponding
+  spec is an orphan — either add the spec or delete the test.
 
 ### Test layers
+
+- **Component tests** use `@testing-library/svelte` with `jsdom` via
+  vitest. Config lives in `ui/vitest.config.ts` (environment: jsdom,
+  setup: vitest.setup.ts). Use component tests for DOM structure,
+  user interaction, and rendering behavior that can't be tested via
+  pure function extraction.
 
 - **Fake backend** (`ui/fake-state.ts`) is a stateful in-memory simulator
   that replaces Tauri when running in a browser via `npx vite`. Supports
@@ -146,7 +157,11 @@ be ticketed for remediation. No grandfathering.
   handlers). Library-style code within the project uses typed errors.
 - **Frontend errors are surfaced, not swallowed.** If a command fails, the
   user sees feedback. Silent failures are bugs. Console.error is not user
-  feedback.
+  feedback. The `.catch(() => {})` pattern is banned — it hides failures
+  from both users and developers. For user-facing operations (send message,
+  send image, fetch messages), show an error in the UI. For background
+  operations (typing notices, stream fetches), log with context via
+  `console.error` at minimum.
 - **SDK errors get context.** When a matrix-rust-sdk call fails, wrap the
   error with what we were trying to do. "Failed to send message to room
   !abc:matrix.org" not just the SDK's error string.
