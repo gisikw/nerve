@@ -33,3 +33,4 @@ loop: building ner-9829 — Add spec and tests for image sending and file attach
 loop: building ner-5c0c — Add spec and tests for room archiving (visibility, recovery, sidebar behavior)
 loop: ner-5c0c SUCCEED
 loop: building ner-86b4 — Sidebar: move activity indicator to rightmost position, ahead of archive button
+loop: building ner-0340.79e1 — Add ComposeBar component tests for textarea height management scenario

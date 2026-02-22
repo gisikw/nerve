@@ -5,6 +5,6 @@ deps: []
 links: []
 created: 2026-02-22T01:10:29Z
 type: task
-priority: 2
+priority: 1
 ---
 # Add shared toast/notification component for transient error feedback
