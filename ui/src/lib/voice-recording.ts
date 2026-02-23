@@ -12,11 +12,16 @@
  * @returns The MIME type string to use with MediaRecorder
  */
 export function selectVoiceMimeType(): string {
-  if (
-    typeof MediaRecorder !== "undefined" &&
-    MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-  ) {
-    return "audio/webm;codecs=opus";
+  if (typeof MediaRecorder === "undefined") return "audio/webm";
+
+  const candidates = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/ogg;codecs=opus",
+    "audio/mp4",
+  ];
+  for (const mime of candidates) {
+    if (MediaRecorder.isTypeSupported(mime)) return mime;
   }
   return "audio/webm";
 }
@@ -28,7 +33,9 @@ export function selectVoiceMimeType(): string {
  * @returns File extension without the dot (e.g., "webm", "ogg")
  */
 export function getVoiceFileExtension(mimeType: string): string {
-  return mimeType.includes("webm") ? "webm" : "ogg";
+  if (mimeType.includes("webm")) return "webm";
+  if (mimeType.includes("mp4")) return "m4a";
+  return "ogg";
 }
 
 /**
