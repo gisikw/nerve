@@ -1,6 +1,6 @@
 ---
 id: ner-1c2d
-status: blocked
+status: closed
 deps: [ner-cf90]
 links: []
 created: 2026-02-22T00:27:50Z

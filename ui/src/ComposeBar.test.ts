@@ -26,6 +26,134 @@ describe("ComposeBar component", () => {
     vi.restoreAllMocks();
   });
 
+  describe("basic message sending", () => {
+    it("clears the input after sending a message", async () => {
+      const user = userEvent.setup();
+      render(ComposeBar);
+
+      const textarea = screen.getByPlaceholderText(
+        "Send a message...",
+      ) as HTMLTextAreaElement;
+
+      await user.type(textarea, "Hello, world!");
+      expect(textarea.value).toBe("Hello, world!");
+
+      await user.keyboard("{Enter}");
+
+      await waitFor(() => {
+        expect(textarea.value).toBe("");
+      });
+    });
+
+    it("submits the message when Enter is pressed without Shift", async () => {
+      const user = userEvent.setup();
+      render(ComposeBar);
+
+      const textarea = screen.getByPlaceholderText(
+        "Send a message...",
+      ) as HTMLTextAreaElement;
+
+      await user.type(textarea, "Test message");
+      await user.keyboard("{Enter}");
+
+      await waitFor(() => {
+        expect(tauri.sendMessage).toHaveBeenCalledWith(
+          "!test:example.com",
+          "Test message",
+        );
+      });
+    });
+
+    it("inserts a newline when Shift+Enter is pressed", async () => {
+      const user = userEvent.setup();
+      render(ComposeBar);
+
+      const textarea = screen.getByPlaceholderText(
+        "Send a message...",
+      ) as HTMLTextAreaElement;
+
+      await user.type(textarea, "Line 1");
+      await user.keyboard("{Shift>}{Enter}{/Shift}");
+      await user.type(textarea, "Line 2");
+
+      expect(textarea.value).toContain("Line 1\nLine 2");
+      expect(tauri.sendMessage).not.toHaveBeenCalled();
+    });
+
+    it("does not send empty messages", async () => {
+      const user = userEvent.setup();
+      render(ComposeBar);
+
+      const textarea = screen.getByPlaceholderText(
+        "Send a message...",
+      ) as HTMLTextAreaElement;
+
+      await user.click(textarea);
+      await user.keyboard("{Enter}");
+
+      expect(tauri.sendMessage).not.toHaveBeenCalled();
+      expect(textarea.value).toBe("");
+    });
+
+    it("does not send whitespace-only messages", async () => {
+      const user = userEvent.setup();
+      render(ComposeBar);
+
+      const textarea = screen.getByPlaceholderText(
+        "Send a message...",
+      ) as HTMLTextAreaElement;
+
+      await user.type(textarea, "   \n  \t  ");
+      await user.keyboard("{Enter}");
+
+      expect(tauri.sendMessage).not.toHaveBeenCalled();
+      // Input should not be cleared when message is not sent
+      expect(textarea.value).toBe("   \n  \t  ");
+    });
+
+    it("does not send messages when no room is selected", async () => {
+      vi.spyOn(roomsStore, "getSelectedRoomId").mockReturnValue(null);
+
+      const user = userEvent.setup();
+      render(ComposeBar);
+
+      const textarea = screen.getByPlaceholderText(
+        "Send a message...",
+      ) as HTMLTextAreaElement;
+
+      await user.type(textarea, "Test message");
+      await user.keyboard("{Enter}");
+
+      expect(tauri.sendMessage).not.toHaveBeenCalled();
+      expect(textarea.value).toBe("Test message");
+    });
+
+    it("sends message which triggers backend to refresh room", async () => {
+      const user = userEvent.setup();
+      render(ComposeBar);
+
+      const textarea = screen.getByPlaceholderText(
+        "Send a message...",
+      ) as HTMLTextAreaElement;
+
+      await user.type(textarea, "Test message");
+
+      // Clear the mock to ensure we're only counting the send call
+      vi.mocked(tauri.sendMessage).mockClear();
+
+      await user.keyboard("{Enter}");
+
+      // Verify message was sent to backend
+      // (Backend will emit events that trigger room refresh - not tested here)
+      await waitFor(() => {
+        expect(tauri.sendMessage).toHaveBeenCalledWith(
+          "!test:example.com",
+          "Test message",
+        );
+      });
+    });
+  });
+
   describe("textarea height management", () => {
     it("resets textarea height to auto after sending a message", async () => {
       const user = userEvent.setup();

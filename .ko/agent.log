@@ -35,3 +35,4 @@ loop: ner-5c0c SUCCEED
 loop: building ner-86b4 — Sidebar: move activity indicator to rightmost position, ahead of archive button
 loop: building ner-0340.79e1 — Add ComposeBar component tests for textarea height management scenario
 loop: building ner-cf90 — Add shared toast/notification component for transient error feedback
+loop: building ner-0340.a7e2 — Add ComposeBar component tests for basic message sending scenarios (clear input, Enter/Shift+Enter, empty messages, no room selected, message refresh)
