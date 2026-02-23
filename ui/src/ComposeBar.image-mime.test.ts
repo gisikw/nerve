@@ -162,4 +162,50 @@ describe("ComposeBar image MIME types", () => {
       expect(screen.queryByAltText("Attachment preview")).toBeNull();
     });
   });
+
+  it("rejects file with unknown extension and no MIME type", async () => {
+    const user = userEvent.setup();
+    const sendImageSpy = vi.spyOn(tauri, "sendImage");
+
+    render(ComposeBar);
+
+    const textarea = screen.getByPlaceholderText(
+      "Send a message...",
+    ) as HTMLTextAreaElement;
+
+    // File with unknown extension and empty MIME type
+    const imageFile = new File(["fake-image"], "test.xyz", { type: "" });
+
+    const clipboardData = {
+      items: [
+        {
+          type: "image/png", // Clipboard reports image
+          getAsFile: () => imageFile,
+        },
+      ],
+    };
+
+    const pasteEvent = new ClipboardEvent("paste", {
+      clipboardData: clipboardData as unknown as DataTransfer,
+    });
+
+    textarea.dispatchEvent(pasteEvent);
+
+    // Preview should appear initially
+    await waitFor(() => {
+      expect(screen.getByAltText("Attachment preview")).toBeTruthy();
+    });
+
+    // Try to send
+    await user.type(textarea, "{Enter}");
+
+    // Image should NOT be sent
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(sendImageSpy).not.toHaveBeenCalled();
+
+    // Attachment should be cleared
+    await waitFor(() => {
+      expect(screen.queryByAltText("Attachment preview")).toBeNull();
+    });
+  });
 });
