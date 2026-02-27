@@ -38,3 +38,31 @@ loop: building ner-cf90 — Add shared toast/notification component for transien
 loop: building ner-0340.a7e2 — Add ComposeBar component tests for basic message sending scenarios (clear input, Enter/Shift+Enter, empty messages, no room selected, message refresh)
 loop: ner-0340.a7e2 SUCCEED
 loop: building ner-0340 — Expand compose test coverage: message_compose.feature has 37 scenarios but compose.test.ts only tests helper function
+loop: ner-0340 SUCCEED
+loop complete: 2 processed (2 succeeded, 0 failed, 0 blocked, 0 decomposed)
+stopped: empty
+loop: building ner-bfc5 — In channel sidebar, unread count and archive button are too big relative to their surrounding circles - probably expand the circles by a few px radius
+loop: ner-bfc5 FAIL
+loop: building ner-99a6 — In channel sidebar, unread badge and archive button aren't vertically aligned
+loop: ner-99a6 FAIL
+loop: building ner-90b6 — Channel sidebar is showing number badge for unreads - should bold for unreads, show numbers only for mentions
+loop: ner-90b6 FAIL
+loop: building ner-f980 — In the channel switcher, bold channels that have unreads
+loop: received signal terminated (pid 2158681)
+loop: building ner-90b6 — Channel sidebar is showing number badge for unreads - should bold for unreads, show numbers only for mentions
+loop: ner-90b6 FAIL
+loop: building ner-99a6 — In channel sidebar, unread badge and archive button aren't vertically aligned
+loop: ner-99a6 FAIL
+loop: building ner-f980 — In the channel switcher, bold channels that have unreads
+loop: ner-f980 FAIL
+loop: building ner-b830 — Use Matrix lowpriority status for determining that a channel is archived, not a local UI setting
+loop: received signal terminated (pid 2215560)
+loop: building ner-b830 — Use Matrix lowpriority status for determining that a channel is archived, not a local UI setting
+loop: ner-b830 FAIL
+loop: building ner-90b6 — Channel sidebar is showing number badge for unreads - should bold for unreads, show numbers only for mentions
+loop: received signal terminated (pid 2245313)
+loop: building ner-be54 — The drawer expand and logout buttons are misaligned vertically
+loop: ner-be54 FAIL
+loop: building ner-b830 — Use Matrix lowpriority status for determining that a channel is archived, not a local UI setting
+loop: received signal terminated (pid 2271902)
+loop: building ner-be54 — The drawer expand and logout buttons are misaligned vertically

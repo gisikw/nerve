@@ -47,6 +47,20 @@ describe("room header button styling", () => {
         /#streams-toggle\s*\{[^}]*padding:\s*0[^}]*\}/
       );
     });
+
+    it("logout button uses flexbox for text centering", () => {
+      // Regression test: the button needs flexbox centering to vertically
+      // align text content within the fixed height
+      expect(layoutCss).toMatch(
+        /#room-header\s+#logout-btn\s*\{[^}]*display:\s*flex/
+      );
+      expect(layoutCss).toMatch(
+        /#room-header\s+#logout-btn\s*\{[^}]*align-items:\s*center/
+      );
+      expect(layoutCss).toMatch(
+        /#room-header\s+#logout-btn\s*\{[^}]*justify-content:\s*center/
+      );
+    });
   });
 
   describe("streams icon visibility", () => {

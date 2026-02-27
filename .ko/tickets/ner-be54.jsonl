@@ -23,3 +23,13 @@
 {"event":"node_complete","node":"verify","result":"error","ticket":"ner-be54","ts":"2026-02-27T16:52:45Z","workflow":"task"}
 {"event":"build_complete","outcome":"fail","ticket":"ner-be54","ts":"2026-02-27T16:52:45Z"}
 {"event":"build_error","reason":"hook 'git stash push -u -m \"ko: ${TICKET_ID} failed build\"' failed: exit status 1\nerror: '.ko/prompts/implement.md' is beyond a symbolic link\nfatal: Unable to process path .ko/prompts/implement.md\nCannot save the current worktree state\n","stage":"on_fail_hook","ticket":"ner-be54","ts":"2026-02-27T16:52:45Z"}
+{"event":"build_start","ticket":"ner-be54","ts":"2026-02-27T16:59:57Z"}
+{"event":"workflow_start","ticket":"ner-be54","ts":"2026-02-27T16:59:57Z","workflow":"main"}
+{"event":"node_start","node":"classify","ticket":"ner-be54","ts":"2026-02-27T16:59:57Z","workflow":"main"}
+{"event":"node_complete","node":"classify","result":"route","ticket":"ner-be54","ts":"2026-02-27T17:00:08Z","workflow":"main"}
+{"event":"workflow_start","ticket":"ner-be54","ts":"2026-02-27T17:00:08Z","workflow":"bug"}
+{"event":"node_start","node":"diagnose","ticket":"ner-be54","ts":"2026-02-27T17:00:08Z","workflow":"bug"}
+{"event":"node_complete","node":"diagnose","result":"done","ticket":"ner-be54","ts":"2026-02-27T17:01:08Z","workflow":"bug"}
+{"event":"node_start","node":"assess","ticket":"ner-be54","ts":"2026-02-27T17:01:08Z","workflow":"bug"}
+{"event":"node_complete","node":"assess","result":"continue","ticket":"ner-be54","ts":"2026-02-27T17:01:26Z","workflow":"bug"}
+{"event":"build_complete","outcome":"succeed","ticket":"ner-be54","ts":"2026-02-27T17:01:26Z"}

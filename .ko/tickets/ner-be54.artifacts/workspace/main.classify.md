@@ -4,14 +4,17 @@ nerve dev shell
   just test     — run full test suite
   just build    — build release binary
   just          — list all recipes
-Looking at the ticket title "The drawer expand and logout buttons are misaligned vertically", this is describing a **visual defect** - unexpected behavior where UI elements are not positioned correctly.
+Looking at the ticket:
 
-The ticket asserts a problem (buttons ARE misaligned), not asking whether there's a problem. It's also not asking for investigation into why this is happening - it's reporting an existing issue that needs diagnosis and fixing.
+**Title:** "The drawer expand and logout buttons are misaligned vertically"
 
-This fits the **bug** classification because:
-- It reports unexpected behavior (misalignment)
-- The root cause isn't immediately clear from the title alone (could be CSS, layout logic, component sizing, etc.)
-- It needs investigation to understand what's causing the misalignment before a fix can be applied
+**Key observations:**
+- The ticket describes a specific, observable problem (misalignment of UI elements)
+- It's asserting that something is broken, not asking whether it's broken
+- The expected resolution is code changes to fix the alignment issue
+- The note shows a test failure, but that's secondary to the core issue being reported
+
+This is a **bug** - it reports unexpected behavior (misalignment) without providing a clear fix. Investigation will be needed to understand the root cause (CSS, layout issue, component structure, etc.) before determining the appropriate code changes.
 
 ```json
 {"disposition": "route", "workflow": "bug"}
