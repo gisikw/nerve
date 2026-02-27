@@ -7,3 +7,7 @@ type: task
 priority: 2
 ---
 # Use Matrix lowpriority status for determining that a channel is archived, not a local UI setting
+
+## Notes
+
+**2026-02-27 15:25:07 UTC:** ko: reset to open (agent stopped)

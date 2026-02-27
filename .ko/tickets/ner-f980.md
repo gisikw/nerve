@@ -1,6 +1,6 @@
 ---
 id: ner-f980
-status: blocked
+status: open
 deps: []
 created: 2026-02-27T12:30:49Z
 type: task

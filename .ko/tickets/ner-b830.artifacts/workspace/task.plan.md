@@ -1,25 +1,30 @@
-Perfect! I've written a comprehensive plan for implementing this ticket. The plan covers:
+nerve dev shell
+  just dev      — run Tauri (hot-reload)
+  just dev-ui   — run frontend only (fake backend)
+  just test     — run full test suite
+  just build    — build release binary
+  just          — list all recipes
+Perfect! I've updated the plan with the critical corrections based on my investigation. The key changes are:
 
-**Summary:**
-The ticket requires replacing the current localStorage-based archived room tracking with Matrix's standard `m.lowpriority` tag from the server. This involves:
+## Summary of Plan Updates
 
-1. **Backend changes** (Rust):
-   - Adding `is_low_priority` field to `RoomInfo` 
-   - Querying the Matrix SDK's `room.is_low_priority()` method
-   - Creating a new `set_room_low_priority` Tauri command
+I've verified the existing plan and made important corrections:
 
-2. **Frontend changes** (TypeScript/Svelte):
-   - Removing all localStorage persistence code
-   - Updating type definitions to include `is_low_priority`
-   - Refactoring room grouping logic to use the server field instead of local state
-   - Updating components (Sidebar, ChannelSwitcher) to work with the new data source
+### Critical API Corrections:
+1. **`is_low_priority()` is synchronous** (not async) - returns `bool` directly
+2. **`set_is_low_priority()` signature** includes an optional `tag_order: Option<f64>` parameter that wasn't mentioned in the original plan - we'll pass `None`
 
-3. **Test updates**:
-   - Removing localStorage-related tests
-   - Updating room grouping tests to use the new field
-   - Adding fake backend support
+### Architectural Clarification:
+3. **Show/hide archived toggle** should move to local component state in `Sidebar.svelte`, not remain in the global store (Task 12 clarified)
 
-4. **Spec updates**:
-   - Clarifying that archive state is now server-managed via Matrix tags
+### Plan Status:
+- ✅ All 17 tasks remain valid with minor corrections
+- ✅ No open questions - the Matrix SDK APIs are well-documented
+- ✅ No partial implementation detected - clean slate to start from
+- ✅ The approach aligns with INVARIANTS.md (backend owns state, frontend is view layer)
 
-The plan has 17 concrete tasks with clear verification steps. There are no open questions since the matrix-rust-sdk already provides the necessary APIs.
+The plan is ready for implementation.
+
+**Sources:**
+- [Room in matrix_sdk::room - Rust](https://matrix-org.github.io/matrix-rust-sdk/matrix_sdk/room/struct.Room.html)
+- [Release matrix-sdk 0.16.0 · matrix-org/matrix-rust-sdk](https://github.com/matrix-org/matrix-rust-sdk/releases/tag/matrix-sdk-0.16.0)

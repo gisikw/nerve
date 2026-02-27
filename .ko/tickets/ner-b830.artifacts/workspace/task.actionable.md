@@ -1,30 +1,29 @@
-Now I'll evaluate the plan:
+nerve dev shell
+  just dev      — run Tauri (hot-reload)
+  just dev-ui   — run frontend only (fake backend)
+  just test     — run full test suite
+  just build    — build release binary
+  just          — list all recipes
+The plan is well-structured and addresses the core requirement. Let me evaluate it:
 
-## Plan Evaluation
+**Checklist:**
 
-I've reviewed the plan for ticket ner-b830: "Use Matrix lowpriority status for determining that a channel is archived, not a local UI setting."
+1. **Open Questions section**: The "Open Questions" section exists but only contains resolved items and a clarification note. There are no outstanding questions requiring human input. ✓
 
-### Analysis:
+2. **Completeness**: 
+   - ✓ Clear goal: Replace localStorage-based archived room tracking with Matrix's `m.lowpriority` tag
+   - ✓ Identified files: All relevant files are listed (Rust backend, TypeScript frontend, tests, specs, fake backend)
+   - ✓ Ordered tasks: 17 tasks with clear dependencies (backend first, then frontend, then tests/specs)
+   - ✓ Verification steps: Each task includes verification steps (compiles, tests pass, renders correctly)
 
-**1. Open Questions:** The plan explicitly states "None — the Matrix SDK's `is_low_priority` API is well-documented and the frontend already has patterns for calling Tauri commands and refreshing state on events." No open questions that require human input. ✓
+3. **Feasibility**: 
+   - The plan references specific files, structs, and methods that appear consistent with a Tauri + Svelte architecture
+   - Task dependencies are logical (add field to `RoomInfo` → expose in backend → update frontend types → update components)
+   - The matrix-rust-sdk APIs are documented as confirmed in the plan
+   - Test updates are appropriately scoped (remove localStorage tests, update call sites)
+   - The clarification about keeping `showArchived` as local component state (not global) is correct per the notes
 
-**2. Completeness:**
-- **Goal:** Clear — replace localStorage-based archive tracking with Matrix's `m.lowpriority` tag. ✓
-- **Context:** Comprehensive — identifies current implementation details, affected files, and existing test coverage. ✓
-- **Approach:** Well-defined — describes the strategy for migrating from local to server-backed state. ✓
-- **Tasks:** 17 ordered, specific tasks with clear file locations (file:location format), implementations described, and verification steps. ✓
-
-**3. Feasibility:**
-- Files referenced appear plausible based on the context section and git status:
-  - `src-tauri/src/rooms.rs`, `src-tauri/src/commands.rs`, `src-tauri/src/main.rs` — Rust backend
-  - `ui/src/lib/tauri.ts`, `ui/src/lib/stores/rooms.svelte.ts`, `ui/src/lib/channel-switcher.ts` — TypeScript/Svelte frontend
-  - `ui/fake-state.ts` — Test fixtures
-  - `specs/room_navigation.feature` — Feature specs
-- The git status shows these files are already modified (`M ui/src/ChannelSwitcher.svelte`, `M ui/src/Sidebar.svelte`, etc.), suggesting they exist and are in scope.
-- The approach relies on matrix-rust-sdk v0.16 APIs (`is_low_priority()`, `set_is_low_priority()`) which the context confirms are available. ✓
-- Task sequencing is logical: Rust type → backend logic → Tauri command registration → TypeScript types → frontend removal/replacement → tests. ✓
-
-**No red flags detected.** The plan is actionable, complete, and feasible.
+The plan is actionable, complete, and feasible. No human input is required to proceed.
 
 ```json
 {"disposition": "continue"}
