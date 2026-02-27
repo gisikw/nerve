@@ -1,0 +1,24 @@
+{"event":"build_start","ticket":"ner-be54","ts":"2026-02-27T16:48:16Z"}
+{"event":"workflow_start","ticket":"ner-be54","ts":"2026-02-27T16:48:17Z","workflow":"main"}
+{"event":"node_start","node":"classify","ticket":"ner-be54","ts":"2026-02-27T16:48:17Z","workflow":"main"}
+{"event":"node_complete","node":"classify","result":"route","ticket":"ner-be54","ts":"2026-02-27T16:48:26Z","workflow":"main"}
+{"event":"workflow_start","ticket":"ner-be54","ts":"2026-02-27T16:48:26Z","workflow":"bug"}
+{"event":"node_start","node":"diagnose","ticket":"ner-be54","ts":"2026-02-27T16:48:26Z","workflow":"bug"}
+{"event":"node_complete","node":"diagnose","result":"done","ticket":"ner-be54","ts":"2026-02-27T16:50:25Z","workflow":"bug"}
+{"event":"node_start","node":"assess","ticket":"ner-be54","ts":"2026-02-27T16:50:25Z","workflow":"bug"}
+{"event":"node_complete","node":"assess","result":"route","ticket":"ner-be54","ts":"2026-02-27T16:50:47Z","workflow":"bug"}
+{"event":"workflow_start","ticket":"ner-be54","ts":"2026-02-27T16:50:47Z","workflow":"task"}
+{"event":"node_start","node":"plan","ticket":"ner-be54","ts":"2026-02-27T16:50:47Z","workflow":"task"}
+{"event":"node_complete","node":"plan","result":"done","ticket":"ner-be54","ts":"2026-02-27T16:51:37Z","workflow":"task"}
+{"event":"node_start","node":"actionable","ticket":"ner-be54","ts":"2026-02-27T16:51:37Z","workflow":"task"}
+{"event":"node_complete","node":"actionable","result":"continue","ticket":"ner-be54","ts":"2026-02-27T16:51:50Z","workflow":"task"}
+{"event":"node_start","node":"implement","ticket":"ner-be54","ts":"2026-02-27T16:51:50Z","workflow":"task"}
+{"event":"node_complete","node":"implement","result":"done","ticket":"ner-be54","ts":"2026-02-27T16:52:44Z","workflow":"task"}
+{"event":"node_start","node":"verify","ticket":"ner-be54","ts":"2026-02-27T16:52:44Z","workflow":"task"}
+{"attempt":1,"event":"node_fail","node":"verify","reason":"command failed: exit status 127\ncd ui \u0026\u0026 [ -x node_modules/.bin/vitest ] || npm install\ncd ui \u0026\u0026 npx vitest run\nsh: line 1: npx: command not found\nerror: Recipe `test` failed on line 11 with exit code 127\n","ticket":"ner-be54","ts":"2026-02-27T16:52:44Z","workflow":"task"}
+{"attempt":2,"event":"node_retry","node":"verify","ticket":"ner-be54","ts":"2026-02-27T16:52:44Z","workflow":"task"}
+{"attempt":2,"event":"node_fail","node":"verify","reason":"command failed: exit status 127\ncd ui \u0026\u0026 [ -x node_modules/.bin/vitest ] || npm install\ncd ui \u0026\u0026 npx vitest run\nsh: line 1: npx: command not found\nerror: Recipe `test` failed on line 11 with exit code 127\n","ticket":"ner-be54","ts":"2026-02-27T16:52:45Z","workflow":"task"}
+{"attempt":3,"event":"node_retry","node":"verify","ticket":"ner-be54","ts":"2026-02-27T16:52:45Z","workflow":"task"}
+{"attempt":3,"event":"node_fail","node":"verify","reason":"command failed: exit status 127\ncd ui \u0026\u0026 [ -x node_modules/.bin/vitest ] || npm install\ncd ui \u0026\u0026 npx vitest run\nsh: line 1: npx: command not found\nerror: Recipe `test` failed on line 11 with exit code 127\n","ticket":"ner-be54","ts":"2026-02-27T16:52:45Z","workflow":"task"}
+{"event":"node_complete","node":"verify","result":"error","ticket":"ner-be54","ts":"2026-02-27T16:52:45Z","workflow":"task"}
+{"event":"build_complete","outcome":"fail","ticket":"ner-be54","ts":"2026-02-27T16:52:45Z"}
