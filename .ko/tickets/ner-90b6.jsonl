@@ -38,3 +38,17 @@
 {"event":"node_complete","node":"verify","result":"error","ticket":"ner-90b6","ts":"2026-02-27T15:16:52Z","workflow":"task"}
 {"event":"build_complete","outcome":"fail","ticket":"ner-90b6","ts":"2026-02-27T15:16:52Z"}
 {"event":"build_error","reason":"hook 'git stash push -u -m \"ko: ${TICKET_ID} failed build\"' failed: exit status 1\nerror: '.ko/prompts/implement.md' is beyond a symbolic link\nfatal: Unable to process path .ko/prompts/implement.md\nCannot save the current worktree state\n","stage":"on_fail_hook","ticket":"ner-90b6","ts":"2026-02-27T15:16:52Z"}
+{"event":"build_start","ticket":"ner-90b6","ts":"2026-02-27T16:05:01Z"}
+{"event":"workflow_start","ticket":"ner-90b6","ts":"2026-02-27T16:05:01Z","workflow":"main"}
+{"event":"node_start","node":"classify","ticket":"ner-90b6","ts":"2026-02-27T16:05:01Z","workflow":"main"}
+{"event":"node_complete","node":"classify","result":"route","ticket":"ner-90b6","ts":"2026-02-27T16:05:10Z","workflow":"main"}
+{"event":"workflow_start","ticket":"ner-90b6","ts":"2026-02-27T16:05:10Z","workflow":"task"}
+{"event":"node_start","node":"plan","ticket":"ner-90b6","ts":"2026-02-27T16:05:10Z","workflow":"task"}
+{"event":"node_complete","node":"plan","result":"done","ticket":"ner-90b6","ts":"2026-02-27T16:05:42Z","workflow":"task"}
+{"event":"node_start","node":"actionable","ticket":"ner-90b6","ts":"2026-02-27T16:05:42Z","workflow":"task"}
+{"event":"node_complete","node":"actionable","result":"continue","ticket":"ner-90b6","ts":"2026-02-27T16:05:57Z","workflow":"task"}
+{"event":"node_start","node":"implement","ticket":"ner-90b6","ts":"2026-02-27T16:05:57Z","workflow":"task"}
+{"attempt":1,"event":"node_fail","node":"implement","reason":"step timed out after 15m0s","ticket":"ner-90b6","ts":"2026-02-27T16:33:48Z","workflow":"task"}
+{"attempt":2,"event":"node_retry","node":"implement","ticket":"ner-90b6","ts":"2026-02-27T16:33:48Z","workflow":"task"}
+{"attempt":2,"event":"node_fail","node":"implement","reason":"agent command failed: exit status 1","ticket":"ner-90b6","ts":"2026-02-27T16:33:50Z","workflow":"task"}
+{"attempt":3,"event":"node_retry","node":"implement","ticket":"ner-90b6","ts":"2026-02-27T16:33:50Z","workflow":"task"}

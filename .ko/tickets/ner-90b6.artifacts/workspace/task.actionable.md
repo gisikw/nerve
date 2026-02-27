@@ -1,20 +1,26 @@
-Perfect. The plan is well-researched and feasible:
+nerve dev shell
+  just dev      — run Tauri (hot-reload)
+  just dev-ui   — run frontend only (fake backend)
+  just test     — run full test suite
+  just build    — build release binary
+  just          — list all recipes
+Perfect. The plan is complete, feasible, and actionable:
 
-✅ **Open Questions section**: None - plan is complete on this front.
+✅ **Open Questions**: None — plan explicitly states there are no open questions.
 
 ✅ **Completeness**: The plan has:
-- Clear goal (distinguish mention badges from general unreads)
-- Identified files with line numbers (Sidebar.svelte, sidebar.ts, sidebar.test.ts, room_navigation.feature)
-- 6 ordered tasks with specific changes and verification steps
-- Clear context explaining the data model and existing patterns
+- Clear goal (distinguish mentions from unreads)
+- All referenced files exist with correct line ranges
+- 6 ordered tasks with verification steps
+- Context explaining the data model and existing CSS support
 
-✅ **Feasibility**: 
-- Files and locations referenced in the plan exist and match actual code
-- `room.notification_count > 0` on lines 68-70 and 119-121 matches plan
-- `formatNotificationBadge()` function exists at ui/src/lib/sidebar.ts:35-40
-- The plan correctly identifies that test file doesn't exist yet (needs creation)
-- Data model distinction (highlight_count vs notification_count) is appropriate for the change
-- Nix environment requirement is acknowledged in the plan
+✅ **Feasibility**:
+- `RoomInfo` interface has both `highlight_count` and `notification_count` ✓
+- `formatNotificationBadge()` exists in `ui/src/lib/sidebar.ts` ✓
+- Sidebar uses the correct condition at lines 71-72 (currently checks `notification_count > 0`) ✓
+- `.unread` class is already applied at line 62 for styling ✓
+- Test pattern references are valid (`ui/src/lib/channel-switcher.test.ts` exists)
+- Environment context (Nix, vitest) is correctly noted
 
 The plan is ready for implementation.
 

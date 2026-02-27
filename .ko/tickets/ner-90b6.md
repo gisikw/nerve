@@ -1,6 +1,6 @@
 ---
 id: ner-90b6
-status: open
+status: in_progress
 deps: []
 created: 2026-02-27T12:31:38Z
 type: task

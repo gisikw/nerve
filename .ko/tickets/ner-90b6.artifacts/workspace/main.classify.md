@@ -1,18 +1,21 @@
-Looking at this ticket, I need to classify what kind of work it represents.
+nerve dev shell
+  just dev      — run Tauri (hot-reload)
+  just dev-ui   — run frontend only (fake backend)
+  just test     — run full test suite
+  just build    — build release binary
+  just          — list all recipes
+Looking at this ticket:
 
-## Analysis
+**Title**: "Channel sidebar is showing number badge for unreads - should bold for unreads, show numbers only for mentions"
 
-**Ticket Summary:**
-- "Channel sidebar is showing number badge for unreads - should bold for unreads, show numbers only for mentions"
-- Notes show a test failure with `npx: command not found`
+**Analysis**:
+- This describes a specific feature requirement (how to display channel status)
+- It states what *should* happen: bold for unreads, numbers only for mentions
+- This is a clear specification of what to build, not a question or investigation
+- The expected output is code changes to the sidebar component
+- The notes show test failures, but these are environment/setup issues, not blockers on the classification itself
 
-**Classification:**
-
-The main ticket description is prescriptive: it's describing *what to build* — change the UI behavior from showing number badges for unreads to instead bolding unreads and only showing numbers for mentions. This is a clear feature/UI change request.
-
-The failure note appears to be a separate infrastructure issue (missing npx in the test environment) and doesn't change the nature of the core request.
-
-This is a **task** — it asks for specific code changes to implement a feature (updating the channel sidebar badge display logic).
+This is a **task** - it's asking for code changes with a clear specification of the desired behavior.
 
 ```json
 {"disposition": "route", "workflow": "task"}
