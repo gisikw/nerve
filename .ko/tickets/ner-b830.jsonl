@@ -1,0 +1,12 @@
+{"event":"build_start","ticket":"ner-b830","ts":"2026-02-27T15:21:38Z"}
+{"event":"workflow_start","ticket":"ner-b830","ts":"2026-02-27T15:21:38Z","workflow":"main"}
+{"event":"node_start","node":"classify","ticket":"ner-b830","ts":"2026-02-27T15:21:38Z","workflow":"main"}
+{"event":"node_complete","node":"classify","result":"route","ticket":"ner-b830","ts":"2026-02-27T15:21:44Z","workflow":"main"}
+{"event":"workflow_start","ticket":"ner-b830","ts":"2026-02-27T15:21:44Z","workflow":"task"}
+{"event":"node_start","node":"plan","ticket":"ner-b830","ts":"2026-02-27T15:21:44Z","workflow":"task"}
+{"event":"node_complete","node":"plan","result":"done","ticket":"ner-b830","ts":"2026-02-27T15:24:34Z","workflow":"task"}
+{"event":"node_start","node":"actionable","ticket":"ner-b830","ts":"2026-02-27T15:24:34Z","workflow":"task"}
+{"event":"node_complete","node":"actionable","result":"continue","ticket":"ner-b830","ts":"2026-02-27T15:24:58Z","workflow":"task"}
+{"event":"node_start","node":"implement","ticket":"ner-b830","ts":"2026-02-27T15:24:58Z","workflow":"task"}
+{"attempt":1,"event":"node_fail","node":"implement","reason":"agent command failed: signal: terminated","ticket":"ner-b830","ts":"2026-02-27T15:25:03Z","workflow":"task"}
+{"attempt":2,"event":"node_retry","node":"implement","ticket":"ner-b830","ts":"2026-02-27T15:25:03Z","workflow":"task"}
