@@ -38,3 +38,15 @@
 {"event":"node_start","node":"plan","ticket":"ner-b830","ts":"2026-02-27T16:52:54Z","workflow":"task"}
 {"attempt":1,"event":"node_fail","node":"plan","reason":"agent command failed: signal: terminated","ticket":"ner-b830","ts":"2026-02-27T16:53:09Z","workflow":"task"}
 {"attempt":2,"event":"node_retry","node":"plan","ticket":"ner-b830","ts":"2026-02-27T16:53:09Z","workflow":"task"}
+{"event":"build_start","ticket":"ner-b830","ts":"2026-02-27T17:01:26Z"}
+{"event":"workflow_start","ticket":"ner-b830","ts":"2026-02-27T17:01:26Z","workflow":"main"}
+{"event":"node_start","node":"classify","ticket":"ner-b830","ts":"2026-02-27T17:01:26Z","workflow":"main"}
+{"event":"node_complete","node":"classify","result":"route","ticket":"ner-b830","ts":"2026-02-27T17:01:36Z","workflow":"main"}
+{"event":"workflow_start","ticket":"ner-b830","ts":"2026-02-27T17:01:36Z","workflow":"task"}
+{"event":"node_start","node":"plan","ticket":"ner-b830","ts":"2026-02-27T17:01:36Z","workflow":"task"}
+{"event":"node_complete","node":"plan","result":"done","ticket":"ner-b830","ts":"2026-02-27T17:02:28Z","workflow":"task"}
+{"event":"node_start","node":"actionable","ticket":"ner-b830","ts":"2026-02-27T17:02:28Z","workflow":"task"}
+{"event":"node_complete","node":"actionable","result":"continue","ticket":"ner-b830","ts":"2026-02-27T17:02:46Z","workflow":"task"}
+{"event":"node_start","node":"implement","ticket":"ner-b830","ts":"2026-02-27T17:02:46Z","workflow":"task"}
+{"attempt":1,"event":"node_fail","node":"implement","reason":"agent command failed: signal: terminated","ticket":"ner-b830","ts":"2026-02-27T17:09:02Z","workflow":"task"}
+{"attempt":2,"event":"node_retry","node":"implement","ticket":"ner-b830","ts":"2026-02-27T17:09:02Z","workflow":"task"}
