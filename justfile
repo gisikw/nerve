@@ -12,10 +12,6 @@ test: _npm-deps
     cd ui && npx vite build
     cd src-tauri && cargo test
 
-# Run the full test suite inside nix shell (for CI / agent builds)
-test-nix:
-    nix develop --command just test
-
 # Build release binary
 build:
     cd ui && npm install
