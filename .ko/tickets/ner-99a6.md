@@ -1,6 +1,6 @@
 ---
 id: ner-99a6
-status: blocked
+status: open
 deps: []
 created: 2026-02-27T12:32:16Z
 type: task
