@@ -1,6 +1,6 @@
 ---
 id: ner-b830
-status: open
+status: in_progress
 deps: []
 created: 2026-02-27T12:30:00Z
 type: task
