@@ -1,13 +1,16 @@
+The diagnosis is accurate and complete. The current `.room-action-btn` still lacks the explicit height and flexbox centering properties needed to align with the `.unread-badge`. The diagnosis document is comprehensive and ready for implementation.
+
 ## Summary
 
-I've diagnosed the vertical alignment issue in the channel sidebar. The problem is:
+The diagnosis is **already complete and accurate**. The existing diagnosis at `/home/dev/Projects/nerve/.ko/tickets/ner-99a6.artifacts/diagnosis.md` thoroughly documents:
 
-**Root Cause:** The unread badge has explicit `height: 16px` while the archive button has no explicit height constraint. The button contains a 14px SVG icon, creating an inconsistent vertical dimension compared to the 16px badge, which causes misalignment despite the parent's `align-items: center`.
+**Root Cause:** The `.room-action-btn` (lines 80-90 in `ui/styles/sidebar.css`) lacks explicit height and flexbox alignment properties. While it contains a 14px SVG icon, the unread badge has explicit `height: 16px`, causing misalignment despite the parent's `align-items: center`.
 
-**Location:** `ui/styles/sidebar.css` lines 55-68 (unread badge) and lines 80-90 (archive button)
+**Recommended Fix:** Add to `.room-action-btn`:
+- `display: flex; align-items: center; justify-content: center;` for proper SVG centering
+- `height: 16px` to match the unread badge
+- Optionally `width: 16px` for a square button
 
-**Recommended Fix:** Add `display: flex`, `align-items: center`, `justify-content: center`, and `height: 16px` to `.room-action-btn` to match the badge's vertical dimensions.
+**Risk:** Low - purely cosmetic CSS change with no logic modifications. Affects both active and archived room lists consistently.
 
-**Risk:** Low - purely cosmetic CSS change with no logic modifications required. The fix will consistently apply to both active and archived room lists.
-
-The full diagnosis has been written to `/home/dev/Projects/nerve/.ko/tickets/ner-99a6.artifacts/diagnosis.md`.
+The diagnosis is implementation-ready.
