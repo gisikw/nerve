@@ -1,0 +1,12 @@
+{"event":"build_start","ticket":"ner-f980","ts":"2026-02-27T14:39:45Z"}
+{"event":"workflow_start","ticket":"ner-f980","ts":"2026-02-27T14:39:45Z","workflow":"main"}
+{"event":"node_start","node":"classify","ticket":"ner-f980","ts":"2026-02-27T14:39:45Z","workflow":"main"}
+{"event":"node_complete","node":"classify","result":"route","ticket":"ner-f980","ts":"2026-02-27T14:40:21Z","workflow":"main"}
+{"event":"workflow_start","ticket":"ner-f980","ts":"2026-02-27T14:40:22Z","workflow":"task"}
+{"event":"node_start","node":"plan","ticket":"ner-f980","ts":"2026-02-27T14:40:22Z","workflow":"task"}
+{"event":"node_complete","node":"plan","result":"done","ticket":"ner-f980","ts":"2026-02-27T14:41:51Z","workflow":"task"}
+{"event":"node_start","node":"actionable","ticket":"ner-f980","ts":"2026-02-27T14:41:51Z","workflow":"task"}
+{"attempt":1,"event":"node_fail","node":"actionable","reason":"agent command failed: signal: terminated","ticket":"ner-f980","ts":"2026-02-27T14:42:26Z","workflow":"task"}
+{"attempt":2,"event":"node_retry","node":"actionable","ticket":"ner-f980","ts":"2026-02-27T14:42:26Z","workflow":"task"}
+{"attempt":2,"event":"node_fail","node":"actionable","reason":"agent command failed: signal: terminated","ticket":"ner-f980","ts":"2026-02-27T14:42:29Z","workflow":"task"}
+{"attempt":3,"event":"node_retry","node":"actionable","ticket":"ner-f980","ts":"2026-02-27T14:42:29Z","workflow":"task"}
