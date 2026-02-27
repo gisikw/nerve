@@ -1,0 +1,15 @@
+{"event":"build_start","ticket":"ner-bfc5","ts":"2026-02-27T12:47:09Z"}
+{"event":"workflow_start","ticket":"ner-bfc5","ts":"2026-02-27T12:47:09Z","workflow":"main"}
+{"event":"node_start","node":"classify","ticket":"ner-bfc5","ts":"2026-02-27T12:47:09Z","workflow":"main"}
+{"event":"node_complete","node":"classify","result":"route","ticket":"ner-bfc5","ts":"2026-02-27T12:47:19Z","workflow":"main"}
+{"event":"workflow_start","ticket":"ner-bfc5","ts":"2026-02-27T12:47:19Z","workflow":"bug"}
+{"event":"node_start","node":"diagnose","ticket":"ner-bfc5","ts":"2026-02-27T12:47:19Z","workflow":"bug"}
+{"event":"node_complete","node":"diagnose","result":"done","ticket":"ner-bfc5","ts":"2026-02-27T12:49:15Z","workflow":"bug"}
+{"event":"node_start","node":"assess","ticket":"ner-bfc5","ts":"2026-02-27T12:49:15Z","workflow":"bug"}
+{"event":"node_complete","node":"assess","result":"route","ticket":"ner-bfc5","ts":"2026-02-27T12:49:26Z","workflow":"bug"}
+{"event":"workflow_start","ticket":"ner-bfc5","ts":"2026-02-27T12:49:26Z","workflow":"task"}
+{"event":"node_start","node":"plan","ticket":"ner-bfc5","ts":"2026-02-27T12:49:26Z","workflow":"task"}
+{"event":"node_complete","node":"plan","result":"done","ticket":"ner-bfc5","ts":"2026-02-27T12:50:40Z","workflow":"task"}
+{"event":"node_start","node":"actionable","ticket":"ner-bfc5","ts":"2026-02-27T12:50:40Z","workflow":"task"}
+{"event":"node_complete","node":"actionable","result":"needs_input","ticket":"ner-bfc5","ts":"2026-02-27T12:50:53Z","workflow":"task"}
+{"event":"build_complete","outcome":"fail","ticket":"ner-bfc5","ts":"2026-02-27T12:50:53Z"}
