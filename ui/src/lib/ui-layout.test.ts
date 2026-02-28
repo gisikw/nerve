@@ -48,9 +48,9 @@ describe("room header button styling", () => {
       );
     });
 
-    it("logout button uses flexbox for text centering", () => {
+    it("logout button uses flexbox for icon centering", () => {
       // Regression test: the button needs flexbox centering to vertically
-      // align text content within the fixed height
+      // align icon content within the fixed height
       expect(layoutCss).toMatch(
         /#room-header\s+#logout-btn\s*\{[^}]*display:\s*flex/
       );
@@ -59,6 +59,19 @@ describe("room header button styling", () => {
       );
       expect(layoutCss).toMatch(
         /#room-header\s+#logout-btn\s*\{[^}]*justify-content:\s*center/
+      );
+    });
+
+    it("logout button has matching fixed width", () => {
+      expect(layoutCss).toMatch(
+        /#room-header\s+#logout-btn\s*\{[^}]*width:\s*1\.75rem/
+      );
+    });
+
+    it("logout button SVG has display block", () => {
+      expect(layoutCss).toContain("#room-header #logout-btn svg");
+      expect(layoutCss).toMatch(
+        /#room-header\s+#logout-btn\s+svg\s*\{[^}]*display:\s*block/
       );
     });
   });

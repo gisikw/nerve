@@ -137,13 +137,17 @@
   align-items: center;
   justify-content: center;
   height: 1.75rem;
-  padding: 0 0.55rem;
-  font-size: 0.7rem;
+  width: 1.75rem;
+  padding: 0;
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-muted);
   margin-top: 0;
   border-radius: var(--radius);
+}
+
+#room-header #logout-btn svg {
+  display: block;
 }
 
 #room-header #logout-btn:hover {

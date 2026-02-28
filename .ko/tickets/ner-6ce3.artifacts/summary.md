@@ -1,16 +1,4 @@
----
-id: ner-6ce3
-status: resolved
-deps: []
-created: 2026-02-27T12:26:18Z
-type: task
-priority: 2
----
-# Can we replace the logout button text with an icon?
-
-## Notes
-
-**2026-02-28 02:55:55 UTC:** # Summary
+# Summary
 
 ## What was done
 
@@ -32,5 +20,3 @@ Replaced the "Logout" text label in the room header logout button with an inline
 
 - The plan did not include updating `specs/ui_layout.feature`. This was caught during review and fixed. All three artifacts (spec, test, code) are now in sync.
 - All 387 tests pass.
-
-**2026-02-28 02:55:55 UTC:** ko: SUCCEED

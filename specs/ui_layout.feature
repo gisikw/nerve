@@ -22,6 +22,13 @@ Feature: UI Layout
     And the active button uses accent color
     And the active button has accent-dim background
 
+  Scenario: Logout button displays icon
+    Given a room is selected
+    When the room header is rendered
+    Then the logout button displays an SVG icon instead of text
+    And the logout button has a fixed square size matching the streams toggle
+    And the icon inherits the button's color
+
   Scenario: Logout button styling matches design tokens
     Given a room is selected
     When the room header is rendered
