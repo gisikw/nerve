@@ -50,3 +50,18 @@
 {"event":"node_complete","node":"verify","result":"error","ticket":"ner-99a6","ts":"2026-02-27T15:18:54Z","workflow":"task"}
 {"event":"build_complete","outcome":"fail","ticket":"ner-99a6","ts":"2026-02-27T15:18:54Z"}
 {"event":"build_error","reason":"hook 'git stash push -u -m \"ko: ${TICKET_ID} failed build\"' failed: exit status 1\nerror: '.ko/prompts/implement.md' is beyond a symbolic link\nfatal: Unable to process path .ko/prompts/implement.md\nCannot save the current worktree state\n","stage":"on_fail_hook","ticket":"ner-99a6","ts":"2026-02-27T15:18:54Z"}
+{"event":"build_start","ticket":"ner-99a6","ts":"2026-02-28T03:18:47Z"}
+{"event":"workflow_start","ticket":"ner-99a6","ts":"2026-02-28T03:18:47Z","workflow":"main"}
+{"event":"node_start","node":"classify","ticket":"ner-99a6","ts":"2026-02-28T03:18:47Z","workflow":"main"}
+{"event":"node_complete","node":"classify","result":"route","ticket":"ner-99a6","ts":"2026-02-28T03:19:06Z","workflow":"main"}
+{"event":"workflow_start","ticket":"ner-99a6","ts":"2026-02-28T03:19:06Z","workflow":"bug"}
+{"event":"node_start","node":"diagnose","ticket":"ner-99a6","ts":"2026-02-28T03:19:06Z","workflow":"bug"}
+{"event":"node_complete","node":"diagnose","result":"done","ticket":"ner-99a6","ts":"2026-02-28T03:19:24Z","workflow":"bug"}
+{"event":"node_start","node":"assess","ticket":"ner-99a6","ts":"2026-02-28T03:19:24Z","workflow":"bug"}
+{"event":"node_complete","node":"assess","result":"route","ticket":"ner-99a6","ts":"2026-02-28T03:19:46Z","workflow":"bug"}
+{"event":"workflow_start","ticket":"ner-99a6","ts":"2026-02-28T03:19:46Z","workflow":"task"}
+{"event":"node_start","node":"plan","ticket":"ner-99a6","ts":"2026-02-28T03:19:46Z","workflow":"task"}
+{"event":"node_complete","node":"plan","result":"done","ticket":"ner-99a6","ts":"2026-02-28T03:19:59Z","workflow":"task"}
+{"event":"node_start","node":"actionable","ticket":"ner-99a6","ts":"2026-02-28T03:19:59Z","workflow":"task"}
+{"event":"node_complete","node":"actionable","result":"fail","ticket":"ner-99a6","ts":"2026-02-28T03:20:37Z","workflow":"task"}
+{"event":"build_complete","outcome":"fail","ticket":"ner-99a6","ts":"2026-02-28T03:20:37Z"}

@@ -1,6 +1,6 @@
 ---
 id: ner-99a6
-status: open
+status: blocked
 deps: []
 created: 2026-02-27T12:32:16Z
 type: task
@@ -20,3 +20,5 @@ error: Recipe `test` failed on line 11 with exit code 127
 **2026-02-27 15:18:54 UTC:** ko: FAIL at node 'verify' — node 'verify' failed after 3 attempts: command failed: exit status 127
 sh: line 1: if [ -f flake.nix ]; then nix develop --command just test; else just test; fi: command not found
 
+
+**2026-02-28 03:20:37 UTC:** ko: FAIL at node 'actionable' — Document is not a proper plan. It reads as a completion status report rather than an actionable plan with ordered tasks and verification steps. A plan should outline what needs to be done, not report what has been done.

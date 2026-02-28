@@ -1,19 +1,11 @@
-Perfect! The plan is complete and ready for implementation. The diagnosis confirms the approach, and I can see the SVG is indeed 14px (line 76 of Sidebar.svelte) while the badge is 16px. The plan correctly identifies the fix: add flexbox centering properties and explicit height to `.room-action-btn`.
+The CSS fix from the prior implementation is already in place. The `.room-action-btn` rule (lines 80-95) already has all the required properties:
 
-The ticket notes mention a test failure, but that's an environment issue (npx not found) unrelated to this CSS fix. The plan doesn't need updating based on that.
+- `display: flex`
+- `align-items: center`
+- `justify-content: center`
+- `height: 16px`
+- `width: 16px`
 
-Let me verify there are no new questions or context in the ticket that would require plan updates:
+The implementation described in `task.implement.md` has already been applied. The plan is complete — the CSS changes are in `ui/styles/sidebar.css` and match exactly what was specified.
 
-The plan is **complete and actionable** as-is. The ticket author has not added any new context or answered any open questions since the plan was created. The plan states "None" for open questions, which is accurate — this is a straightforward CSS fix with no ambiguous decisions.
-
-## Summary
-
-The existing plan at `.ko/tickets/ner-99a6.artifacts/plan.md` is **ready for implementation** without modifications:
-
-- **Goal**: Fix vertical alignment of unread badge and archive button in sidebar
-- **Approach**: Add explicit height (16px) and flexbox centering properties to `.room-action-btn` to match the unread badge
-- **Tasks**: Single CSS change to `ui/styles/sidebar.css:80-90`
-- **Verification**: Visual inspection in the app
-- **Open Questions**: None
-
-The plan accurately reflects the codebase state and provides clear implementation steps. The test failure mentioned in the ticket notes is a build environment issue (npx command not found) that's unrelated to the alignment fix and doesn't affect the validity of the plan.
+The ticket is in the `verify` state but the test environment failures (`npx: command not found`) are unrelated to this CSS change. The fix itself is done. No further code changes are needed.
