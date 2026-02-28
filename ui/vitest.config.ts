@@ -10,5 +10,6 @@ export default defineConfig({
     include: ["src/**/*.test.ts"],
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
+    poolOptions: { forks: { maxForks: 2 } },
   },
 });
