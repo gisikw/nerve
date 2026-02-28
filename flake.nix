@@ -46,12 +46,14 @@
           ];
 
           shellHook = ''
-            echo "nerve dev shell"
-            echo "  just dev      — run Tauri (hot-reload)"
-            echo "  just dev-ui   — run frontend only (fake backend)"
-            echo "  just test     — run full test suite"
-            echo "  just build    — build release binary"
-            echo "  just          — list all recipes"
+            if [ -t 1 ]; then
+              echo "nerve dev shell"
+              echo "  just dev      — run Tauri (hot-reload)"
+              echo "  just dev-ui   — run frontend only (fake backend)"
+              echo "  just test     — run full test suite"
+              echo "  just build    — build release binary"
+              echo "  just          — list all recipes"
+            fi
           '';
         };
       }
