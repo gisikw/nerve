@@ -20,3 +20,6 @@ Thumbs.db
 *.key
 *.pem
 .env
+
+# ko prompts (symlinked from knockout, tracked there)
+.ko/prompts/
