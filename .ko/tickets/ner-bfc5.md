@@ -13,3 +13,5 @@ priority: 2
 **2026-02-27 21:12:51 UTC:** Question: Should the unread badge and archive button circles be 20px or 22px in diameter?
 Answer: 22px
 Provides 4px padding per side for more generous spacing with better visual breathing room
+
+**2026-02-28 01:14:56 UTC:** ko: reset to open (agent stopped)
