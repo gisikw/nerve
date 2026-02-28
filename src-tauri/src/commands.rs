@@ -1,4 +1,4 @@
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Emitter, State};
 
 use crate::client::{self, MatrixState};
 use crate::messages::{self, MessagesResponse};
@@ -378,6 +378,32 @@ pub async fn get_streams(
 #[tauri::command]
 pub async fn speak_text(text: String) -> Result<String, String> {
     tts::synthesize(&text).await
+}
+
+/// Set or clear the m.lowpriority tag for a room, archiving or unarchiving it.
+/// Emits a rooms-updated event so the frontend refreshes the room list.
+#[tauri::command]
+pub async fn set_room_low_priority(
+    state: State<'_, MatrixState>,
+    app_handle: AppHandle,
+    room_id: String,
+    is_low_priority: bool,
+) -> Result<(), String> {
+    let guard = state.client.lock().await;
+    if let Some(ref client) = *guard {
+        let parsed_id = crate::error::parse_room_id(&room_id)
+            .map_err(|e| format!("Failed to set low priority for room {room_id}: {e}"))?;
+        let room = client
+            .get_room(&parsed_id)
+            .ok_or_else(|| format!("Room not found: {room_id}"))?;
+        room.set_is_low_priority(is_low_priority, None)
+            .await
+            .map_err(|e| format!("Failed to set low priority for room {room_id}: {e}"))?;
+        let _ = app_handle.emit("rooms-updated", ());
+        Ok(())
+    } else {
+        Err("Not logged in".to_string())
+    }
 }
 
 /// Send a stream button action back to a room.

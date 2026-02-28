@@ -23,6 +23,7 @@ export interface RoomInfo {
   typing_users: string[];
   topic?: string;
   last_activity: number;
+  is_low_priority: boolean;
 }
 
 export interface Reaction {
@@ -202,6 +203,10 @@ export function sendStreamAction(
 
 export function speakText(text: string): Promise<string> {
   return invoke("speak_text", { text }) as Promise<string>;
+}
+
+export function setRoomLowPriority(roomId: string, isLowPriority: boolean): Promise<void> {
+  return invoke("set_room_low_priority", { roomId, isLowPriority }) as Promise<void>;
 }
 
 // --- Event subscriptions ---

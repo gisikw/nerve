@@ -1,74 +1,51 @@
-nerve dev shell
-  just dev      — run Tauri (hot-reload)
-  just dev-ui   — run frontend only (fake backend)
-  just test     — run full test suite
-  just build    — build release binary
-  just          — list all recipes
-Excellent! All tasks are complete. Let me provide a summary of the implementation:
+All 17 tasks complete. Here's a summary of what was changed:
 
-## Implementation Summary
+---
 
-I successfully implemented the ticket to replace localStorage-based room archiving with Matrix's `m.lowpriority` tag. Here's what was changed, organized by task:
+## Summary
 
-### Backend Changes (Rust)
+### Backend (Rust)
 
-**Tasks 1-4: Rust backend implementation**
-- Added `is_low_priority: bool` field to `RoomInfo` struct (src-tauri/src/rooms.rs:24)
-- Updated `collect_rooms()` to call synchronous `room.is_low_priority()` method (src-tauri/src/rooms.rs:51)
-- Created new `set_room_low_priority` command in commands.rs:404-422 that:
-  - Parses room ID using `error::parse_room_id()`
-  - Calls `room.set_is_low_priority(is_low_priority, None).await`
-  - Emits `rooms-updated` event to refresh UI
-- Registered the new command in main.rs:44
+**Task 1–2: `src-tauri/src/rooms.rs`**
+- Added `is_low_priority: bool` to `RoomInfo` struct
+- Added `let is_low_priority = room.is_low_priority();` in `collect_rooms()` (synchronous call) and populated the field
 
-### Frontend Changes (TypeScript/Svelte)
+**Task 3–4: `src-tauri/src/commands.rs` / `main.rs`**
+- Added `use tauri::Emitter` import to `commands.rs`
+- Added `set_room_low_priority(room_id, is_low_priority)` Tauri command that parses the room ID, calls `room.set_is_low_priority(is_low_priority, None).await`, and emits `rooms-updated`
+- Registered it in `main.rs`'s `invoke_handler!` macro
 
-**Tasks 5-6: TypeScript interface and command wrapper**
-- Added `is_low_priority: boolean` to RoomInfo interface (ui/src/lib/tauri.ts:26)
-- Added `setRoomLowPriority(roomId, isLowPriority)` wrapper function (ui/src/lib/tauri.ts:207-212)
+### Frontend (TypeScript/Svelte)
 
-**Tasks 7-8: Room store cleanup**
-- Removed all localStorage code: `archivedRoomIds`, `loadArchivedIds()`, `saveArchivedIds()`, `ARCHIVE_KEY` constant
-- Removed `getArchivedRoomIds()`, `getShowArchived()`, `toggleShowArchived()` from global store
-- Updated `toggleArchive()` to be async and call `setRoomLowPriority()` followed by `refreshRooms()` (ui/src/lib/stores/rooms.svelte.ts:45-54)
+**Task 5–6: `ui/src/lib/tauri.ts`**
+- Added `is_low_priority: boolean` to `RoomInfo` interface
+- Added `setRoomLowPriority(roomId, isLowPriority)` typed wrapper
 
-**Tasks 9-10: Channel switcher logic**
-- Removed `archivedIds` parameter from `getRoomGroup()` - now checks `room.is_low_priority` directly (ui/src/lib/channel-switcher.ts:54)
-- Removed `archivedIds` parameter from `sortRooms()` (ui/src/lib/channel-switcher.ts:75)
+**Task 7–8: `ui/src/lib/stores/rooms.svelte.ts`**
+- Removed all localStorage code (`ARCHIVE_KEY`, `loadArchivedIds`, `saveArchivedIds`, `archivedRoomIds`, `getArchivedRoomIds`, `getShowArchived`, `toggleShowArchived`)
+- Rewrote `toggleArchive` as async: calls `setRoomLowPriority(!room.is_low_priority)` then `refreshRooms()`
 
-**Task 11: Channel switcher component**
-- Removed `getArchivedRoomIds` import
-- Updated `sortRooms()` call to remove archivedIds argument
-- Changed archived indicator to use `room.is_low_priority` directly (ui/src/ChannelSwitcher.svelte:140)
+**Task 9–10: `ui/src/lib/channel-switcher.ts`**
+- Removed `archivedIds: Set<string>` parameter from `getRoomGroup` and `sortRooms`; now checks `room.is_low_priority` directly
 
-**Task 12: Sidebar component**
+**Task 11: `ui/src/ChannelSwitcher.svelte`**
+- Removed `getArchivedRoomIds` import; updated `sortRooms()` call (no set argument); uses `room.is_low_priority` for archived indicator
+
+**Task 12: `ui/src/Sidebar.svelte`**
 - Removed `getArchivedRoomIds`, `getShowArchived`, `toggleShowArchived` imports
-- Added local component state `showArchived = $state(false)` and local `toggleShowArchived()` function
-- Updated room filtering to use `r.is_low_priority` directly (ui/src/Sidebar.svelte:22, 30)
+- Added local `showArchived = $state(false)` and local `toggleShowArchived()` function
+- Filters rooms by `r.is_low_priority` directly
 
-**Tasks 13-14: Test updates**
-- Commented out localStorage-related tests in rooms.test.ts (all archive persistence tests)
-- Updated channel-switcher.test.ts to:
-  - Add `is_low_priority` parameter to `makeRoom()` helper
-  - Remove `archivedIds` from all function calls
-  - Set `is_low_priority: true` on archived test rooms
+**Tasks 13–14: Tests**
+- `rooms.test.ts`: removed all localStorage/archive/visibility tests; kept only `channels section visibility` tests
+- `channel-switcher.test.ts`: added `is_low_priority` parameter to `makeRoom()`, removed `archivedIds` from all `getRoomGroup`/`sortRooms` calls, set `is_low_priority: true` on archived test rooms
 
-**Tasks 15-16: Fake backend**
-- Added `is_low_priority: boolean` to FakeRoom interface (ui/fake-state.ts:18)
-- Initialized all seed rooms with `is_low_priority: false` (ui/fake-state.ts:82-86)
-- Added `set_room_low_priority` command handler (ui/fake-state.ts:323-330)
+**Tasks 15–16: `ui/fake-state.ts`**
+- Added `is_low_priority: boolean` to `FakeRoom` interface; initialized to `false` in all seed rooms and `add_room` handler
+- Added `set_room_low_priority` command handler
 
-**Task 17: Specification updates**
-- Updated specs/room_navigation.feature scenarios to reference "Matrix's m.lowpriority tag" instead of localStorage
-- Changed "Archive state persists in localStorage" to "Archive state persists on the server"
-- Updated language to reflect server-side synchronization
+**Task 17: `specs/room_navigation.feature`**
+- Updated archiving scenarios to reference Matrix's `m.lowpriority` tag instead of localStorage
+- Renamed "Archive state persists in localStorage" → "Archive state is server-managed"
 
-### Verification
-
-- ✅ All Rust tests pass (44 tests)
-- ✅ All frontend tests pass (366 tests across 27 files)
-- ✅ Rust backend compiles cleanly
-- ✅ Frontend builds successfully
-- ✅ Fake backend integrates the new field
-
-The implementation follows the plan exactly with no deviations. Archive state is now managed server-side via Matrix's standard `m.lowpriority` tag, replacing the previous localStorage-based approach. The visibility toggle for the archived section remains as local component state in Sidebar.svelte as specified.
+**No deviations from the plan.**

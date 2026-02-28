@@ -1,33 +1,10 @@
-nerve dev shell
-  just dev      — run Tauri (hot-reload)
-  just dev-ui   — run frontend only (fake backend)
-  just test     — run full test suite
-  just build    — build release binary
-  just          — list all recipes
-Perfect! The plan is accurate. I can see:
+The plan at `.ko/tickets/ner-b830.artifacts/plan.md` is complete and accurate. The codebase is in its original state — no implementation has been started. The previous attempt's verify step failed due to `npx` not being found in the shell environment (the dev shell uses `just test` instead), but no code changes were persisted.
 
-1. `channel-switcher.ts` line 54 currently takes `archivedIds: Set<string>` parameter - matches the plan's Context section
-2. `commands.rs` exists and follows the pattern for Tauri commands - good foundation for adding the new command
-3. The plan accurately describes all the changes needed
+The existing plan requires no updates:
 
-The plan is comprehensive, well-structured, and ready for implementation. All open questions have been resolved. The 17 tasks are properly ordered with clear verification steps. The plan aligns with INVARIANTS.md (backend owns state via matrix-rust-sdk, frontend is view layer).
+- **Goal**: Replace localStorage-based room archiving with Matrix's `m.lowpriority` tag
+- **17 tasks** covering Rust backend, TypeScript/Svelte frontend, tests, fake backend, and specs
+- **All open questions resolved**: Matrix SDK APIs confirmed (`is_low_priority()` is synchronous, `set_is_low_priority()` is async with `Option<f64>` tag_order)
+- **Key architectural note**: `toggleShowArchived()`/`getShowArchived()` moves to local Sidebar component state (not removed entirely)
 
-## Summary
-
-The existing plan at `.ko/tickets/ner-b830.artifacts/plan.md` is **complete and ready for implementation**. No updates are needed.
-
-**Key points:**
-- ✅ **Goal**: Clear - replace localStorage-based archiving with Matrix's `m.lowpriority` tag
-- ✅ **Context**: Accurate - verified current implementation uses localStorage and identified all affected files
-- ✅ **Approach**: Sound - add field to backend, remove localStorage code, call SDK methods
-- ✅ **Tasks**: 17 ordered tasks covering backend (Rust), frontend (TypeScript/Svelte), tests, fake backend, and specs
-- ✅ **Open Questions**: All resolved - Matrix SDK APIs confirmed, architectural decisions clarified
-- ✅ **No partial implementation**: Grep confirms `is_low_priority` doesn't exist in source code yet
-
-The plan follows INVARIANTS.md principles:
-- Backend owns state via matrix-rust-sdk (not bypassing with raw HTTP)
-- Frontend is view layer that renders backend data
-- Commands are the API boundary (new `set_room_low_priority` command)
-- Tests mirror the changes (update/remove localStorage tests, update component tests)
-
-The plan is ready to proceed to implementation.
+The plan is ready for implementation.

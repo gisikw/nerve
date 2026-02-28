@@ -1,29 +1,11 @@
 // Room list state. Refreshed on push events and explicit commands.
 
 import type { RoomInfo } from "../tauri";
-import { listRooms, onRoomsUpdated, onMessagesUpdated } from "../tauri";
+import { listRooms, onRoomsUpdated, onMessagesUpdated, setRoomLowPriority } from "../tauri";
 
 let rooms = $state<RoomInfo[]>([]);
 let selectedRoomId = $state<string | null>(null);
 
-// Archive state — persisted to localStorage
-const ARCHIVE_KEY = "nerve-archived-rooms";
-
-function loadArchivedIds(): Set<string> {
-  try {
-    const stored = localStorage.getItem(ARCHIVE_KEY);
-    return stored ? new Set(JSON.parse(stored)) : new Set();
-  } catch {
-    return new Set();
-  }
-}
-
-function saveArchivedIds(ids: Set<string>): void {
-  localStorage.setItem(ARCHIVE_KEY, JSON.stringify([...ids]));
-}
-
-let archivedRoomIds = $state<Set<string>>(loadArchivedIds());
-let showArchived = $state(false);
 let showChannels = $state(true);
 
 export function getRooms(): RoomInfo[] {
@@ -47,27 +29,15 @@ export function resetRooms(): void {
   selectedRoomId = null;
 }
 
-export function getArchivedRoomIds(): Set<string> {
-  return archivedRoomIds;
-}
-
-export function toggleArchive(roomId: string): void {
-  const next = new Set(archivedRoomIds);
-  if (next.has(roomId)) {
-    next.delete(roomId);
-  } else {
-    next.add(roomId);
+export async function toggleArchive(roomId: string): Promise<void> {
+  const room = rooms.find((r) => r.id === roomId);
+  if (!room) return;
+  try {
+    await setRoomLowPriority(roomId, !room.is_low_priority);
+    await refreshRooms();
+  } catch (err) {
+    console.error("Failed to toggle archive for room", roomId, err);
   }
-  archivedRoomIds = next;
-  saveArchivedIds(next);
-}
-
-export function getShowArchived(): boolean {
-  return showArchived;
-}
-
-export function toggleShowArchived(): void {
-  showArchived = !showArchived;
 }
 
 export function getShowChannels(): boolean {

@@ -41,6 +41,7 @@ fn main() {
             commands::get_streams,
             commands::send_stream_action,
             commands::speak_text,
+            commands::set_room_low_priority,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

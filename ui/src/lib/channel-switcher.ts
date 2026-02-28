@@ -48,11 +48,10 @@ export enum RoomGroup {
  * Determine which group a room belongs to.
  *
  * @param room - The room to categorize
- * @param archivedIds - Set of room IDs that are archived
  * @returns The group identifier
  */
-export function getRoomGroup(room: RoomInfo, archivedIds: Set<string>): RoomGroup {
-  if (archivedIds.has(room.id)) {
+export function getRoomGroup(room: RoomInfo): RoomGroup {
+  if (room.is_low_priority) {
     return RoomGroup.Archived;
   }
   if (room.highlight_count > 0) {
@@ -69,13 +68,12 @@ export function getRoomGroup(room: RoomInfo, archivedIds: Set<string>): RoomGrou
  * activity within each group.
  *
  * @param rooms - The list of rooms to sort
- * @param archivedIds - Set of room IDs that are archived
  * @returns A new sorted array of rooms
  */
-export function sortRooms(rooms: RoomInfo[], archivedIds: Set<string>): RoomInfo[] {
+export function sortRooms(rooms: RoomInfo[]): RoomInfo[] {
   return [...rooms].sort((a, b) => {
-    const groupA = getRoomGroup(a, archivedIds);
-    const groupB = getRoomGroup(b, archivedIds);
+    const groupA = getRoomGroup(a);
+    const groupB = getRoomGroup(b);
 
     // First sort by group priority
     if (groupA !== groupB) {

@@ -70,7 +70,8 @@ Feature: Room Navigation
   Scenario: Archiving a room removes it from active channels
     Given a room is visible in the Channels section
     When the user clicks the archive button for that room
-    Then the room disappears from the Channels section
+    Then the backend sets the Matrix m.lowpriority tag on the room
+    And the room disappears from the Channels section
     And the room appears in the Archived section
     And the Archived section header shows the count of archived rooms
 
@@ -100,10 +101,11 @@ Feature: Room Navigation
     And if no archived rooms remain, the Archived section header is hidden
 
   Scenario: Archived rooms persist across sessions
-    Given a room has been archived
+    Given a room has been archived via Matrix's m.lowpriority tag
     When the user refreshes the page
     Then the room still appears in the Archived section
     And the room does not appear in the Channels section
+    And the archive state persists on the server
 
   Scenario: Archived rooms can be selected
     Given a room is in the Archived section
@@ -117,14 +119,14 @@ Feature: Room Navigation
     Then the room shows an unread badge in the Archived section
     And the badge follows the same display rules as active rooms
 
-  Scenario: Archive state persists in localStorage
+  Scenario: Archive state is server-managed
     Given the user has archived a room with id "!test:matrix.org"
-    Then localStorage contains the archived room id
-    And the persisted state includes all archived room ids as a JSON array
+    Then the backend sets the Matrix m.lowpriority tag on the room
+    And the archived state is reflected in the room list from the server
 
   Scenario: Archive toggle is idempotent
-    Given a room is archived
+    Given a room is archived via Matrix's m.lowpriority tag
     When the user clicks the unarchive button
     And then clicks the archive button again
     Then the room ends up archived
-    And the archive state is correctly persisted
+    And the archive state is correctly persisted on the server

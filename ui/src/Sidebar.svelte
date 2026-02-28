@@ -3,10 +3,7 @@
     getRooms,
     getSelectedRoomId,
     selectRoom,
-    getArchivedRoomIds,
     toggleArchive,
-    getShowArchived,
-    toggleShowArchived,
     getShowChannels,
     toggleShowChannels,
   } from "./lib/stores/rooms.svelte";
@@ -19,14 +16,20 @@
 
   let { onOpenSwitcher }: Props = $props();
 
+  let showArchived = $state(false);
+
+  function toggleShowArchived(): void {
+    showArchived = !showArchived;
+  }
+
   let activeRooms = $derived(
-    getRooms().filter((r) => !getArchivedRoomIds().has(r.id)),
+    getRooms().filter((r) => !r.is_low_priority),
   );
   let visibleActiveRooms = $derived(
     filterVisibleRooms(activeRooms, getShowChannels()),
   );
   let archivedRooms = $derived(
-    getRooms().filter((r) => getArchivedRoomIds().has(r.id)),
+    getRooms().filter((r) => r.is_low_priority),
   );
 
   function handleKeydown(e: KeyboardEvent, action: () => void): void {
@@ -92,12 +95,12 @@
       onclick={() => toggleShowArchived()}
     >
       <span class="section-toggle">
-        {getShowArchived() ? "▼" : "▶"}
+        {showArchived ? "▼" : "▶"}
       </span>
       <span>Archived ({archivedRooms.length})</span>
     </button>
 
-    {#if getShowArchived()}
+    {#if showArchived}
       <ul class="room-list archived-rooms" role="listbox">
         {#each archivedRooms as room (room.id)}
           {@const isSelected = getSelectedRoomId() === room.id}

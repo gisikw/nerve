@@ -21,6 +21,7 @@ pub struct RoomInfo {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub topic: Option<String>,
     pub last_activity: u64,
+    pub is_low_priority: bool,
 }
 
 /// Collect room info from the client's current state.
@@ -48,6 +49,7 @@ pub async fn collect_rooms(client: &Client, typing_cache: &TypingCache) -> Vec<R
                 let highlight_count = unread_counts.highlight_count;
 
                 let topic = room.topic();
+                let is_low_priority = room.is_low_priority();
 
                 // TODO: Get last activity timestamp from the latest timeline event
                 // The matrix-rust-sdk's LatestEvent API doesn't expose timestamp directly
@@ -64,6 +66,7 @@ pub async fn collect_rooms(client: &Client, typing_cache: &TypingCache) -> Vec<R
                     typing_users,
                     topic,
                     last_activity,
+                    is_low_priority,
                 }
             }
         })

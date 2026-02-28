@@ -3,7 +3,6 @@
   import {
     getRooms,
     selectRoom,
-    getArchivedRoomIds,
     refreshRooms,
   } from "./lib/stores/rooms.svelte";
   import { createRoom } from "./lib/tauri";
@@ -24,7 +23,7 @@
   let filtered = $derived.by(() => {
     const q = query.trim().toLowerCase();
     const all = getRooms();
-    const sorted = sortRooms(all, getArchivedRoomIds());
+    const sorted = sortRooms(all);
     if (!q) return sorted;
     return sorted.filter((r) => r.name.toLowerCase().includes(q));
   });
@@ -126,7 +125,6 @@
     />
     <ul id="switcher-results" role="listbox">
       {#each filtered as room, i (room.id)}
-        {@const archived = getArchivedRoomIds().has(room.id)}
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <li
           role="option"
@@ -138,7 +136,7 @@
           onmouseenter={() => (selectedIndex = i)}
         >
           {room.is_direct ? room.name : `# ${room.name}`}
-          {#if archived}
+          {#if room.is_low_priority}
             <span class="switcher-archived">(archived)</span>
           {/if}
         </li>
