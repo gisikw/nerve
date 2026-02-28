@@ -1,6 +1,6 @@
 ---
 id: ner-0c4c
-status: open
+status: closed
 deps: []
 created: 2026-02-27T12:23:34Z
 type: task

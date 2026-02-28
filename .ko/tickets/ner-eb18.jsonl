@@ -1,0 +1,13 @@
+{"event":"build_start","ticket":"ner-eb18","ts":"2026-02-28T03:25:46Z"}
+{"event":"workflow_start","ticket":"ner-eb18","ts":"2026-02-28T03:25:46Z","workflow":"main"}
+{"event":"node_start","node":"classify","ticket":"ner-eb18","ts":"2026-02-28T03:25:46Z","workflow":"main"}
+{"event":"node_complete","node":"classify","result":"route","ticket":"ner-eb18","ts":"2026-02-28T03:25:58Z","workflow":"main"}
+{"event":"workflow_start","ticket":"ner-eb18","ts":"2026-02-28T03:25:58Z","workflow":"bug"}
+{"event":"node_start","node":"diagnose","ticket":"ner-eb18","ts":"2026-02-28T03:25:58Z","workflow":"bug"}
+{"attempt":1,"event":"node_fail","node":"diagnose","reason":"step timed out after 15m0s","ticket":"ner-eb18","ts":"2026-02-28T03:48:00Z","workflow":"bug"}
+{"attempt":2,"event":"node_retry","node":"diagnose","ticket":"ner-eb18","ts":"2026-02-28T03:48:00Z","workflow":"bug"}
+{"attempt":2,"event":"node_fail","node":"diagnose","reason":"step timed out after 15m0s","ticket":"ner-eb18","ts":"2026-02-28T04:10:46Z","workflow":"bug"}
+{"attempt":3,"event":"node_retry","node":"diagnose","ticket":"ner-eb18","ts":"2026-02-28T04:10:46Z","workflow":"bug"}
+{"attempt":3,"event":"node_fail","node":"diagnose","reason":"step timed out after 15m0s","ticket":"ner-eb18","ts":"2026-02-28T04:37:42Z","workflow":"bug"}
+{"event":"node_complete","node":"diagnose","result":"error","ticket":"ner-eb18","ts":"2026-02-28T04:37:42Z","workflow":"bug"}
+{"event":"build_complete","outcome":"fail","ticket":"ner-eb18","ts":"2026-02-28T04:37:42Z"}
