@@ -6,12 +6,18 @@ Feature: Room Navigation
     And the backend returns a list of rooms
     Then each room appears in the sidebar
 
-  Scenario: Rooms with notifications show badge
-    Given a room has notification_count greater than 0
-    Then the room shows an unread badge with the count
+  Scenario: Rooms with mentions show number badge
+    Given a room has highlight_count greater than 0
+    Then the room shows an unread badge with the mention count
 
-  Scenario: Notification badge caps at 99+
-    Given a room has notification_count greater than 99
+  Scenario: Rooms with unreads but no mentions show bold text only
+    Given a room has notification_count greater than 0
+    And the room has highlight_count equal to 0
+    Then the room name is displayed in bold
+    And no number badge is shown
+
+  Scenario: Mention badge caps at 99+
+    Given a room has highlight_count greater than 99
     Then the badge displays "99+"
 
   Scenario: Selecting a room loads messages
@@ -114,8 +120,8 @@ Feature: Room Navigation
     And messages load for that room
     And the room remains in the Archived section
 
-  Scenario: Archived rooms show notification badges
-    Given an archived room has notification_count greater than 0
+  Scenario: Archived rooms show mention badges
+    Given an archived room has highlight_count greater than 0
     Then the room shows an unread badge in the Archived section
     And the badge follows the same display rules as active rooms
 

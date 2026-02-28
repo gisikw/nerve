@@ -26,13 +26,13 @@ export function filterVisibleRooms(
 }
 
 /**
- * Format notification count for display in a badge.
+ * Format mention count for display in a badge.
  * Caps the count at 99, displaying "99+" for higher values.
  *
- * @param count - The notification count to format
+ * @param count - The highlight_count (mention count) to format
  * @returns The formatted badge text
  */
-export function formatNotificationBadge(count: number): string {
+export function formatHighlightBadge(count: number): string {
   if (count > 99) {
     return "99+";
   }

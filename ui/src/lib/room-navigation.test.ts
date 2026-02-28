@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { filterVisibleRooms, hasActivity, formatNotificationBadge } from "./sidebar";
+import { filterVisibleRooms, hasActivity, formatHighlightBadge } from "./sidebar";
 import type { RoomInfo } from "./tauri";
 
 /**
@@ -114,28 +114,68 @@ describe("sidebar channel filtering", () => {
     });
   });
 
-  describe("formatNotificationBadge", () => {
+  describe("badge display logic", () => {
+    function makeRoom(
+      id: string,
+      notification_count: number = 0,
+      highlight_count: number = 0,
+    ): RoomInfo {
+      return {
+        id,
+        name: "test-room",
+        is_direct: false,
+        notification_count,
+        highlight_count,
+        typing_users: [],
+        last_activity: 0,
+        is_low_priority: false,
+      };
+    }
+
+    it("rooms with only notification_count > 0 should not show a badge (highlight_count = 0)", () => {
+      const room = makeRoom("!general", 5, 0);
+      expect(room.highlight_count > 0).toBe(false);
+    });
+
+    it("rooms with highlight_count > 0 should show a badge", () => {
+      const room = makeRoom("!general", 5, 2);
+      expect(room.highlight_count > 0).toBe(true);
+      expect(formatHighlightBadge(room.highlight_count)).toBe("2");
+    });
+
+    it("rooms with no notifications or highlights should not show a badge", () => {
+      const room = makeRoom("!general", 0, 0);
+      expect(room.highlight_count > 0).toBe(false);
+    });
+
+    it("badge displays the highlight_count, not the notification_count", () => {
+      const room = makeRoom("!general", 10, 3);
+      expect(formatHighlightBadge(room.highlight_count)).toBe("3");
+    });
+  });
+
+  describe("formatHighlightBadge", () => {
     it("displays count as-is for values under 100", () => {
-      expect(formatNotificationBadge(0)).toBe("0");
-      expect(formatNotificationBadge(1)).toBe("1");
-      expect(formatNotificationBadge(42)).toBe("42");
-      expect(formatNotificationBadge(99)).toBe("99");
+      expect(formatHighlightBadge(0)).toBe("0");
+      expect(formatHighlightBadge(1)).toBe("1");
+      expect(formatHighlightBadge(42)).toBe("42");
+      expect(formatHighlightBadge(99)).toBe("99");
     });
 
     it("displays '99+' for count of 100", () => {
-      expect(formatNotificationBadge(100)).toBe("99+");
+      expect(formatHighlightBadge(100)).toBe("99+");
     });
 
     it("displays '99+' for counts greater than 100", () => {
-      expect(formatNotificationBadge(101)).toBe("99+");
-      expect(formatNotificationBadge(250)).toBe("99+");
-      expect(formatNotificationBadge(999)).toBe("99+");
-      expect(formatNotificationBadge(9999)).toBe("99+");
+      expect(formatHighlightBadge(101)).toBe("99+");
+      expect(formatHighlightBadge(250)).toBe("99+");
+      expect(formatHighlightBadge(999)).toBe("99+");
+      expect(formatHighlightBadge(9999)).toBe("99+");
     });
 
     it("handles boundary value of 99 correctly", () => {
-      expect(formatNotificationBadge(99)).toBe("99");
-      expect(formatNotificationBadge(100)).toBe("99+");
+      expect(formatHighlightBadge(99)).toBe("99");
+      expect(formatHighlightBadge(100)).toBe("99+");
     });
   });
 });

@@ -1,28 +1,22 @@
-nerve dev shell
-  just dev      — run Tauri (hot-reload)
-  just dev-ui   — run frontend only (fake backend)
-  just test     — run full test suite
-  just build    — build release binary
-  just          — list all recipes
-Perfect. The plan is complete, feasible, and actionable:
+The plan is complete and ready for implementation.
 
-✅ **Open Questions**: None — plan explicitly states there are no open questions.
+**Evaluation:**
 
-✅ **Completeness**: The plan has:
-- Clear goal (distinguish mentions from unreads)
-- All referenced files exist with correct line ranges
-- 6 ordered tasks with verification steps
-- Context explaining the data model and existing CSS support
+1. **Open Questions**: None listed. The plan explicitly states the data model already distinguishes mentions (`highlight_count`) from general unreads (`notification_count`), and the UI change is straightforward with existing CSS support. ✓
 
-✅ **Feasibility**:
-- `RoomInfo` interface has both `highlight_count` and `notification_count` ✓
-- `formatNotificationBadge()` exists in `ui/src/lib/sidebar.ts` ✓
-- Sidebar uses the correct condition at lines 71-72 (currently checks `notification_count > 0`) ✓
-- `.unread` class is already applied at line 62 for styling ✓
-- Test pattern references are valid (`ui/src/lib/channel-switcher.test.ts` exists)
-- Environment context (Nix, vitest) is correctly noted
+2. **Completeness**: 
+   - Clear goal: Show number badges only for mentions, bold text for general unreads ✓
+   - Identified files: 8 files/line ranges listed in Context section ✓
+   - Ordered tasks: 6 tasks with specific verification steps ✓
+   - Context explains the data model, existing CSS support, and testing approach ✓
 
-The plan is ready for implementation.
+3. **Feasibility**:
+   - `RoomInfo` type has both `highlight_count` and `notification_count` ✓
+   - `formatNotificationBadge()` exists and needs renaming ✓
+   - Sidebar badge condition currently uses `notification_count > 0` ✓
+   - `.unread` class already provides bold styling ✓
+   - Testing pattern documented with vitest and `@testing-library/svelte` ✓
+   - Environment context (Nix, npx) properly noted ✓
 
 ```json
 {"disposition": "continue"}

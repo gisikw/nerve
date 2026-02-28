@@ -8,7 +8,7 @@
     toggleShowChannels,
   } from "./lib/stores/rooms.svelte";
   import { getTypingUsers } from "./lib/stores/typing.svelte";
-  import { filterVisibleRooms, formatNotificationBadge } from "./lib/sidebar";
+  import { filterVisibleRooms, formatHighlightBadge } from "./lib/sidebar";
 
   interface Props {
     onOpenSwitcher?: () => void;
@@ -68,8 +68,8 @@
         <span class="room-name-text">
           {room.is_direct ? room.name : `# ${room.name}`}
         </span>
-        {#if room.notification_count > 0}
-          <span class="unread-badge">{formatNotificationBadge(room.notification_count)}</span>
+        {#if room.highlight_count > 0}
+          <span class="unread-badge">{formatHighlightBadge(room.highlight_count)}</span>
         {/if}
         <button
           class="room-action-btn"
@@ -119,8 +119,8 @@
             <span class="room-name-text">
               {room.is_direct ? room.name : `# ${room.name}`}
             </span>
-            {#if room.notification_count > 0}
-              <span class="unread-badge">{formatNotificationBadge(room.notification_count)}</span>
+            {#if room.highlight_count > 0}
+              <span class="unread-badge">{formatHighlightBadge(room.highlight_count)}</span>
             {/if}
             <button
               class="room-action-btn"
