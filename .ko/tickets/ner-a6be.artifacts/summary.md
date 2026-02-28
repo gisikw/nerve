@@ -1,16 +1,4 @@
----
-id: ner-a6be
-status: resolved
-deps: []
-created: 2026-02-27T12:27:30Z
-type: task
-priority: 2
----
-# Let's make the channel plus section maybe half its current height. Right now it feels like the horizontal splits in the sidebar panel vs the main panel are almost-but-not-quite aligned
-
-## Notes
-
-**2026-02-28 03:25:46 UTC:** # Summary
+# Summary
 
 ## What was done
 
@@ -29,5 +17,3 @@ Total section height drops from ~2.3rem to ~1.7rem — noticeably more compact.
 ## For future readers
 
 The intent is visual alignment: the `border-top` dividers on `#sidebar-actions` and `#compose` should feel horizontally aligned when both panels are visible side by side. If the compose bar height changes in the future, revisit these values together.
-
-**2026-02-28 03:25:46 UTC:** ko: SUCCEED
