@@ -133,6 +133,7 @@
           aria-selected={selectedIndex === i}
           class="switcher-item"
           class:selected={selectedIndex === i}
+          class:unread={room.notification_count > 0 || room.highlight_count > 0}
           onclick={() => selectItem(i)}
           onmouseenter={() => (selectedIndex = i)}
         >

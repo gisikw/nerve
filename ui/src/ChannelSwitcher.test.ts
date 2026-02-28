@@ -44,6 +44,14 @@ describe("ChannelSwitcher markup regression tests", () => {
     expect(componentSource).toContain('+ Create #{query.trim()}');
   });
 
+  it("applies unread class to rooms with notification_count or highlight_count", () => {
+    // Spec: channel_switcher.feature "Channels with unreads appear bold in the switcher"
+    // Verify the class binding exists for both notification_count and highlight_count
+    expect(componentSource).toContain(
+      "class:unread={room.notification_count > 0 || room.highlight_count > 0}"
+    );
+  });
+
   it("create option template is in the showCreate conditional block", () => {
     // Structural verification: ensure the "Create" text is only shown
     // when showCreate is true, to prevent it appearing unconditionally

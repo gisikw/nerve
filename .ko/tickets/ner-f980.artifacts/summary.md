@@ -1,22 +1,4 @@
----
-id: ner-f980
-status: resolved
-deps: []
-created: 2026-02-27T12:30:49Z
-type: task
-priority: 2
----
-# In the channel switcher, bold channels that have unreads
-
-## Notes
-
-**2026-02-27 14:42:30 UTC:** ko: reset to open (agent stopped)
-
-**2026-02-27 15:21:38 UTC:** ko: FAIL at node 'verify' — node 'verify' failed after 3 attempts: command failed: exit status 127
-sh: line 1: if [ -f flake.nix ]; then nix develop --command just test; else just test; fi: command not found
-
-
-**2026-02-28 02:59:33 UTC:** # After-Action Summary: Bold Unread Channels in Switcher
+# After-Action Summary: Bold Unread Channels in Switcher
 
 ## What was done
 
@@ -38,5 +20,3 @@ Implemented bold rendering for channels with unreads in the channel switcher, fo
 ## Notes for future readers
 
 The test in `ChannelSwitcher.test.ts` is a source-level markup regression test (checks that the class binding string exists in component source), consistent with the existing test style in that file. It is not a DOM rendering test — if deeper behavioral verification is needed, a component test using `@testing-library/svelte` would be appropriate.
-
-**2026-02-28 02:59:33 UTC:** ko: SUCCEED

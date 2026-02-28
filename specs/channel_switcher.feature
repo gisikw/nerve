@@ -88,6 +88,15 @@ Feature: Channel Switcher
     Then the room name text is rendered with normal font weight
     And no part of the option appears bold or highlighted beyond the selection indicator
 
+  Scenario: Channels with unreads appear bold in the switcher
+    Given the switcher is open
+    And there is a room "general" with notification_count of 3
+    And there is a room "ops" with highlight_count of 1
+    And there is a room "quiet" with no unreads
+    Then "general" is rendered with bold font weight
+    And "ops" is rendered with bold font weight
+    And "quiet" is rendered with normal font weight
+
   Scenario: Input field has spellcheck disabled
     Given the switcher is open
     When the user types in the filter input

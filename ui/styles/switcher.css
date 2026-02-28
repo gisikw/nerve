@@ -57,6 +57,10 @@
   color: var(--text);
 }
 
+.switcher-item.unread {
+  font-weight: 600;
+}
+
 .switcher-hint {
   padding: 0.5rem 0.85rem;
   font-size: 0.8rem;
