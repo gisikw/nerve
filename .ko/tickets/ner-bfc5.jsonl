@@ -14,3 +14,15 @@
 {"event":"node_complete","node":"actionable","result":"needs_input","ticket":"ner-bfc5","ts":"2026-02-27T12:50:53Z","workflow":"task"}
 {"event":"build_complete","outcome":"fail","ticket":"ner-bfc5","ts":"2026-02-27T12:50:53Z"}
 {"event":"build_error","reason":"hook 'git stash push -u -m \"ko: ${TICKET_ID} failed build\"' failed: exit status 1\nerror: '.ko/prompts/implement.md' is beyond a symbolic link\nfatal: Unable to process path .ko/prompts/implement.md\nCannot save the current worktree state\n","stage":"on_fail_hook","ticket":"ner-bfc5","ts":"2026-02-27T12:50:53Z"}
+{"event":"build_start","ticket":"ner-bfc5","ts":"2026-02-27T21:13:01Z"}
+{"event":"workflow_start","ticket":"ner-bfc5","ts":"2026-02-27T21:13:01Z","workflow":"main"}
+{"event":"node_start","node":"classify","ticket":"ner-bfc5","ts":"2026-02-27T21:13:01Z","workflow":"main"}
+{"event":"node_complete","node":"classify","result":"route","ticket":"ner-bfc5","ts":"2026-02-27T21:13:11Z","workflow":"main"}
+{"event":"workflow_start","ticket":"ner-bfc5","ts":"2026-02-27T21:13:11Z","workflow":"task"}
+{"event":"node_start","node":"plan","ticket":"ner-bfc5","ts":"2026-02-27T21:13:11Z","workflow":"task"}
+{"event":"node_complete","node":"plan","result":"done","ticket":"ner-bfc5","ts":"2026-02-27T21:13:38Z","workflow":"task"}
+{"event":"node_start","node":"actionable","ticket":"ner-bfc5","ts":"2026-02-27T21:13:38Z","workflow":"task"}
+{"event":"node_complete","node":"actionable","result":"continue","ticket":"ner-bfc5","ts":"2026-02-27T21:13:57Z","workflow":"task"}
+{"event":"node_start","node":"implement","ticket":"ner-bfc5","ts":"2026-02-27T21:13:57Z","workflow":"task"}
+{"attempt":1,"event":"node_fail","node":"implement","reason":"step timed out after 15m0s","ticket":"ner-bfc5","ts":"2026-02-28T01:14:52Z","workflow":"task"}
+{"attempt":2,"event":"node_retry","node":"implement","ticket":"ner-bfc5","ts":"2026-02-28T01:14:52Z","workflow":"task"}

@@ -1,18 +1,23 @@
-Looking at this ticket, I need to classify what kind of work it requires.
+nerve dev shell
+  just dev      — run Tauri (hot-reload)
+  just dev-ui   — run frontend only (fake backend)
+  just test     — run full test suite
+  just build    — build release binary
+  just          — list all recipes
+Looking at this ticket, I can analyze what it's asking for:
 
-**Ticket Analysis:**
-- The ticket describes a visual layout issue: "unread count and archive button are too big relative to their surrounding circles"
-- It proposes a specific solution: "probably expand the circles by a few px radius"
-- It's asserting that there's a problem (elements are disproportionately sized)
-- The fix direction is clear (increase circle size), but the underlying cause and implementation details haven't been diagnosed
+**Ticket Summary:**
+- Reports that unread count badge and archive button circles are too big relative to their surrounding elements
+- Suggests expanding the circles by a few pixels
+- Already has a decision: circles should be 22px in diameter (with 4px padding per side)
 
-**Classification Reasoning:**
-This falls into the **bug** category because:
-1. It reports unexpected/undesired visual behavior ("too big")
-2. While a potential fix is suggested, it's tentative ("probably")
-3. The root cause hasn't been investigated - we don't know if the issue is with the circles being too small, the icons being too large, or spacing calculations
-4. Before committing to a specific fix, the visual issue should be diagnosed to ensure the proposed solution is appropriate
+**Analysis:**
+This ticket describes a **specific visual problem** ("unread count and archive button are too big") and proposes a **clear solution** ("expand the circles by a few px"). The decision has already been made about the exact dimensions (22px diameter).
+
+The ticket is not asking "should we do this?" or "is this a problem?" — it's asserting that there's a sizing issue and has already determined the fix. This is straightforward work to adjust CSS/component sizes in the sidebar.
+
+This is a **task**: it specifies what code changes are needed (increase circle diameter to 22px) with a clear expected output (committed code changes to the sidebar component).
 
 ```json
-{"disposition": "route", "workflow": "bug"}
+{"disposition": "route", "workflow": "task"}
 ```

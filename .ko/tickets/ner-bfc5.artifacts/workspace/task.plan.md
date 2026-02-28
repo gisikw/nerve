@@ -1,11 +1,20 @@
-Perfect! I've created the implementation plan at `/home/dev/Projects/nerve/.ko/tickets/ner-bfc5.artifacts/plan.md`.
+nerve dev shell
+  just dev      — run Tauri (hot-reload)
+  just dev-ui   — run frontend only (fake backend)
+  just test     — run full test suite
+  just build    — build release binary
+  just          — list all recipes
+Perfect! I've updated the plan to reflect the decision to use 22px circles. The changes include:
 
-## Summary
+## Summary of Plan Updates
 
-The plan addresses the visual sizing issue for unread count badges and archive buttons in the channel sidebar. Key points:
+**Decision incorporated:** The circle size is now **22px** (providing 4px padding per side).
 
-1. **Unread badge**: Increase from 16px to 20px circles (height, line-height, border-radius adjustment)
-2. **Archive button**: Add explicit 20px circular background with flexbox centering for the 14px SVG icon
-3. **Verification**: Manual testing in dev mode with various notification counts and hover states
+**Updated sections:**
 
-The only open question is whether to use 20px or 22px circles—I recommended starting with 20px as it provides adequate spacing (3px per side around the icon) while being more conservative. This can be bumped to 22px if it still feels cramped during implementation.
+1. **Approach:** Changed from "20px (or 22px)" to definitively "22px"
+2. **Task 1 (Unread badge):** Updated all pixel values from 20px to 22px, and border-radius from 10px to 11px
+3. **Task 2 (Archive button):** Updated all pixel values from 20px to 22px, and border-radius from 10px to 11px
+4. **Open Questions:** Changed from the original question to "None" with a note that the decision has been made
+
+The plan is now actionable and ready for implementation with all open questions resolved.
