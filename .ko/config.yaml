@@ -1,0 +1,5 @@
+project:
+  prefix: ner
+
+pipeline:
+  from: ~/Projects/hoard/pipelines/coding
