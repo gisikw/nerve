@@ -1,1 +1,0 @@
-The fix adds `display: flex`, `align-items: center`, `justify-content: center`, `height: 16px`, and `width: 16px` to `.room-action-btn`. This gives the button explicit 16px dimensions matching the unread badge, and centers the 14px SVG icon within it — eliminating the vertical misalignment.

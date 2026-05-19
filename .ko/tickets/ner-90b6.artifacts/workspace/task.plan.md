@@ -1,1 +1,0 @@
-The prior plan is accurate and the implementation has not yet been applied — `Sidebar.svelte` still uses `notification_count` for badge conditions and `formatNotificationBadge` is still the function name. The plan requires no updates.
